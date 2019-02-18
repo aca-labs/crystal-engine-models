@@ -1,0 +1,10 @@
+name: engine-models
+version: 1.0.0
+
+dependencies:
+  rethinkdb-orm:
+    github: aca-labs/rethinkdb-orm
+
+development_dependencies:
+  ameba:
+    github: veelenga/ameba
