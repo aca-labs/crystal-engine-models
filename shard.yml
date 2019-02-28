@@ -3,7 +3,7 @@ version: 1.0.0
 
 dependencies:
   rethinkdb-orm:
-    github: aca-labs/rethinkdb-orm
+    github: spider-gazelle/rethinkdb-orm
 
 development_dependencies:
   ameba:

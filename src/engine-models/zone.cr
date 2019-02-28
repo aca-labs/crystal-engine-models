@@ -1,27 +1,22 @@
-require "rethinkdb-orm"
-
-class Engine::Zone < RethinkORM::Base
+class Engine::Models::Zone < Engine::Model
   attribute name : String
   attribute description : String
   attribute tags : String
-  attribute settings : Hash(String, String), default: {} of String => String
+  attribute settings : String = "{}"
 
   # TODO:
-  # attribute triggers : Array(Trigger),   default: [] of Trigger
+  # attribute triggers : Array(Trigger) = [] of Trigger
 
-  attribute created_at : Int64, default: ->{ Time.now }
+  attribute created_at : Time = ->{ Time.now }
 
   # TODO:
   # has_many TriggerInstance, collection_name: "trigger_instances", dependent: :destroy
 
-  ensure_unique :name do |name|
-    "#{name.to_s.strip.downcase}"
-  end
-
+  ensure_unique :name
   validates :name, presence: true
 
   def systems
-    ControlSystem.in_zone(self.id)
+    ControlSystem.by_zone_id(self.id)
   end
 
   # TODO:
@@ -33,31 +28,30 @@ class Engine::Zone < RethinkORM::Base
   #     end
   # end
 
-  before_destroy :remove_zone
-
-  protected def remove_zone
-    zone_cache.delete(self.id)
-    systems.each do |cs|
-      cs.zones.delete(self.id)
-      cs.version += 1
-      cs.save!
-    end
-  end
+  # before_destroy :remove_zone
+  # protected def remove_zone
+  #   zone_cache.delete(self.id)
+  #   systems.each do |cs|
+  #     cs.zones.delete(self.id)
+  #     cs.version += 1
+  #     cs.save!
+  #   end
+  # end
 
   # Expire both the zone cache and any systems that use the zone
-  after_save :expire_caches
+  # after_save :expire_caches
 
-  protected def expire_caches
-    zone_cache[self.id] = self
-    ctrl = Control.instance
-    systems.each do |cs|
-      ctrl.expire_cache cs.id
-    end
-  end
+  # protected def expire_caches
+  #   zone_cache[self.id] = self
+  #   ctrl = Control.instance
+  #   systems.each do |cs|
+  #     ctrl.expire_cache cs.id
+  #   end
+  # end
 
-  protected def zone_cache
-    Control.instance.zones
-  end
+  # protected def zone_cache
+  #   Control.instance.zones
+  # end
 
   # TODO:
   # =======================
