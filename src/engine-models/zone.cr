@@ -4,21 +4,11 @@ class Engine::Models::Zone < Engine::Model
   attribute tags : String
   attribute settings : String = "{}"
 
-  # TODO:
-  # attribute triggers : Array(Trigger) = [] of Trigger
-
   attribute created_at : Time = ->{ Time.now }
 
   # TODO:
+  # attribute triggers : Array(Trigger) = [] of Trigger
   # has_many TriggerInstance, collection_name: "trigger_instances", dependent: :destroy
-
-  ensure_unique :name
-  validates :name, presence: true
-
-  def systems
-    ControlSystem.by_zone_id(self.id)
-  end
-
   # TODO:
   # def trigger_data
   #     if triggers.empty?
@@ -27,6 +17,13 @@ class Engine::Models::Zone < Engine::Model
   #         Array(Trigger.find_by_id(triggers))
   #     end
   # end
+
+  ensure_unique :name
+  validates :name, presence: true
+
+  def systems
+    ControlSystem.by_zone_id(self.id)
+  end
 
   # before_destroy :remove_zone
   # protected def remove_zone

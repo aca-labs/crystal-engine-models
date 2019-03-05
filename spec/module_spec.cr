@@ -1,4 +1,4 @@
-describe Engine::Models do
-  context Module do
-  end
+require "./helper"
+
+describe Engine::Models::Module do
 end

@@ -1,4 +1,4 @@
-describe Engine::Models do
-  context ControlSystem do
-  end
+require "./helper"
+
+describe Engine::Models::ControlSystem do
 end

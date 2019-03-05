@@ -12,9 +12,12 @@ class Engine::Models::Dependency < Engine::Model
   end
 
   attribute name : String
-  attribute role : Role
   attribute description : String
-  attribute default : String | Int32 # default data (Port or URI)
+
+  attribute default_uri : String
+  attribute default_port : Int32
+
+  enum_attribute role : Role
 
   attribute class_name : String
   attribute module_name : String
@@ -32,12 +35,12 @@ class Engine::Models::Dependency < Engine::Model
 
   def default_port=(port)
     self.role = Role::Device
-    self.default = port
+    self.default_port = port
   end
 
   def default_uri=(uri)
     self.role = Role::Service
-    self.default = uri
+    self.default_uri = uri
   end
 
   # Validations

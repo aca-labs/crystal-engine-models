@@ -4,6 +4,7 @@ version: 1.0.0
 dependencies:
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
+    branch: master
 
 development_dependencies:
   ameba:

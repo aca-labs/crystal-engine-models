@@ -10,10 +10,6 @@ class Engine::Models::ControlSystem < Engine::Model
   # We only want to run this callback if run within a rails console
   # before_destroy :cleanup_modules
 
-  # Defines the default affinity for modules in this system and triggers
-  # Of course it doesn't mean the module has to be located on this machine
-  # belongs_to EdgeControl
-
   attribute name : String
   attribute description : String
 
@@ -46,13 +42,6 @@ class Engine::Models::ControlSystem < Engine::Model
   # # Used in triggers::manager for accssing a system proxy
   # def control_system_id
   #   self.id
-  # end
-
-  # # Returns the node currently running this module
-  # def node
-  #   # NOTE:: Same function in module.cr
-  #   @node_id ||= self.edge_id.to_sym
-  #   Control.instance.nodes[@node_id]
   # end
 
   ensure_unique :name do |name|
@@ -89,18 +78,17 @@ class Engine::Models::ControlSystem < Engine::Model
   #   by_edge_id
   # end
 
-  # index_view :edge_id, find_method: :on_node
-
-  # Methods for obtaining the modules and zones as objects
+  # Obtains the control system's modules as json
   def module_data
-    Module.find_by_id(modules).collect do |mod|
+    Module.get_all(modules).to_a.map do |mod|
       object = mod.attributes[:dependency].try(&.select({:name, :module_name}))
       object.try(&.to_json)
     end
   end
 
+  # Obtains the control system's zones as json
   def zone_data
-    Zone.find(zones).to_a
+    Zone.get_all(zones).to_a.map(&.to_json)
   end
 
   # # Triggers
@@ -152,32 +140,22 @@ class Engine::Models::ControlSystem < Engine::Model
   # Zones and settings are only required for confident coding
   validates :name, presence: true
 
-  validate("support_link", ->(this : ControlSystem) {
+  # Validate support URI
+  validate ->(this : ControlSystem) {
     support_url = this.support_url
     if support_url.nil? || support_url.empty?
       this.support_url = nil
-      true
     else
-      begin
-        url = URI.parse(support_url)
-        !!(url.scheme && url.host && url)
-      rescue
-        # this.errors << ActiveModel::Error.new(this, :support_url, "is an invalid URI")
-        false
-      end
+      url = URI.parse(support_url)
+      url_parsed = !!(url && url.scheme && url.host)
+      validation_error(:support_url, "is an invalid URI") unless url_parsed
     end
-  })
-
-  # protected def control_running?
-  #   # Control.instance.ready
-  # end
+  }
 
   # protected def update_features
   #   return unless self.bookable
-
   #   ctrl = Control.instance
   #   return unless ctrl.ready
-
   #   if self.id
   #     system = System.get(self.id)
   #     if system
@@ -201,30 +179,28 @@ class Engine::Models::ControlSystem < Engine::Model
   # =======================
   # Zone Trigger Management
   # =======================
-  before_save :check_zones
+  # before_save :check_zones
 
-  protected def check_zones
-    if self.zones_changed?
-      previous = self.zones_was.to_a
-      current = self.zones
+  # protected def check_zones
+  #   if self.zones_changed?
+  #     previous = self.zones_was.to_a
+  #     current = self.zones
 
-      @remove_zones = previous - current
-      @add_zones = current - previous
+  #     @remove_zones = previous - current
+  #     @add_zones = current - previous
 
-      @update_triggers = @remove_zones.present? || @add_zones.present?
-    else
-      @update_triggers = false
-    end
-    nil
-  end
+  #     @update_triggers = @remove_zones.present? || @add_zones.present?
+  #   else
+  #     @update_triggers = false
+  #   end
+  #   nil
+  # end
 
   # after_save :update_triggers
   # protected def update_triggers
   #   return unless @update_triggers
-
   #   if @remove_zones.present?
   #     trigs = triggers.to_a
-
   #     @remove_zones.collect { |zone_id|
   #       Zone.find_by_id(zone_id)
   #     }.reject(&:nil?).each do |zone|
@@ -237,7 +213,6 @@ class Engine::Models::ControlSystem < Engine::Model
   #       end
   #     end
   #   end
-
   #   @add_zones.each do |zone_id|
   #     zone = Zone.find_by_id(zone_id)
   #       inst.trigger_id = trig_id

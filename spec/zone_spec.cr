@@ -1,4 +1,4 @@
-describe Engine::Models do
-  context Zone do
-  end
+require "./helper"
+
+describe Engine::Models::Zone do
 end
