@@ -25,7 +25,7 @@ class Engine::Models::Module < Engine::Model
   attribute updated_at : Time = ->{ Time.now }
   attribute created_at : Time = ->{ Time.now }
 
-  attribute role : Dependency::Role # cache the dependency role locally for load order
+  enum_attribute role : Dependency::Role # cache the dependency role locally for load order
 
   # Connected state in model so we can filter and search on it
   attribute connected : Bool = true
