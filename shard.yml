@@ -7,5 +7,7 @@ dependencies:
     branch: master
 
 development_dependencies:
+  faker:
+    github: askn/faker
   ameba:
     github: veelenga/ameba

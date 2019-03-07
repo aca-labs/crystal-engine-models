@@ -1,4 +1,4 @@
 require "./helper"
 
-describe Engine::Models::Zone do
+describe Engine::Model::Zone do
 end

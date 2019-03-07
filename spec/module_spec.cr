@@ -1,4 +1,4 @@
 require "./helper"
 
-describe Engine::Models::Module do
+describe Engine::Model::Module do
 end
