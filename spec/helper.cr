@@ -1,2 +1,2 @@
 require "spec"
-require "../src/engine_models"
+require "../src/engine-models"
