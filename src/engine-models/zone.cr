@@ -2,6 +2,8 @@ require "../engine-models"
 
 module Engine::Model
   class Zone < ModelBase
+    table :zone
+
     attribute name : String
     attribute description : String
     attribute tags : String
