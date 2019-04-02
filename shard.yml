@@ -5,6 +5,9 @@ dependencies:
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
     branch: master
+  neuroplastic:
+    github: aca-labs/neuroplastic
+    branch: master
 
 development_dependencies:
   faker:
