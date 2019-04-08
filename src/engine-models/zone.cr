@@ -1,5 +1,9 @@
 require "../engine-models"
 
+# TODO:
+# - zone cache
+# - triggers
+
 module Engine::Model
   class Zone < ModelBase
     table :zone
@@ -11,15 +15,15 @@ module Engine::Model
 
     attribute created_at : Time = ->{ Time.now }
 
-    # TODO:
-    # attribute triggers : Array(Trigger) = [] of Trigger
+    # attribute triggers : Array(String) = [] of String
     # has_many TriggerInstance, collection_name: "trigger_instances", dependent: :destroy
-    # TODO:
+
+    # # Looks up the triggers attached to the zone
     # def trigger_data
-    #     if triggers.empty?
-    #         []
+    #     if @triggers.empty?
+    #         [] of Trigger
     #     else
-    #         Array(Trigger.find_by_id(triggers))
+    #         Trigger.find(triggers).to_a
     #     end
     # end
 
@@ -30,19 +34,18 @@ module Engine::Model
       ControlSystem.by_zone_id(self.id)
     end
 
-    # before_destroy :remove_zone
-    # protected def remove_zone
-    #   zone_cache.delete(self.id)
-    #   systems.each do |cs|
-    #     cs.zones.delete(self.id)
-    #     cs.version += 1
-    #     cs.save!
-    #   end
-    # end
+    before_destroy :remove_zone
+    protected def remove_zone
+      # zone_cache.delete(self.id)
+      systems.each do |cs|
+        cs.zones.delete(self.id)
+        cs.version += 1
+        cs.save!
+      end
+    end
 
     # Expire both the zone cache and any systems that use the zone
     # after_save :expire_caches
-
     # protected def expire_caches
     #   zone_cache[self.id] = self
     #   ctrl = Control.instance
