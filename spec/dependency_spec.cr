@@ -4,9 +4,10 @@ describe Engine::Model::Dependency do
   it "creates a dependency" do
     dep = Engine::Model::Dependency.create!(
       name: "whatever",
-      class_name: "hitachi",
-      module_name: "some_module",
       role: Engine::Model::Dependency::Role::Service,
+      commit: "cbf1337",
+      version: "1.1.1",
+      module_name: "some_module",
     )
 
     dep.should_not be_nil

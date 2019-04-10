@@ -22,7 +22,13 @@ module Engine::Model
 
     enum_attribute role : Role
 
-    attribute class_name : String
+    # Dependency version management
+    attribute file_name : String
+    attribute commit : String
+    attribute version : String # FIXME: fix crystal's SemVer serialisation
+    belongs_to DriverRepo
+
+    # Module instance configuration
     attribute module_name : String
     attribute settings : String = "{}"
     attribute created_at : Time = ->{ Time.now }
@@ -48,9 +54,10 @@ module Engine::Model
 
     # Validations
     validates :name, presence: true
-    validates :class_name, presence: true
-    validates :module_name, presence: true
     validates :role, presence: true
+    validates :commit, presence: true
+    validates :version, presence: true
+    validates :module_name, presence: true
 
     # Delete all the module references relying on this dependency
     #
