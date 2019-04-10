@@ -8,6 +8,8 @@ dependencies:
   neuroplastic:
     github: aca-labs/neuroplastic
     branch: master
+  active-model:
+    github: spider-gazelle/active-model
 
 development_dependencies:
   faker:
