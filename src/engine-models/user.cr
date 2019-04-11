@@ -33,7 +33,7 @@ module Engine::Model
     attribute email_digest : String
     attribute card_number : String
 
-    attribute created_at : Time = ->{ Time.now }, converter: Time::EpochConverter
+    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
     attribute deleted : Bool = false
 
     # belongs_to Authority
