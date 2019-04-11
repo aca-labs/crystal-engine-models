@@ -1,3 +1,5 @@
+require "time"
+
 require "../engine-models"
 
 # TODO:
@@ -13,19 +15,20 @@ module Engine::Model
     attribute tags : String
     attribute settings : String = "{}"
 
-    attribute created_at : Time = ->{ Time.now }
+    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
-    # attribute triggers : Array(String) = [] of String
-    # has_many TriggerInstance, collection_name: "trigger_instances", dependent: :destroy
+    attribute triggers : Array(String) = [] of String
 
-    # # Looks up the triggers attached to the zone
-    # def trigger_data
-    #     if @triggers.empty?
-    #         [] of Trigger
-    #     else
-    #         Trigger.find(triggers).to_a
-    #     end
-    # end
+    has_many TriggerInstance, collection_name: "trigger_instances", dependent: :destroy
+
+    # Looks up the triggers attached to the zone
+    def trigger_data : Array(Trigger)
+      if @triggers.empty?
+        [] of Trigger
+      else
+        Trigger.find(@triggers).to_a
+      end
+    end
 
     ensure_unique :name
     validates :name, presence: true
@@ -35,12 +38,19 @@ module Engine::Model
     end
 
     before_destroy :remove_zone
+
     protected def remove_zone
       # zone_cache.delete(self.id)
       systems.each do |cs|
-        cs.zones.delete(self.id)
-        cs.version += 1
-        cs.save!
+        zones = cs.zones
+        if zones
+          cs.zones = zones.reject(self.id)
+
+          version = cs.version
+          cs.version = version + 1 if version
+
+          cs.save!
+        end
       end
     end
 

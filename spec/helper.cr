@@ -23,7 +23,7 @@ end
 def inspect_error(error : RethinkORM::Error::DocumentInvalid)
   errors = error.model.errors.map do |e|
     {
-      field: e.field,
+      field:   e.field,
       message: e.message,
     }
   end
