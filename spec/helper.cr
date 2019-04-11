@@ -2,6 +2,8 @@ require "spec"
 require "faker"
 require "random"
 
+require "rethinkdb-orm"
+
 require "../src/engine-models/*"
 require "../src/engine-models/**"
 

@@ -1,6 +1,9 @@
-require "rethinkdb-orm"
-require "neuroplastic"
 require "active-model"
+require "neuroplastic"
+require "json"
+require "rethinkdb-orm"
+
+require "./utils"
 
 module Engine::Model
   abstract class ModelBase < RethinkORM::Base
@@ -10,9 +13,9 @@ module Engine::Model
   abstract class SubModel < ActiveModel::Model
     include ActiveModel::Validation
 
-    # Generate string for field
+    # RethinkDB library serializes through JSON::Any
     def to_reql
-      self.to_json
+      JSON::Any.new(self.to_json)
     end
   end
 end
