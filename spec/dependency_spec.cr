@@ -6,7 +6,7 @@ describe Engine::Model::Dependency do
       name: "whatever",
       role: Engine::Model::Dependency::Role::Service,
       commit: "cbf1337",
-      version: "1.1.1",
+      version: SemanticVersion.parse("1.1.1"),
       module_name: "some_module",
     )
 

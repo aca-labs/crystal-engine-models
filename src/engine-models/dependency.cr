@@ -1,3 +1,5 @@
+require "semantic_version"
+
 require "../engine-models"
 
 module Engine::Model
@@ -25,13 +27,13 @@ module Engine::Model
     # Dependency version management
     attribute file_name : String
     attribute commit : String
-    attribute version : String # FIXME: fix crystal's SemVer serialisation
+    attribute version : SemanticVersion, converter: SemanticVersion::Converter
     belongs_to DriverRepo
 
     # Module instance configuration
     attribute module_name : String
     attribute settings : String = "{}"
-    attribute created_at : Time = ->{ Time.now }
+    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
     # Don't include this module in statistics or disconnected searches
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)
@@ -63,7 +65,7 @@ module Engine::Model
     #
     protected def cleanup_modules
       modules.each do |mod|
-        mod.destroy!
+        mod.destroy
       end
     end
 

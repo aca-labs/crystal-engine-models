@@ -4,6 +4,8 @@ module Engine::Model
   # Class that pins engine's drivers to a specifc repository state
   # Allows external driver management from a VCS
   class DriverRepo < ModelBase
+    table :repo
+
     # Repo metadata
     attribute name : String
     attribute description : String
@@ -22,6 +24,6 @@ module Engine::Model
     attribute password : String
     attribute key : String
 
-    # has_many Dependency
+    has_many Dependency, collection_name: "dependencies"
   end
 end
