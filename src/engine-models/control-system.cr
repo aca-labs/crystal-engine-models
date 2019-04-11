@@ -1,4 +1,6 @@
 require "uri"
+require "time"
+
 require "../engine-models"
 
 module Engine::Model
@@ -21,6 +23,7 @@ module Engine::Model
     attribute capacity : Int32 = 0
     attribute features : String
     attribute bookable : Bool = false
+    attribute map_id : String
 
     # Provide a email lookup helpers
     secondary_index :email
@@ -29,22 +32,25 @@ module Engine::Model
     # i.e. the number of iPads mounted on the wall
     attribute installed_ui_devices : Int32 = 0
 
+    # has_many Zone, collection_name: :zones
+    # has_many Module, collection_name: :modules
+
     attribute zones : Array(String) = [] of String
     attribute modules : Array(String) = [] of String
+
+    # FIXME: Mock
+    def self.by_zone_id(id)
+      [] of ControlSystem
+    end
 
     # YAML settings
     attribute settings : String = "{}"
 
-    attribute created_at : Time = ->{ Time.now }
+    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
     # Provide a field for simplifying support
     attribute support_url : String
     attribute version : Int32 = 0
-
-    # # Used in triggers::manager for accssing a system proxy
-    # def control_system_id
-    #   self.id
-    # end
 
     ensure_unique :name do |name|
       "#{name.to_s.strip.downcase}"
@@ -76,15 +82,11 @@ module Engine::Model
     #   end
     # end
 
-    # def self.all
-    #   by_edge_id
-    # end
-
     # Obtains the control system's modules as json
     def module_data
       Module.get_all(modules).to_a.map do |mod|
         object = mod.attributes[:dependency].try(&.select({:name, :module_name}))
-        object.try(&.to_json)
+        object.to_json
       end
     end
 
@@ -93,10 +95,12 @@ module Engine::Model
       Zone.get_all(zones).to_a.map(&.to_json)
     end
 
-    # # Triggers
-    # def triggers
-    #     TriggerInstance.for(self.id)
-    # end
+    # Triggers
+    def triggers : Array(TriggerInstance)
+      # TriggerInstance.get_all()
+      # TriggerInstance.by_control_system_id(self.id)
+      [] of TriggerInstance
+    end
 
     # For trigger logic module compatibility
     # def running
@@ -150,7 +154,7 @@ module Engine::Model
       else
         url = URI.parse(support_url)
         url_parsed = !!(url && url.scheme && url.host)
-        validation_error(:support_url, "is an invalid URI") unless url_parsed
+        this.validation_error(:support_url, "is an invalid URI") unless url_parsed
       end
     }
 
