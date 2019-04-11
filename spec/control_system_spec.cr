@@ -2,10 +2,8 @@ require "./helper"
 
 # Transmogrified from the Ruby Engine spec
 describe Engine::Model::ControlSystem do
-  it "saves a control system" do
-    cs = Engine::Model::ControlSystem.new(
-      name: Faker::Hacker.noun
-    )
+  pending "saves a control system" do
+    cs = new_control_system
     begin
       cs.save!
     rescue e : RethinkORM::Error::DocumentInvalid
@@ -22,7 +20,7 @@ describe Engine::Model::ControlSystem do
   pending "should create triggers when added and removed from a zone" do
     begin
       zone2 = Engine::Model::Zone.create!(name: "trig zone2")
-      cs = Engine::Model::ControlSystem.new(name: "trig sys")
+      cs = new_control_system
 
       zone2_id = zone2.id
       if zone2_id

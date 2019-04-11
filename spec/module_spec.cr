@@ -24,7 +24,7 @@ describe Engine::Model::Module do
       end
     end
 
-    it "saves a Logic module" do
+    pending "saves a Logic module" do
       name = Faker::Hacker.noun
       mod = Engine::Model::Module.new(
         custom_name: name,
