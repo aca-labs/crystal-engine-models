@@ -8,7 +8,7 @@ require "time"
 require "../engine-models"
 
 module Engine::Model
-  class Zone < ModelBase
+  class User < ModelBase
     table :user
 
     PUBLIC_DATA = {

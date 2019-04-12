@@ -2,7 +2,7 @@ require "./helper"
 
 # Transmogrified from the Ruby Engine spec
 describe Engine::Model::Zone do
-  pending "should save a zone" do
+  it "should save a zone" do
     zone = new_zone
 
     begin
