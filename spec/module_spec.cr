@@ -79,7 +79,7 @@ describe Engine::Model::Module do
         custom_name: name,
         uri: Faker::Internet.url,
         ip: Faker::Internet.ip_v4_address,
-        port: Random.rand((1..6555)),
+        port: Random.rand((1..65_535)),
       )
 
       service_dep = new_dependency(

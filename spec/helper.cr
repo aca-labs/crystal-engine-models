@@ -21,7 +21,6 @@ require "../src/engine-models/**"
 
 RANDOM = Random.new(9966)
 
-
 def new_dependency(module_name : String, role : Engine::Model::Dependency::Role)
   dep = Engine::Model::Dependency.new(
     name: Faker::Hacker.noun,

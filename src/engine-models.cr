@@ -17,6 +17,16 @@ module Engine::Model
     def to_reql
       JSON::Any.new(self.to_json)
     end
+
+    # Propagate submodel validation errors to parent's
+    protected def collect_errors(collection : Symbol, models)
+      errors = models.compact_map do |m|
+        m.errors unless m.valid?
+      end
+      errors.flatten.each do |e|
+        self.validation_error(collection, e.message)
+      end
+    end
   end
 end
 

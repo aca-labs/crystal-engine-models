@@ -11,14 +11,13 @@ module Engine::Model
     attribute description : String
     attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
-    # FIXME: dummy
+    # attribute actions : Array(String)
+    attribute actions : Actions = ->{ Actions.new }
+
     # attribute conditions : Array(String)
-    attribute actions : Array(String)
+    attribute conditions : Conditions = ->{ Conditions.new }
 
-    attribute conditions : Array(Condition)
-    # attribute actions : Array(Action) = ->{ [] of Action }
-
-    # in seconds
+    # In seconds
     attribute debounce_period : Int32 = 0
     attribute important : Bool = false
 
@@ -33,108 +32,102 @@ module Engine::Model
     end
 
     # ---------------------------
-    # VALIDATIONS (and mutation)
+    # VALIDATIONS
     # ---------------------------
 
     validates :name, presence: true
 
-    # No point fleshing out Conditions/Actions until the new API is solidified.
+    validate ->(this : Trigger) {
+      actions = this.actions
+      if actions && !actions.valid?
+        actions.errors.each do |e|
+          this.validation_error(:action, e.message)
+        end
+      end
+
+      conditions = this.conditions
+      if conditions && !conditions.valid?
+        conditions.errors.each do |e|
+          this.validation_error(:condition, e.message)
+        end
+      end
+    }
 
     # Conditions
     ###########################################################################
 
-    alias Condition = DependentCondition | ComparisonCondition
+    class Conditions < SubModel
+      attribute dependent_conditions : Array(DependentCondition) = ->{ [] of DependentCondition }
+      attribute comparison_conditions : Array(ComparisonCondition) = ->{ [] of ComparisonCondition }
 
-    class DependentCondition < Engine::Model::SubModel
-      attribute trigger_type : String, presence: true
-      attribute value : String
-      attribute time : Time
+      validate ->(this : Conditions) {
+        dependent_conditions = this.dependent_conditions
+        this.collect_errors(:dependent_conditions, dependent_conditions) if dependent_conditions
 
-      TRIGGER_TYPES = {"at", "webhook", "cron"}
-      # validates :trigger_type, inclusion: {in: TRIGGER_TYPES}
-    end
-
-    class ComparisonCondition < Engine::Model::SubModel
-      attribute left : StatusVariable
-      attribute operator : String
-      attribute right : StatusVariable
-
-      OPERATORS = {
-        "equal", "not_equal", "greater_than", "greater_than_or_equal",
-        "less_than", "less_than_or_equal", "and", "or", "exclusive_or",
+        comparison_conditions = this.comparison_conditions
+        this.collect_errors(:comparison_conditions, comparison_conditions) if comparison_conditions
       }
-      # validates :operator, inclusion: {in: OPERATORS}
-    end
 
-    alias StatusValue = ConstantValue | StatusVariable
-    alias ConstantValue = NamedTuple(const: Int32 | Float32 | String | Bool)
-    alias StatusVariable = NamedTuple(
-      mod: String,
-      index: Int32,
-      # Unparsed hash of a status variable
-      status: String,
-      keys: Array(String),
-    )
+      class DependentCondition < SubModel
+        attribute trigger_type : String, presence: true
 
-    # Check conditions validity
-    validate ->(this : Trigger) {
-      conditions = this.conditions
-      return unless conditions
-      unless conditions.empty?
-        valid = conditions.all?(&.valid?)
-        this.validation_error(:conditions, "are not all valid") unless valid
+        attribute value : String
+        attribute time : Time, converter: Time::EpochConverter
+
+        TRIGGER_TYPES = {"at", "webhook", "cron"}
+        validates :trigger_type, inclusion: {in: TRIGGER_TYPES}
       end
-    }
+
+      class ComparisonCondition < SubModel
+        attribute left : StatusVariable
+        attribute operator : String
+        attribute right : StatusVariable
+
+        alias StatusValue = ConstantValue | StatusVariable
+        alias ConstantValue = NamedTuple(const: Int32 | Float32 | String | Bool)
+        alias StatusVariable = NamedTuple(
+          mod: String,
+          index: Int32,
+          # Unparsed hash of a status variable
+          status: String,
+          keys: Array(String),
+        )
+
+        OPERATORS = {
+          "equal", "not_equal", "greater_than", "greater_than_or_equal",
+          "less_than", "less_than_or_equal", "and", "or", "exclusive_or",
+        }
+        validates :operator, inclusion: {in: OPERATORS}
+      end
+    end
 
     # Actions
     ###########################################################################
 
-    # # If we go with a sub model approach
-    # # Better to go with the serializable class
+    class Actions < SubModel
+      attribute function_actions : Array(FunctionAction) = ->{ [] of FunctionAction }
+      attribute email_actions : Array(EmailAction) = ->{ [] of EmailAction }
 
-    # alias Action = EmailAction | FunctionAction
-    # class EmailAction < SubModel
-    #   attribute emails : Array(String)
-    #   attribute content : String
+      class EmailAction < SubModel
+        # Attributes that define an EmailAction
+        attribute emails : Array(String), presence: true
+        attribute content : String = ->{ "" }
+      end
 
-    #   # Transform the emails on parse
-    #   def from_json(input)
-    #     super(input)
-    #     @emails.map(&.strip)
-    #   end
-    # end
+      class FunctionAction < SubModel
+        attribute mod : String, presence: true
+        attribute index : Int32, presence: true
+        attribute func : String, presence: true
+        attribute args : Array(String) = ->{ [] of String }
+      end
 
-    # class FunctionAction < SubModel
-    #   attribute mod : String
-    #   attribute index : Int32
-    #   attribute func : String
-    #   attribute args : Array(String) = ->{ [] of String }
-    # end
+      validate ->(this : Actions) {
+        function_actions = this.function_actions
+        this.collect_errors(:function_actions, function_actions) if function_actions
 
-    # validate ->(this : Trigger) {
-    #   unless this.actions.empty?
-    #     valid = self.actions.all? do |action|
-    #       check_action(action)
-    #     end
-    #     validation_error(:actions, "are not all valid") unless valid
-    #   end
-    # }
-
-    # def check_action(action : Action)
-    #   return false unless action.valid?
-    #   case action
-    #   when FunctionAction
-    #     valid = !(action.index.nil? || action.mod.nil? || action.func.nil?)
-
-    #     action, valid
-    #   when :email
-    #     action.emails = parse_emails(action.emails) unless action.emails.nil?
-    #     valid = action.emails && !action.emails.empty?
-
-    #     action, valid
-    #   else
-    #     nil, false
-    #   end
-    # end
+        email_actions = this.email_actions
+        this.collect_errors(:email_actions, email_actions) if email_actions
+      }
+    end
   end
 end
