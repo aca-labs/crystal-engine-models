@@ -21,8 +21,8 @@ module Engine::Model
     attribute webhook_secret : String = ->{ Random::Secure.hex(32) }
     attribute trigger_count : Int32 = 0
 
-    before_destroy :unload
-    after_save :load
+    # before_destroy :unload
+    # after_save :load
 
     # ----------------
     # PARENT ACCESSORS

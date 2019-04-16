@@ -11,10 +11,7 @@ module Engine::Model
     attribute description : String
     attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
-    # attribute actions : Array(String)
     attribute actions : Actions = ->{ Actions.new }
-
-    # attribute conditions : Array(String)
     attribute conditions : Conditions = ->{ Conditions.new }
 
     # In seconds
@@ -22,6 +19,11 @@ module Engine::Model
     attribute important : Bool = false
 
     has_many TriggerInstance, dependent: :destroy, collection_name: :trigger_instances
+
+    # Allows filtering in cases of a Trigger belonging to a single ControlSystem
+    belongs_to ControlSystem
+
+    # Need a before_destroy call to remove Trigger if it belongs to a ControlSystem
 
     after_save :reload_all
 
@@ -84,12 +86,15 @@ module Engine::Model
         attribute right : StatusVariable
 
         alias StatusValue = ConstantValue | StatusVariable
+
         alias ConstantValue = NamedTuple(const: Int32 | Float32 | String | Bool)
+
         alias StatusVariable = NamedTuple(
+          # Module that defines the status variable
           mod: String,
-          index: Int32,
           # Unparsed hash of a status variable
           status: String,
+          # Keys to look up in the module
           keys: Array(String),
         )
 
@@ -108,6 +113,14 @@ module Engine::Model
       attribute function_actions : Array(FunctionAction) = ->{ [] of FunctionAction }
       attribute email_actions : Array(EmailAction) = ->{ [] of EmailAction }
 
+      validate ->(this : Actions) {
+        function_actions = this.function_actions
+        this.collect_errors(:function_actions, function_actions) if function_actions
+
+        email_actions = this.email_actions
+        this.collect_errors(:email_actions, email_actions) if email_actions
+      }
+
       class EmailAction < SubModel
         # Attributes that define an EmailAction
         attribute emails : Array(String), presence: true
@@ -116,18 +129,9 @@ module Engine::Model
 
       class FunctionAction < SubModel
         attribute mod : String, presence: true
-        attribute index : Int32, presence: true
         attribute func : String, presence: true
         attribute args : Array(String) = ->{ [] of String }
       end
-
-      validate ->(this : Actions) {
-        function_actions = this.function_actions
-        this.collect_errors(:function_actions, function_actions) if function_actions
-
-        email_actions = this.email_actions
-        this.collect_errors(:email_actions, email_actions) if email_actions
-      }
     end
   end
 end

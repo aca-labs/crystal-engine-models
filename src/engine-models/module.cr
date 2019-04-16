@@ -120,7 +120,7 @@ module Engine::Model
       # No blank IP
       self.validation_error(:ip, "cannot be blank") if ip && ip.blank?
       # Port in valid range
-      self.validation_error(:port, "is invalid") unless port && (1..65535) === port
+      self.validation_error(:port, "is invalid") unless port && (1..65_535) === port
 
       self.tls = false if self.udp
 
