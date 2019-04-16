@@ -9,7 +9,8 @@ module Engine::Model
 
     # Allows us to lookup systems by names
     # after_save :expire_caches
-    # before_save :update_features
+
+    before_save :update_features
 
     # We only want to run this callback if run within a rails console
     # before_destroy :cleanup_modules
@@ -35,6 +36,7 @@ module Engine::Model
     # has_many Zone, collection_name: :zones
     # has_many Module, collection_name: :modules
 
+    # IDs of associated models
     attribute zones : Array(String) = [] of String
     attribute modules : Array(String) = [] of String
 
@@ -113,34 +115,19 @@ module Engine::Model
     # 1. Find systems that have each of the modules specified
     # 2. If this is the last system we remove the modules
     # def cleanup_modules
-    #   unless control_running?
-    #     ctrl = Control.instance
-    #     wait = [] of Module
-
-    #     self.modules.each do |mod_id|
-    #       systems = ControlSystem.using_module(mod_id).to_a
-
-    #       if systems.length <= 1
-    #         # We don't use the model's delete method as it looks up control systems
-    #         wait << ctrl.unload(mod_id).then {
-    #           Module.bucket.delete(mod_id, {quiet: true})
-    #         }
-    #       end
-    #     end
-
-    #     # Unload the triggers
-    #     wait << ctrl.unload(self.id)
-
-    #     # delete all the trigger instances (remove directly as before_delete is not required)
-    #     bucket = TriggerInstance.bucket
-    #     TriggerInstance.for(self.id).each do |trig|
-    #       bucket.delete(trig.id)
-    #     end
-
-    #     # Prevents reload for the cache expiry
-    #     @old_id = self.id
-    #     wait
+    #   self.modules.each do |mod_id|
+    #     systems = ControlSystem.using_module(mod_id).to_a
+    #     # We don't use the model's delete method as it looks up control systems
+    #     Module.delete(mod_id) if systems.size <= 1
     #   end
+
+    #   # delete all the trigger instances (remove directly as before_delete is not required)
+    #   TriggerInstance.for(self.id).each do |trig|
+    #     TriggerInstance.delete(trig.id)
+    #   end
+
+    #   # Prevents reload for the cache expiry
+    #   @old_id = self.id
     # end
 
     # Zones and settings are only required for confident coding
@@ -158,23 +145,26 @@ module Engine::Model
       end
     }
 
-    # protected def update_features
-    #   return unless self.bookable
-    #   ctrl = Control.instance
-    #   return unless ctrl.ready
-    #   if self.id
-    #     system = System.get(self.id)
-    #     if system
-    #       mods = system.modules
-    #       mods.delete(:__Triggers__)
-    #       self.features = mods.join " "
-    #     end
-    #   end
+    # Adds modules to the features field,
+    # Extends features with extra_features field in settings if present
+    protected def update_features
+      if self.id
+        system = ControlSystem.find(self.id)
+        if system
+          mods = system.modules || [] of String
+          mods.reject! "__Triggers__"
+          self.features = mods.join " "
+        end
+      end
 
-    #   if self.settings[:extra_features].present?
-    #     self.features = "#{self.features} #{self.settings[:extra_features]}"
-    #   end
-    # end
+      settings = self.settings
+      if settings
+        extra_features = JSON.parse(settings)["extra_features"]?
+        if extra_features
+          self.features = "#{self.features} #{extra_features}"
+        end
+      end
+    end
 
     # protected def expire_caches
     #   if control_running?
@@ -185,48 +175,74 @@ module Engine::Model
     # =======================
     # Zone Trigger Management
     # =======================
-    # before_save :check_zones
 
-    # protected def check_zones
-    #   if self.zones_changed?
-    #     previous = self.zones_was.to_a
-    #     current = self.zones
+    @remove_zones : Array(String) = [] of String
+    @add_zones : Array(String) = [] of String
 
-    #     @remove_zones = previous - current
-    #     @add_zones = current - previous
+    @update_triggers = false
 
-    #     @update_triggers = @remove_zones.present? || @add_zones.present?
-    #   else
-    #     @update_triggers = false
-    #   end
-    #   nil
-    # end
+    before_save :check_zones
 
-    # after_save :update_triggers
-    # protected def update_triggers
-    #   return unless @update_triggers
-    #   if @remove_zones.present?
-    #     trigs = triggers.to_a
-    #     @remove_zones.collect { |zone_id|
-    #       Zone.find_by_id(zone_id)
-    #     }.reject(&:nil?).each do |zone|
-    #       zone.triggers.each do |trig_id|
-    #         trigs.each do |trig|
-    #           if trig.trigger_id == trig_id && trig.zone_id == zone.id
-    #             trig.destroy
-    #           end
-    #         end
-    #       end
-    #     end
-    #   end
-    #   @add_zones.each do |zone_id|
-    #     zone = Zone.find_by_id(zone_id)
-    #       inst.trigger_id = trig_id
-    #       inst.zone_id = zone.id
-    #       inst.save
-    #     end
-    #   end
-    #   nil
-    # end
+    # Update the zones on the model
+    protected def check_zones
+      if self.zones_changed?
+        previous = self.zones_was || [] of String
+        current = self.zones || [] of String
+
+        @remove_zones = previous - current
+        @add_zones = current - previous
+
+        @update_triggers = !@remove_zones.empty? || !@add_zones.empty?
+      else
+        @update_triggers = false
+      end
+    end
+
+    after_save :update_triggers
+
+    # Updates triggers after save
+    #
+    # * Destroy Triggers from removed zones
+    # * Adds TriggerInstances to added zones
+    protected def update_triggers
+      return unless @update_triggers
+      pp! "helloooooo"
+      pp! @remove_zones
+      pp! @add_zones
+
+      unless @remove_zones.empty?
+        trigs = triggers.to_a
+
+        # Remove ControlSystem's triggers associated with the removed zone
+        @remove_zones.compact_map { |zone_id|
+          Zone.find(zone_id)
+        }.each do |zone|
+          # Destroy the associated triggers
+          triggers = zone.triggers || [] of String
+          triggers.each do |trig_id|
+            trigs.each do |trig|
+              if trig.trigger_id == trig_id && trig.zone_id == zone.id
+                trig.destroy
+              end
+            end
+          end
+        end
+      end
+
+      # Add trigger instances to zones
+      @add_zones.each do |zone_id|
+        zone = Zone.find(zone_id)
+        pp! zone
+        next if zone.nil?
+        triggers = zone.triggers || [] of String
+        triggers.each do |trig_id|
+          inst = TriggerInstance.new
+          inst.control_system = self
+          inst.trigger_id = trig_id
+          inst.zone_id = zone.id
+          inst.save
+        end
+      end
+    end
   end
 end

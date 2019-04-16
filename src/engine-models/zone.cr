@@ -26,12 +26,12 @@ module Engine::Model
       if @triggers.empty?
         [] of Trigger
       else
-        Trigger.find(@triggers).to_a
+        Trigger.find_all(@triggers).to_a
       end
     end
 
-    ensure_unique :name
     validates :name, presence: true
+    ensure_unique :name
 
     def systems
       ControlSystem.by_zone_id(self.id)

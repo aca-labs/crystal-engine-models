@@ -18,7 +18,7 @@ describe Engine::Model::Zone do
     zone.persisted?.should be_true
   end
 
-  pending "should create triggers when added and removed from a zone" do
+  it "should create triggers when added and removed from a zone" do
     begin
       zone2 = new_zone.save!
       cs = new_control_system
