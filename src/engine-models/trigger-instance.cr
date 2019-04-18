@@ -21,30 +21,27 @@ module Engine::Model
     attribute webhook_secret : String = ->{ Random::Secure.hex(32) }
     attribute trigger_count : Int32 = 0
 
-    # before_destroy :unload
-    # after_save :load
-
     # ----------------
     # PARENT ACCESSORS
     # ----------------
     def name
-      self.trigger.name
+      self.trigger.try(&.name)
     end
 
     def description
-      self.trigger.description
+      self.trigger.try(&.description)
     end
 
     def conditions
-      self.trigger.conditions
+      self.trigger.try(&.conditions)
     end
 
     def actions
-      self.trigger.actions
+      self.trigger.try(&.actions)
     end
 
     def debounce_period
-      self.trigger.debounce_period
+      self.trigger.try(&.debounce_period)
     end
 
     def binding
@@ -66,7 +63,7 @@ module Engine::Model
     end
 
     # Override to_json, set method fields
-    def to_json
+    def as_json
       self.attributes.merge({
         :name        => name,
         :description => description,
@@ -89,43 +86,6 @@ module Engine::Model
 
     def stop
     end
-
-    # # Ignore updates to trigger
-    # def ignore_update
-    #   @ignore_update = true
-    # end
-
-    # Loads trigger instance into module
-    # def load
-    # FIXME: Stub
-    # if @ignore_update
-    #     @ignore_update = false
-    # else
-    #     mod_man = get_module_manager
-    #     mod = mod_man.instance if mod_man
-
-    #     if mod_man && mod
-    #         trig = self
-    #         mod_man.thread.schedule do
-    #             mod.reload trig
-    #         end
-    #     end
-    # end
-
-    # Unloads trigger instance from module
-    # def unload
-    # FIXME: Stub
-    #     mod_man = get_module_manager
-    #     mod = mod_man.instance if mod_man
-
-    #     if mod_man && mod
-    #         trig = self
-    #         old_id = trig.id # This is removed once delete has completed
-    #         mod_man.thread.schedule do
-    #             mod.remove old_id
-    #         end
-    #     end
-    # end
 
     # -----------
     # VALIDATIONS

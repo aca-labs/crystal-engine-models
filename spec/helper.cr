@@ -19,11 +19,11 @@ end
 require "../src/engine-models/*"
 require "../src/engine-models/**"
 
-RANDOM = Random.new(9966)
+RANDOM = Random.new
 
 def new_dependency(module_name : String, role : Engine::Model::Dependency::Role)
   dep = Engine::Model::Dependency.new(
-    name: Faker::Hacker.noun,
+    name: RANDOM.base64(10),
     commit: RANDOM.hex(7),
     version: SemanticVersion.parse("1.1.1"),
     module_name: module_name,
@@ -44,13 +44,13 @@ end
 
 def new_control_system
   Engine::Model::ControlSystem.new(
-    name: Faker::Hacker.noun,
+    name: RANDOM.base64(10),
   )
 end
 
 def new_zone
   Engine::Model::Zone.new(
-    name: Faker::Hacker.noun,
+    name: RANDOM.base64(10),
   )
 end
 

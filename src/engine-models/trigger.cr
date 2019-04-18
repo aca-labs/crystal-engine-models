@@ -23,7 +23,7 @@ module Engine::Model
     # Allows filtering in cases of a Trigger belonging to a single ControlSystem
     belongs_to ControlSystem
 
-    # Need a before_destroy call to remove Trigger if it belongs to a ControlSystem
+    # TODO: before_destroy call to remove Trigger if it belongs to a ControlSystem
 
     after_save :reload_all
 

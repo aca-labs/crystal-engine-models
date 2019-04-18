@@ -7,13 +7,7 @@ module Engine::Model
   class ControlSystem < ModelBase
     table :sys
 
-    # Allows us to lookup systems by names
-    # after_save :expire_caches
-
     before_save :update_features
-
-    # We only want to run this callback if run within a rails console
-    # before_destroy :cleanup_modules
 
     attribute name : String
     attribute description : String
@@ -33,14 +27,15 @@ module Engine::Model
     # i.e. the number of iPads mounted on the wall
     attribute installed_ui_devices : Int32 = 0
 
-    # has_many Zone, collection_name: :zones
-    # has_many Module, collection_name: :modules
-
     # IDs of associated models
     attribute zones : Array(String) = [] of String
     attribute modules : Array(String) = [] of String
 
+    # index_view :modules, find_method: :using_module, validate: false
+    # index_view :zones, find_method: :in_zone
+
     # FIXME: Mock
+    #
     def self.by_zone_id(id)
       [] of ControlSystem
     end
@@ -57,6 +52,9 @@ module Engine::Model
     ensure_unique :name do |name|
       "#{name.to_s.strip.downcase}"
     end
+
+    # Allows us to lookup systems by names
+    # after_save :expire_caches
 
     # def expire_cache(no_update = nil)
     #   System.expire(self.id || @old_id)
@@ -98,16 +96,12 @@ module Engine::Model
     end
 
     # Triggers
-    def triggers : Array(TriggerInstance)
-      # TriggerInstance.get_all()
-      # TriggerInstance.by_control_system_id(self.id)
-      [] of TriggerInstance
+    def triggers
+      TriggerInstance.for(self.id)
     end
 
-    # For trigger logic module compatibility
-    # def running
-    #   true
-    # end
+    # We only want to run this callback if run within a rails console
+    # before_destroy :cleanup_modules
 
     # This is called by the API directly for coordination purposes.
     # The callback is only used if running within a console.
@@ -206,17 +200,12 @@ module Engine::Model
     # * Adds TriggerInstances to added zones
     protected def update_triggers
       return unless @update_triggers
-      pp! "helloooooo"
-      pp! @remove_zones
-      pp! @add_zones
 
       unless @remove_zones.empty?
-        trigs = triggers.to_a
+        trigs = self.triggers.to_a
 
         # Remove ControlSystem's triggers associated with the removed zone
-        @remove_zones.compact_map { |zone_id|
-          Zone.find(zone_id)
-        }.each do |zone|
+        Zone.find_all(@remove_zones).each do |zone|
           # Destroy the associated triggers
           triggers = zone.triggers || [] of String
           triggers.each do |trig_id|
@@ -230,16 +219,11 @@ module Engine::Model
       end
 
       # Add trigger instances to zones
-      @add_zones.each do |zone_id|
-        zone = Zone.find(zone_id)
-        pp! zone
-        next if zone.nil?
+      Zone.find_all(@add_zones).each do |zone|
         triggers = zone.triggers || [] of String
         triggers.each do |trig_id|
-          inst = TriggerInstance.new
+          inst = TriggerInstance.new(trigger_id: trig_id, zone_id: zone.id)
           inst.control_system = self
-          inst.trigger_id = trig_id
-          inst.zone_id = zone.id
           inst.save
         end
       end
