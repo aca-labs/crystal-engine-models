@@ -10,7 +10,7 @@ module Engine::Model
           uri: Faker::Internet.url,
         )
 
-        service_dep = new_dependency(
+        service_dep = Generator.dependency(
           module_name: name,
           role: Dependency::Role::Service,
         ).save!
@@ -32,13 +32,13 @@ module Engine::Model
           uri: Faker::Internet.url,
         )
 
-        service_dep = new_dependency(
+        service_dep = Generator.dependency(
           module_name: name,
           role: Dependency::Role::Logic,
         ).save!
 
         mod.dependency = service_dep
-        mod.control_system = new_control_system.save!
+        mod.control_system = Generator.control_system.save!
 
         begin
           mod.save!
@@ -58,7 +58,7 @@ module Engine::Model
           port: Random.rand((1..6555)),
         )
 
-        service_dep = new_dependency(
+        service_dep = Generator.dependency(
           module_name: name,
           role: Dependency::Role::Device,
         ).save!
@@ -83,7 +83,7 @@ module Engine::Model
           port: Random.rand((1..65_535)),
         )
 
-        service_dep = new_dependency(
+        service_dep = Generator.dependency(
           module_name: name,
           role: Dependency::Role::SSH,
         ).save!

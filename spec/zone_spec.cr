@@ -3,13 +3,13 @@ require "./helper"
 module Engine::Model
   # Transmogrified from the Ruby Engine spec
   describe Zone do
-    it "should save a zone" do
-      zone = new_zone
+    it "saves a zone" do
+      zone = Generator.zone
 
       begin
         zone.save!
       rescue e : RethinkORM::Error::DocumentInvalid
-        pp! e.model.errors
+        inspect_error(e)
         raise e
       end
 
@@ -20,9 +20,9 @@ module Engine::Model
     end
 
     pending "should create triggers when added and removed from a zone" do
-      # set up
-      zone = new_zone.save!
-      cs = new_control_system
+      # Set up
+      zone = Generator.zone.save!
+      cs = Generator.control_system
 
       id = zone.id
       cs.zones = [id] if id
@@ -31,12 +31,12 @@ module Engine::Model
 
       trigger = Trigger.create!(name: "trigger test")
 
+      # No trigger_instances associated with zone
       zone.trigger_instances.to_a.size.should eq 0
       cs.triggers.to_a.size.should eq 0
 
       id = trigger.id
       zone.triggers = [id] if id
-
       zone.triggers_changed?.should be_true
       zone.save
 

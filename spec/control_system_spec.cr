@@ -4,11 +4,11 @@ module Engine::Model
   # Transmogrified from the Ruby Engine spec
   describe ControlSystem do
     it "saves a control system" do
-      cs = new_control_system
+      cs = Generator.control_system
       begin
         cs.save!
       rescue e : RethinkORM::Error::DocumentInvalid
-        pp! e.model.errors
+        inspect_error(e)
         raise e
       end
 
@@ -20,9 +20,9 @@ module Engine::Model
 
     it "should create triggers when added and removed from a zone" do
       begin
-        zone2 = new_zone.save!
+        zone2 = Generator.zone.save!
 
-        cs = new_control_system
+        cs = Generator.control_system
         zone2_id = zone2.id
         if zone2_id
           cs.zones = [zone2_id]
@@ -31,7 +31,7 @@ module Engine::Model
         cs.save!
 
         trigger = Trigger.create!(name: "trigger test")
-        zone = new_zone
+        zone = Generator.zone
         trigger_id = trigger.id
         if trigger_id
           zone.triggers = [trigger_id]
@@ -39,8 +39,7 @@ module Engine::Model
         zone.save!
         zone_id = zone.id
       rescue e : RethinkORM::Error::DocumentInvalid
-        pp! e.class
-        pp! e.model.errors
+        inspect_error(e)
         raise e
       end
 

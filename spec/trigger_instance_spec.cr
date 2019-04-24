@@ -1,7 +1,6 @@
 require "./helper"
 
 module Engine::Model
-  # Transmogrified from the Ruby Engine spec
   describe TriggerInstance do
     it "saves a TriggerInstance" do
       inst = TriggerInstance.create!
@@ -21,7 +20,7 @@ module Engine::Model
       end
 
       it "#for finds TriggerInstance by parent ControlSystem" do
-        cs = new_control_system.save!
+        cs = Generator.control_system.save!
         inst = TriggerInstance.new
         inst.control_system = cs
         inst.save!
