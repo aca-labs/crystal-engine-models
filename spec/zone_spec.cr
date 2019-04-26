@@ -19,7 +19,7 @@ module Engine::Model
       zone.persisted?.should be_true
     end
 
-    pending "should create triggers when added and removed from a zone" do
+    it "should create triggers when added and removed from a zone" do
       # Set up
       zone = Generator.zone.save!
       cs = Generator.control_system
@@ -45,6 +45,7 @@ module Engine::Model
 
       # Reload the relationships
       zone = Zone.find! zone.id
+
       zone.trigger_instances.to_a.size.should eq 1
       zone.triggers = [] of String
       zone.save

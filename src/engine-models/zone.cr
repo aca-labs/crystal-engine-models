@@ -2,10 +2,6 @@ require "time"
 
 require "../engine-models"
 
-# TODO:
-# - zone cache
-# - triggers
-
 module Engine::Model
   class Zone < ModelBase
     table :zone
@@ -39,9 +35,9 @@ module Engine::Model
 
     before_destroy :remove_zone
 
+    # Removes self from ControlSystems
     protected def remove_zone
-      # zone_cache.delete(self.id)
-      systems.each do |cs|
+      self.systems.try &.each do |cs|
         zones = cs.zones
         if zones
           cs.zones = zones.reject(self.id)
@@ -54,61 +50,53 @@ module Engine::Model
       end
     end
 
-    # Expire both the zone cache and any systems that use the zone
-    # after_save :expire_caches
-    # protected def expire_caches
-    #   zone_cache[self.id] = self
-    #   ctrl = Control.instance
-    #   systems.each do |cs|
-    #     ctrl.expire_cache cs.id
-    #   end
-    # end
-
-    # protected def zone_cache
-    #   Control.instance.zones
-    # end
-
-    # TODO:
     # =======================
     # Zone Trigger Management
     # =======================
-    # before_save :check_triggers
-    # protected def check_triggers
-    #     if self.triggers_changed?
-    #         previous = Array(self.triggers_was)
-    #         current  = self.triggers
 
-    #         @remove_triggers = previous - current
-    #         @add_triggers = current - previous
+    @remove_triggers : Array(String) = [] of String
+    @add_triggers : Array(String) = [] of String
 
-    #         @update_systems = @remove_triggers.present? || @add_triggers.present?
-    #     else
-    #         @update_systems = false
-    #     end
-    #     nil
-    # end
+    @update_systems = false
 
-    # after_save :update_triggers
-    # protected def update_triggers
-    #     return unless @update_systems
-    #     if @remove_triggers.present?
-    #         self.trigger_instances.stream do |trig|
-    #             trig.destroy if @remove_triggers.include?(trig.trigger_id)
-    #         end
-    #     end
-    #
-    #     if @add_triggers.present?
-    #         systems.stream do |sys|
-    #             @add_triggers.each do |trig_id|
-    #                 inst = TriggerInstance.new
-    #                 inst.control_system = sys
-    #                 inst.trigger_id = trig_id
-    #                 inst.zone_id = self.id
-    #                 inst.save
-    #             end
-    #         end
-    #     end
-    #     nil
-    # end
+    before_save :check_triggers
+
+    protected def check_triggers
+      if self.triggers_changed?
+        previous = self.triggers_was || [] of String
+        current = self.triggers || [] of String
+
+        @remove_triggers = previous - current
+        @add_triggers = current - previous
+
+        @update_systems = !@remove_triggers.empty? || !@add_triggers.empty?
+      else
+        @update_systems = false
+      end
+    end
+
+    after_save :update_triggers
+
+    protected def update_triggers
+      return unless @update_systems
+
+      # Remove TriggerInstances
+      unless @remove_triggers.empty?
+        self.trigger_instances.each do |trig|
+          trig.destroy if @remove_triggers.includes?(trig.trigger_id)
+        end
+      end
+
+      # Add TriggerInstances
+      unless @add_triggers.empty?
+        self.systems.try &.each do |sys|
+          @add_triggers.each do |trig_id|
+            inst = TriggerInstance.new(trigger_id: trig_id, zone_id: self.id)
+            inst.control_system = sys
+            inst.save
+          end
+        end
+      end
+    end
   end
 end

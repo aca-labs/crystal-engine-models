@@ -31,13 +31,28 @@ module Engine::Model
     attribute zones : Array(String) = [] of String
     attribute modules : Array(String) = [] of String
 
-    # index_view :modules, find_method: :using_module, validate: false
-    # index_view :zones, find_method: :in_zone
-
-    # FIXME: Mock
-    #
     def self.by_zone_id(id)
-      [] of ControlSystem
+      ControlSystem.raw_query do |q|
+        q.table(ControlSystem.table_name).filter do |doc|
+          doc["zones"].contains(id)
+        end
+      end
+    end
+
+    def self.in_zone(id)
+      self.by_zone_id(id)
+    end
+
+    def self.by_module_id(id)
+      ControlSystem.raw_query do |q|
+        q.table(ControlSystem.table_name).filter do |doc|
+          doc["modules"].contains(id)
+        end
+      end
+    end
+
+    def self.using_module(id)
+      self.by_module_id(id)
     end
 
     # YAML settings
@@ -52,35 +67,6 @@ module Engine::Model
     ensure_unique :name do |name|
       "#{name.to_s.strip.downcase}"
     end
-
-    # Allows us to lookup systems by names
-    # after_save :expire_caches
-
-    # def expire_cache(no_update = nil)
-    #   System.expire(self.id || @old_id)
-    #   remote = node
-
-    #   # Only the active host should reload the modules
-    #   if remote.host_active?
-    #     ctrl = Control.instance
-
-    #     # If not deleted and control is running
-    #     # then we want to trigger updates on the logic modules
-    #     if !@old_id && no_update.nil? && ctrl.ready
-    #       # Start the triggers if not already running (must occur on the same thread)
-    #       cs = self
-    #       ctrl.nodes[cs.edge_id.to_sym].load_triggers_for(cs)
-
-    #       # Reload the running modules
-    #       Module.find_by_id(self.modules).each do |mod|
-    #         if mod.control_system_id
-    #           manager = ctrl.loaded? mod.id
-    #           manager.reloaded(mod) if manager
-    #         end
-    #       end
-    #     end
-    #   end
-    # end
 
     # Obtains the control system's modules as json
     def module_data
@@ -99,30 +85,6 @@ module Engine::Model
     def triggers
       TriggerInstance.for(self.id)
     end
-
-    # We only want to run this callback if run within a rails console
-    # before_destroy :cleanup_modules
-
-    # This is called by the API directly for coordination purposes.
-    # The callback is only used if running within a console.
-    #
-    # 1. Find systems that have each of the modules specified
-    # 2. If this is the last system we remove the modules
-    # def cleanup_modules
-    #   self.modules.each do |mod_id|
-    #     systems = ControlSystem.using_module(mod_id).to_a
-    #     # We don't use the model's delete method as it looks up control systems
-    #     Module.delete(mod_id) if systems.size <= 1
-    #   end
-
-    #   # delete all the trigger instances (remove directly as before_delete is not required)
-    #   TriggerInstance.for(self.id).each do |trig|
-    #     TriggerInstance.delete(trig.id)
-    #   end
-
-    #   # Prevents reload for the cache expiry
-    #   @old_id = self.id
-    # end
 
     # Zones and settings are only required for confident coding
     validates :name, presence: true
@@ -159,12 +121,6 @@ module Engine::Model
         end
       end
     end
-
-    # protected def expire_caches
-    #   if control_running?
-    #     Control.instance.expire_cache(self.id)
-    #   end
-    # end
 
     # =======================
     # Zone Trigger Management
