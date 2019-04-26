@@ -16,6 +16,7 @@ module Engine::Model
       id = dep.id
       id.should start_with "dep-" if id
       dep.role.should eq Dependency::Role::Service
+      dep.version.should eq SemanticVersion.parse("1.1.1")
       dep.persisted?.should be_true
     end
   end
