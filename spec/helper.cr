@@ -3,7 +3,7 @@ require "faker"
 require "random"
 require "rethinkdb-orm"
 
-require "./generators"
+require "./generator"
 
 DB_NAME = "test_#{Time.now.to_unix}_#{rand(10000)}"
 RethinkORM::Connection.configure do |settings|
