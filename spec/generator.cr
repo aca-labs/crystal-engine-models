@@ -21,8 +21,8 @@ module Engine::Model
     end
 
     def self.role
-      role_value = Dependency::Role.values.sample(1).first
-      Dependency::Role.from_value(role_value)
+      role_value = Dependency::Role.names.sample(1).first
+      Dependency::Role.parse(role_value)
     end
 
     def self.driver_repo

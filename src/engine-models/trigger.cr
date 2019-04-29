@@ -11,8 +11,9 @@ module Engine::Model
     attribute description : String
     attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
-    attribute actions : Actions = ->{ Actions.new }
-    attribute conditions : Conditions = ->{ Conditions.new }
+    # Full path allows resolution in macros
+    attribute actions : Engine::Model::Trigger::Actions = ->{ Actions.new }, es_type: "object"
+    attribute conditions : Engine::Model::Trigger::Conditions = ->{ Conditions.new }, es_type: "object"
 
     # In seconds
     attribute debounce_period : Int32 = 0
