@@ -5,14 +5,17 @@ dependencies:
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
     branch: master
+
   neuroplastic:
     github: aca-labs/neuroplastic
     branch: master
+
   active-model:
     github: spider-gazelle/active-model
 
 development_dependencies:
   faker:
     github: askn/faker
+
   ameba:
     github: veelenga/ameba

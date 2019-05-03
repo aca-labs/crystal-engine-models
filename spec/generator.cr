@@ -41,6 +41,51 @@ module Engine::Model
       )
     end
 
+    def self.module(dependency_role, control_system = nil)
+      mod_name = Faker::Hacker.noun
+      mod, dep = case dependency_role
+                 when Dependency::Role::Logic
+                   logic_mod = Module.new(custom_name: mod_name, uri: Faker::Internet.url)
+                   logic_dep = Generator.dependency(module_name: mod_name, role: dependency_role)
+
+                   {logic_mod, logic_dep}
+                 when Dependency::Role::Device
+                   device_mod = Module.new(
+                     custom_name: mod_name,
+                     uri: Faker::Internet.url,
+                     ip: Faker::Internet.ip_v4_address,
+                     port: Random.rand((1..6555)),
+                   )
+                   device_dep = Generator.dependency(module_name: mod_name, role: dependency_role)
+
+                   {device_mod, device_dep}
+                 when Dependency::Role::SSH
+                   ssh_mod = Module.new(
+                     custom_name: mod_name,
+                     uri: Faker::Internet.url,
+                     ip: Faker::Internet.ip_v4_address,
+                     port: Random.rand((1..65_535)),
+                   )
+                   ssh_dep = Generator.dependency(module_name: mod_name, role: dependency_role)
+
+                   {ssh_mod, ssh_dep}
+                 else
+                   # Dependency::Role::Service
+                   service_mod = Module.new(custom_name: mod_name, uri: Faker::Internet.url)
+                   service_dep = Generator.dependency(module_name: mod_name, role: dependency_role)
+
+                   {service_mod, service_dep}
+                 end
+
+      # Set dep
+      mod.dependency = dep.save!
+
+      # Set cs
+      mod.control_system = !control_system ? Generator.control_system.save! : control_system
+
+      mod
+    end
+
     def self.zone
       Zone.new(
         name: RANDOM.base64(10),

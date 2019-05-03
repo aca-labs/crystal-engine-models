@@ -19,10 +19,11 @@ module Engine::Model
 
     # Looks up the triggers attached to the zone
     def trigger_data : Array(Trigger)
-      if @triggers.empty?
+      triggers = @triggers
+      if !triggers || triggers.empty?
         [] of Trigger
       else
-        Trigger.find_all(@triggers).to_a
+        Trigger.find_all(triggers).to_a
       end
     end
 

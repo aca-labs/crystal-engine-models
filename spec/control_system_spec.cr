@@ -18,6 +18,45 @@ module Engine::Model
       cs.persisted?.should be_true
     end
 
+    describe "generation of json data" do
+      it "#module_data" do
+        cs = Generator.control_system.save!
+        modules = [Dependency::Role::Logic, Dependency::Role::SSH, Dependency::Role::Device].map do |role|
+          Generator.module(role, control_system: cs).save!
+        end
+
+        dep_names = modules.compact_map(&.dependency.try &.name).sort
+
+        module_ids = modules.compact_map(&.id)
+        cs.modules = module_ids
+
+        data = cs.module_data
+        module_anys = data.map do |d|
+          any = JSON.parse(d).as_h
+          any.merge({"dependency" => any["dependency"].as_h})
+        end
+
+        data_dep_names = module_anys.map { |m| m["dependency"]["name"].to_s }.sort
+        data_dep_names.should eq dep_names
+
+        ids = module_anys.map { |m| m["id"].to_s }
+        ids.sort.should eq module_ids.sort
+      end
+
+      it "#zone_data" do
+        cs = Generator.control_system.save!
+        zones = 3.times.to_a.map { |_| Generator.zone.save! }
+        zone_ids = zones.compact_map(&.id)
+        cs.zones = zone_ids
+
+        data = cs.zone_data
+        data.size.should eq 3
+
+        ids = data.map { |d| JSON.parse(d).as_h["id"].to_s }
+        ids.sort.should eq zone_ids.sort
+      end
+    end
+
     it "should create triggers when added and removed from a zone" do
       begin
         zone2 = Generator.zone.save!

@@ -69,15 +69,31 @@ module Engine::Model
     end
 
     # Obtains the control system's modules as json
+    # FIXME: Dreadfully needs optimisation, i.e. subset serialisation
     def module_data
-      Module.get_all(modules).to_a.map do |mod|
-        object = mod.attributes[:dependency].try(&.select({:name, :module_name}))
-        object.to_json
+      modules = @modules || [] of String
+      Module.find_all(modules).to_a.map do |mod|
+        # Pick off dependency name, and module_name from associated dependency
+        dep_data = mod.dependency.try do |dep|
+          {
+            :dependency => {
+              name:        dep.name,
+              module_name: dep.module_name,
+            },
+          }
+        end
+
+        if dep_data
+          JSON.parse(mod.to_json).as_h.merge(dep_data).to_json
+        else
+          mod.to_json
+        end
       end
     end
 
     # Obtains the control system's zones as json
     def zone_data
+      zones = @zones || [] of String
       Zone.get_all(zones).to_a.map(&.to_json)
     end
 
@@ -157,11 +173,12 @@ module Engine::Model
     protected def update_triggers
       return unless @update_triggers
 
-      unless @remove_zones.empty?
+      remove_zones = @remove_zones || [] of String
+      unless remove_zones.empty?
         trigs = self.triggers.to_a
 
         # Remove ControlSystem's triggers associated with the removed zone
-        Zone.find_all(@remove_zones).each do |zone|
+        Zone.find_all(remove_zones).each do |zone|
           # Destroy the associated triggers
           triggers = zone.triggers || [] of String
           triggers.each do |trig_id|
@@ -175,7 +192,8 @@ module Engine::Model
       end
 
       # Add trigger instances to zones
-      Zone.find_all(@add_zones).each do |zone|
+      add_zones = @add_zones || [] of String
+      Zone.find_all(add_zones).each do |zone|
         triggers = zone.triggers || [] of String
         triggers.each do |trig_id|
           inst = TriggerInstance.new(trigger_id: trig_id, zone_id: zone.id)
