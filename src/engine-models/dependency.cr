@@ -64,16 +64,15 @@ module Engine::Model
     # Delete all the module references relying on this dependency
     #
     protected def cleanup_modules
-      modules.each do |mod|
-        mod.destroy
-      end
+      self.modules.each &.destroy
     end
 
     # Reload all modules to update their settings
     #
     protected def update_modules
-      modules.each do |mod|
-        mod.dependency = self # Otherwise this will hit the database again
+      self.modules.each do |mod|
+        mod.dependency = self
+        mod.save
       end
     end
   end

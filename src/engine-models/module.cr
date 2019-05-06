@@ -61,6 +61,12 @@ module Engine::Model
       @ip = host
     end
 
+    # Set dependency and role
+    def dependency=(dep : Dependency)
+      previous_def(dep)
+      self.role = dep.role
+    end
+
     validates :dependency, presence: true
 
     validate ->(this : Module) {
