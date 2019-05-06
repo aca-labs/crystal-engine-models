@@ -57,6 +57,14 @@ module Engine::Model
       end
     end
 
+    describe "validation" do
+      it "rejects invalid support URI" do
+        sys = Generator.control_system
+        sys.support_url = "string"
+        sys.valid?.should be_false
+      end
+    end
+
     it "should create triggers when added and removed from a zone" do
       begin
         zone2 = Generator.zone.save!

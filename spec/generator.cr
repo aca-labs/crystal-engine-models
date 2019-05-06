@@ -35,6 +35,12 @@ module Engine::Model
       )
     end
 
+    def self.trigger
+      Trigger.new(
+        name: Faker::Hacker.noun
+      )
+    end
+
     def self.control_system
       ControlSystem.new(
         name: RANDOM.base64(10),

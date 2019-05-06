@@ -26,13 +26,15 @@ module Engine::Model
 
     # TODO: before_destroy call to remove Trigger if it belongs to a ControlSystem
 
-    after_save :reload_all
-
-    protected def reload_all
-      trigger_instances.each do |trig|
-        trig.reload
-      end
-    end
+    # TODO:
+    #  Old engine: reloads the trigger instance to the module manager.
+    #  New engine: hits the trigger service to re-enable the trigger
+    # after_save :reload_all
+    # protected def reload_all
+    #   trigger_instances.each do |trig|
+    #     trig.reload
+    #   end
+    # end
 
     # ---------------------------
     # VALIDATIONS
