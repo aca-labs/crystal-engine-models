@@ -1,3 +1,5 @@
+require "faker"
+
 require "../src/engine-models/*"
 require "../src/engine-models/**"
 
@@ -47,7 +49,9 @@ module Engine::Model
       )
     end
 
-    def self.module(dependency_role, control_system = nil)
+    def self.module(dependency_role = nil, control_system = nil)
+      dependency_role = self.role if dependency_role.nil?
+
       mod_name = Faker::Hacker.noun
       mod, dep = case dependency_role
                  when Dependency::Role::Logic

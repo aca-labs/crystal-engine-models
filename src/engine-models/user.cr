@@ -7,6 +7,7 @@ require "time"
 
 require "../engine-models"
 
+# TODO: blocked on authentication model of new engine
 module Engine::Model
   class User < ModelBase
     table :user

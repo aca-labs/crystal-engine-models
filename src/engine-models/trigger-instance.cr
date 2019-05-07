@@ -81,10 +81,14 @@ module Engine::Model
       self.important = self.trigger.important
     end
 
+    # Enables the trigger
     def start
+      # TODO: implement
     end
 
+    # Disables the trigger
     def stop
+      # TODO: implement
     end
 
     # -----------

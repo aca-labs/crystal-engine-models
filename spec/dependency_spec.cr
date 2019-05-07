@@ -41,7 +41,7 @@ module Engine::Model
         Module.find(mod.id).should be_nil
       end
 
-      it "#update_modules updates dependent modules dependency metadata" do
+      it "#update_modules updates dependent modules' dependency metadata" do
         dep = Generator.dependency(role: Dependency::Role::Device).save!
         mod = Generator.module(dependency_role: dep.role)
 

@@ -1,5 +1,4 @@
 require "spec"
-require "faker"
 require "random"
 require "rethinkdb-orm"
 
