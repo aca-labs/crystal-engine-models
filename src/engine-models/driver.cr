@@ -1,10 +1,10 @@
 require "semantic_version"
-
+#
 require "../engine-models"
 
 module Engine::Model
-  class Dependency < ModelBase
-    table :dep
+  class Driver < ModelBase
+    table :driver
 
     after_save :update_modules
     before_destroy :cleanup_modules
@@ -24,7 +24,7 @@ module Engine::Model
 
     enum_attribute role : Role
 
-    # Dependency version management
+    # Driver version management
     attribute file_name : String
     attribute commit : String
     attribute version : SemanticVersion, converter: SemanticVersion::Converter
@@ -39,9 +39,9 @@ module Engine::Model
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)
     attribute ignore_connected : Bool = false
 
-    # Find the modules that rely on this dependency
+    # Find the modules that rely on this driver
     def modules
-      Module.by_dependency_id(self.id)
+      Module.by_driver_id(self.id)
     end
 
     def default_port=(port)
@@ -61,7 +61,7 @@ module Engine::Model
     validates :version, presence: true
     validates :module_name, presence: true
 
-    # Delete all the module references relying on this dependency
+    # Delete all the module references relying on this driver
     #
     protected def cleanup_modules
       self.modules.each &.destroy
@@ -71,7 +71,7 @@ module Engine::Model
     #
     protected def update_modules
       self.modules.each do |mod|
-        mod.dependency = self
+        mod.driver = self
         mod.save
       end
     end

@@ -9,8 +9,8 @@ module Engine::Model
     # The classes / files that this module requires to execute
     # Defines module type
 
-    # Requires dependency_id to be set
-    belongs_to Dependency
+    # Requires driver_id to be set
+    belongs_to Driver
     belongs_to ControlSystem
 
     attribute ip : String
@@ -22,14 +22,14 @@ module Engine::Model
     # HTTP Service module
     attribute uri : String
 
-    # Custom module names (in addition to what is defined in the dependency)
+    # Custom module names (in addition to what is defined in the driver)
     attribute custom_name : String
     attribute settings : String = "{}"
 
     attribute updated_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
     attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
-    enum_attribute role : Dependency::Role # cache the dependency role locally for load order
+    enum_attribute role : Driver::Role # cache the driver role locally for load order
 
     # Connected state in model so we can filter and search on it
     attribute connected : Bool = true
@@ -48,7 +48,7 @@ module Engine::Model
 
     # Getter for the module's host
     def hostname
-      case dependency.role
+      case driver.role
       when SSH, Device
         self.ip
       when Service
@@ -61,35 +61,35 @@ module Engine::Model
       @ip = host
     end
 
-    # Set dependency and role
-    def dependency=(dep : Dependency)
-      previous_def(dep)
-      self.role = dep.role
+    # Set driver and role
+    def driver=(driver : Driver)
+      previous_def(driver)
+      self.role = driver.role
     end
 
-    validates :dependency, presence: true
+    validates :driver, presence: true
 
     validate ->(this : Module) {
-      dependency = this.dependency
-      return if dependency.nil?
-      case dependency.role
-      when Dependency::Role::Service
+      driver = this.driver
+      return if driver.nil?
+      case driver.role
+      when Driver::Role::Service
         this.validate_service_module
-      when Dependency::Role::Logic
+      when Driver::Role::Logic
         this.validate_logic_module
-      when Dependency::Role::Device, Dependency::Role::SSH
+      when Driver::Role::Device, Driver::Role::SSH
         this.validate_device_module
       end
     }
 
     protected def validate_service_module
-      self.role = Dependency::Role::Service
+      self.role = Driver::Role::Service
       self.udp = false
 
-      dependency = self.dependency
-      return if dependency.nil?
+      driver = self.driver
+      return if driver.nil?
 
-      self.uri ||= dependency.default_uri
+      self.uri ||= driver.default_uri
 
       uri = self.uri # URI presence
       unless uri
@@ -108,18 +108,18 @@ module Engine::Model
       self.connected = true # Logic modules are connectionless
       self.tls = nil
       self.udp = nil
-      self.role = Dependency::Role::Logic
+      self.role = Driver::Role::Logic
       has_control = !self.control_system_id.nil?
 
       self.validation_error(:control_system, "must be associated") unless has_control
     end
 
     protected def validate_device_module
-      dependency = self.dependency
-      return if dependency.nil?
+      driver = self.driver
+      return if driver.nil?
 
-      self.role = dependency.role
-      self.port = (self.port || dependency.default_port || 0).to_i
+      self.role = driver.role
+      self.port = (self.port || driver.default_port || 0).to_i
       ip = self.ip
       port = self.port
 

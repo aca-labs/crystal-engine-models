@@ -8,23 +8,23 @@ RANDOM = Random.new
 module Engine::Model
   # Defines generators for models
   module Generator
-    def self.dependency(module_name : String? = nil, role : Dependency::Role? = nil)
+    def self.driver(module_name : String? = nil, role : Driver::Role? = nil)
       role = Generator.role unless role
       module_name = Faker::Hacker.noun unless module_name
 
-      dep = Dependency.new(
+      driver = Driver.new(
         name: RANDOM.base64(10),
         commit: RANDOM.hex(7),
         version: SemanticVersion.parse("1.1.1"),
         module_name: module_name,
       )
-      dep.role = role
-      dep
+      driver.role = role
+      driver
     end
 
     def self.role
-      role_value = Dependency::Role.names.sample(1).first
-      Dependency::Role.parse(role_value)
+      role_value = Driver::Role.names.sample(1).first
+      Driver::Role.parse(role_value)
     end
 
     def self.driver_repo
@@ -49,46 +49,46 @@ module Engine::Model
       )
     end
 
-    def self.module(dependency_role = nil, control_system = nil)
-      dependency_role = self.role if dependency_role.nil?
+    def self.module(driver_role = nil, control_system = nil)
+      driver_role = self.role if driver_role.nil?
 
       mod_name = Faker::Hacker.noun
-      mod, dep = case dependency_role
-                 when Dependency::Role::Logic
-                   logic_mod = Module.new(custom_name: mod_name, uri: Faker::Internet.url)
-                   logic_dep = Generator.dependency(module_name: mod_name, role: dependency_role)
+      mod, driver = case driver_role
+                    when Driver::Role::Logic
+                      logic_mod = Module.new(custom_name: mod_name, uri: Faker::Internet.url)
+                      logic_driver = Generator.driver(module_name: mod_name, role: driver_role)
 
-                   {logic_mod, logic_dep}
-                 when Dependency::Role::Device
-                   device_mod = Module.new(
-                     custom_name: mod_name,
-                     uri: Faker::Internet.url,
-                     ip: Faker::Internet.ip_v4_address,
-                     port: Random.rand((1..6555)),
-                   )
-                   device_dep = Generator.dependency(module_name: mod_name, role: dependency_role)
+                      {logic_mod, logic_driver}
+                    when Driver::Role::Device
+                      device_mod = Module.new(
+                        custom_name: mod_name,
+                        uri: Faker::Internet.url,
+                        ip: Faker::Internet.ip_v4_address,
+                        port: Random.rand((1..6555)),
+                      )
+                      device_driver = Generator.driver(module_name: mod_name, role: driver_role)
 
-                   {device_mod, device_dep}
-                 when Dependency::Role::SSH
-                   ssh_mod = Module.new(
-                     custom_name: mod_name,
-                     uri: Faker::Internet.url,
-                     ip: Faker::Internet.ip_v4_address,
-                     port: Random.rand((1..65_535)),
-                   )
-                   ssh_dep = Generator.dependency(module_name: mod_name, role: dependency_role)
+                      {device_mod, device_driver}
+                    when Driver::Role::SSH
+                      ssh_mod = Module.new(
+                        custom_name: mod_name,
+                        uri: Faker::Internet.url,
+                        ip: Faker::Internet.ip_v4_address,
+                        port: Random.rand((1..65_535)),
+                      )
+                      ssh_driver = Generator.driver(module_name: mod_name, role: driver_role)
 
-                   {ssh_mod, ssh_dep}
-                 else
-                   # Dependency::Role::Service
-                   service_mod = Module.new(custom_name: mod_name, uri: Faker::Internet.url)
-                   service_dep = Generator.dependency(module_name: mod_name, role: dependency_role)
+                      {ssh_mod, ssh_driver}
+                    else
+                      # Driver::Role::Service
+                      service_mod = Module.new(custom_name: mod_name, uri: Faker::Internet.url)
+                      service_driver = Generator.driver(module_name: mod_name, role: driver_role)
 
-                   {service_mod, service_dep}
-                 end
+                      {service_mod, service_driver}
+                    end
 
-      # Set dep
-      mod.dependency = dep.save!
+      # Set driver
+      mod.driver = driver.save!
 
       # Set cs
       mod.control_system = !control_system ? Generator.control_system.save! : control_system

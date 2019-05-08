@@ -21,11 +21,11 @@ module Engine::Model
     describe "generation of json data" do
       it "#module_data" do
         cs = Generator.control_system.save!
-        modules = [Dependency::Role::Logic, Dependency::Role::SSH, Dependency::Role::Device].map do |role|
+        modules = [Driver::Role::Logic, Driver::Role::SSH, Driver::Role::Device].map do |role|
           Generator.module(role, control_system: cs).save!
         end
 
-        dep_names = modules.compact_map(&.dependency.try &.name).sort
+        driver_names = modules.compact_map(&.driver.try &.name).sort
 
         module_ids = modules.compact_map(&.id)
         cs.modules = module_ids
@@ -33,11 +33,11 @@ module Engine::Model
         data = cs.module_data
         module_anys = data.map do |d|
           any = JSON.parse(d).as_h
-          any.merge({"dependency" => any["dependency"].as_h})
+          any.merge({"driver" => any["driver"].as_h})
         end
 
-        data_dep_names = module_anys.map { |m| m["dependency"]["name"].to_s }.sort
-        data_dep_names.should eq dep_names
+        data_driver_names = module_anys.map { |m| m["driver"]["name"].to_s }.sort
+        data_driver_names.should eq driver_names
 
         ids = module_anys.map { |m| m["id"].to_s }
         ids.sort.should eq module_ids.sort

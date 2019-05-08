@@ -6,7 +6,7 @@ module Engine::Model
   class DriverRepo < ModelBase
     table :repo
 
-    # Repo metadata
+    # Repository metadata
     attribute name : String
     attribute description : String
     attribute uri : String
@@ -24,6 +24,6 @@ module Engine::Model
     attribute password : String
     attribute key : String
 
-    has_many Dependency, collection_name: "dependencies"
+    has_many Driver, collection_name: "drivers"
   end
 end

@@ -3,7 +3,7 @@ require "./helper"
 module Engine::Model
   describe Module do
     describe "persistence" do
-      Dependency::Role.values.each do |role|
+      Driver::Role.values.each do |role|
         spec_module_persistence(role)
       end
     end

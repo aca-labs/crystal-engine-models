@@ -73,18 +73,18 @@ module Engine::Model
     def module_data
       modules = @modules || [] of String
       Module.find_all(modules).to_a.map do |mod|
-        # Pick off dependency name, and module_name from associated dependency
-        dep_data = mod.dependency.try do |dep|
+        # Pick off driver name, and module_name from associated driver
+        driver_data = mod.driver.try do |driver|
           {
-            :dependency => {
-              name:        dep.name,
-              module_name: dep.module_name,
+            :driver => {
+              name:        driver.name,
+              module_name: driver.module_name,
             },
           }
         end
 
-        if dep_data
-          JSON.parse(mod.to_json).as_h.merge(dep_data).to_json
+        if driver_data
+          JSON.parse(mod.to_json).as_h.merge(driver_data).to_json
         else
           mod.to_json
         end
