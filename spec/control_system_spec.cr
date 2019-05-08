@@ -22,7 +22,8 @@ module Engine::Model
       it "#module_data" do
         cs = Generator.control_system.save!
         modules = [Driver::Role::Logic, Driver::Role::SSH, Driver::Role::Device].map do |role|
-          Generator.module(role, control_system: cs).save!
+          driver = Generator.driver(role: role)
+          Generator.module(driver: driver, control_system: cs).save!
         end
 
         driver_names = modules.compact_map(&.driver.try &.name).sort

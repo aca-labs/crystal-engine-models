@@ -49,46 +49,36 @@ module Engine::Model
       )
     end
 
-    def self.module(driver_role = nil, control_system = nil)
-      driver_role = self.role if driver_role.nil?
-
+    def self.module(driver = nil, control_system = nil)
       mod_name = Faker::Hacker.noun
-      mod, driver = case driver_role
-                    when Driver::Role::Logic
-                      logic_mod = Module.new(custom_name: mod_name, uri: Faker::Internet.url)
-                      logic_driver = Generator.driver(module_name: mod_name, role: driver_role)
 
-                      {logic_mod, logic_driver}
-                    when Driver::Role::Device
-                      device_mod = Module.new(
-                        custom_name: mod_name,
-                        uri: Faker::Internet.url,
-                        ip: Faker::Internet.ip_v4_address,
-                        port: Random.rand((1..6555)),
-                      )
-                      device_driver = Generator.driver(module_name: mod_name, role: driver_role)
+      driver = Generator.driver(module_name: mod_name) if driver.nil?
+      driver.save! unless driver.persisted?
 
-                      {device_mod, device_driver}
-                    when Driver::Role::SSH
-                      ssh_mod = Module.new(
-                        custom_name: mod_name,
-                        uri: Faker::Internet.url,
-                        ip: Faker::Internet.ip_v4_address,
-                        port: Random.rand((1..65_535)),
-                      )
-                      ssh_driver = Generator.driver(module_name: mod_name, role: driver_role)
-
-                      {ssh_mod, ssh_driver}
-                    else
-                      # Driver::Role::Service
-                      service_mod = Module.new(custom_name: mod_name, uri: Faker::Internet.url)
-                      service_driver = Generator.driver(module_name: mod_name, role: driver_role)
-
-                      {service_mod, service_driver}
-                    end
+      mod = case driver.role
+            when Driver::Role::Logic
+              Module.new(custom_name: mod_name, uri: Faker::Internet.url)
+            when Driver::Role::Device
+              Module.new(
+                custom_name: mod_name,
+                uri: Faker::Internet.url,
+                ip: Faker::Internet.ip_v4_address,
+                port: Random.rand((1..6555)),
+              )
+            when Driver::Role::SSH
+              Module.new(
+                custom_name: mod_name,
+                uri: Faker::Internet.url,
+                ip: Faker::Internet.ip_v4_address,
+                port: Random.rand((1..65_535)),
+              )
+            else
+              # Driver::Role::Service
+              Module.new(custom_name: mod_name, uri: Faker::Internet.url)
+            end
 
       # Set driver
-      mod.driver = driver.save!
+      mod.driver = driver
 
       # Set cs
       mod.control_system = !control_system ? Generator.control_system.save! : control_system

@@ -15,10 +15,8 @@ module Engine::Model
     end
 
     it "finds modules by driver" do
-      driver = Generator.driver(role: Driver::Role::Device).save!
-      mod = Generator.module(driver_role: driver.role)
-      mod.driver = driver
-      mod.save!
+      mod = Generator.module.save!
+      driver = mod.driver.not_nil!
 
       driver.persisted?.should be_true
       mod.persisted?.should be_true
@@ -28,10 +26,8 @@ module Engine::Model
 
     describe "callbacks" do
       it "#cleanup_modules removes driver modules" do
-        driver = Generator.driver(role: Driver::Role::Device).save!
-        mod = Generator.module(driver_role: driver.role)
-        mod.driver = driver
-        mod.save!
+        mod = Generator.module.save!
+        driver = mod.driver.not_nil!
 
         driver.persisted?.should be_true
         mod.persisted?.should be_true
@@ -43,10 +39,7 @@ module Engine::Model
 
       pending "#update_modules updates dependent modules' driver metadata" do
         driver = Generator.driver(role: Driver::Role::Device).save!
-        mod = Generator.module(driver_role: driver.role)
-
-        mod.driver = driver
-        mod.save!
+        mod = Generator.module(driver: driver)
 
         driver.persisted?.should be_true
         mod.persisted?.should be_true

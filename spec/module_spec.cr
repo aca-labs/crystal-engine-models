@@ -12,7 +12,8 @@ end
 
 def spec_module_persistence(role)
   it "saves a #{role} module" do
-    mod = Engine::Model::Generator.module(role)
+    driver = Engine::Model::Generator.driver(role: role)
+    mod = Engine::Model::Generator.module(driver: driver)
     begin
       mod.save!
       mod.persisted?.should be_true
