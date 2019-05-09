@@ -18,4 +18,15 @@ module SemanticVersion::Converter
   def self.to_json(value : SemanticVersion, json : JSON::Builder)
     json.string(value.to_s)
   end
+
+  def self.from_yaml(ctx : YAML::ParseContext, node : YAML::Nodes::Node) : SemanticVersion
+    unless node.is_a?(YAML::Nodes::Scalar)
+      node.raise "Expected scalar, not #{node.class}"
+    end
+    SemanticVersion.parse(node.value.to_s)
+  end
+
+  def self.to_yaml(value : SemanticVersion, yaml : YAML::Nodes::Builder)
+    yaml.scalar(value.to_s)
+  end
 end
