@@ -48,16 +48,20 @@ module Engine::Model
 
     # Getter for the module's host
     def hostname
-      case driver.role
-      when SSH, Device
+      case role
+      when Driver::Role::SSH, Driver::Role::Device
         self.ip
-      when Service
-        URI.parse(self.uri).host
+      when Driver::Role::Service
+        uri = self.uri || self.driver.try &.default_uri
+        uri.try { |u| URI.parse(u).host }
+      else
+        # No hostname for Logic module
+        nil
       end
     end
 
     # Setter for Device module ip
-    def hostname=(host)
+    def hostname=(host : String)
       @ip = host
     end
 
@@ -119,7 +123,8 @@ module Engine::Model
       return if driver.nil?
 
       self.role = driver.role
-      self.port = (self.port || driver.default_port || 0).to_i
+      self.port = self.port || driver.default_port || 0
+
       ip = self.ip
       port = self.port
 
