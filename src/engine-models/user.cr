@@ -1,13 +1,12 @@
+require "digest/md5"
+require "scrypt"
 require "time"
 
 # Ruby libraries
 # require 'email_validator'
-# require 'digest/md5'
-# require 'scrypt'
 
 require "../engine-models"
 
-# TODO: blocked on authentication model of new engine
 module Engine::Model
   class User < ModelBase
     table :user
@@ -30,12 +29,15 @@ module Engine::Model
     attribute last_name : String
     attribute building : String
 
-    attribute password_digest : String
+    attribute password_digest : Scrypt::Password, converter: Scrypt::Converter
     attribute email_digest : String
     attribute card_number : String
 
     attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
     attribute deleted : Bool = false
+
+    validates :email, presence: true
+    validates :password, length: {minimum: 6, wrong_length: "must be at least 6 characters"}, allow_blank: true
 
     # belongs_to Authority
     # find_by_email(authority, email)
@@ -43,13 +45,20 @@ module Engine::Model
     #     "#{authority_id}-#{email.to_s.strip.downcase}"
     # end
 
-    # find_by_login_name(login)
     ensure_unique :login_name
     ensure_unique :staff_id
 
+    def find_by_login_name(login_name)
+      User.where(login_name: login_name)
+    end
+
+    def find_by_staff_id(staff_id)
+      User.where(staff_id: staff_id)
+    end
+
     # Create a secondary index on sys_admin field for quick lookup
-    secondary_index :sys_admin
     attribute sys_admin : Bool = false
+    secondary_index :sys_admin
 
     attribute support : Bool = false
 
@@ -62,61 +71,49 @@ module Engine::Model
     end
 
     # ----------------
-    # indexes
+    # Indices
     # ----------------
     # index_view :authority_id
     # def self.all
     # by_authority_id
     # end
+
     def self.find_sys_admins
       User.get_all([true], index: :sys_admin)
     end
 
-    # FIXME: Encryption methods
-
     # PASSWORD ENCRYPTION::
     # ---------------------
-    # getter :password
-    # validates_confirmation_of :password
-    # if respond_to?(:attributes_protected_by_default)
-    #     def self.attributes_protected_by_default
-    #         super + ['password_digest']
-    #     end
-    # end
 
-    # def authenticate(unencrypted_password)
-    #     if ::SCrypt::Password.new(password_digest || '') == unencrypted_password
-    #         self
-    #     else
-    #         false
-    #     end
-    # rescue ::SCrypt::Errors::InvalidHash
-    #     # accounts created with social logins will have an empty password_digest
-    #     # which causes SCrypt to raise an InvalidHash exception
-    #     false
-    # end
+    attribute password : String, persistence: false
+    validates :password, confirmation: true
 
-    # # Encrypts the password into the password_digest attribute.
-    # def password=(unencrypted_password)
-    #     @password = unencrypted_password
-    #     unless unencrypted_password.empty?
-    #         self.password_digest = ::SCrypt::Password.create(unencrypted_password)
-    #     end
-    # end
+    def authenticate(unencrypted_password)
+      # accounts created with social logins will have an empty password_digest
+      return nil if unencrypted_password.size == 0
+
+      if (password_digest || "") == unencrypted_password
+        self
+      else
+        nil
+      end
+    end
+
+    # Encrypts the password into the password_digest attribute.
+    def password=(unencrypted_password)
+      @password = unencrypted_password
+      unless unencrypted_password.empty?
+        self.password_digest = ::Bcrypt::Password.create(unencrypted_password)
+      end
+    end
+
     # --------------------
     # END PASSWORD METHODS
 
-    # FIXME: Email methods
     # Make reference to the email= function of the model
-    # alias_method :assign_email, :email=
-    # def email=(new_email)
-    #     assign_email(new_email)
-
-    #     # For looking up user pictures without making the email public
-    #     self.email_digest = Digest::MD5.hexdigest(new_email) if new_email
-    # end
-
-    # protected validates :email, :email => true
-    # protected validates :password, length: { minimum: 6, message: 'must be at least 6 characters' }, allow_blank: true
+    def email=(new_email : String)
+      # For looking up user pictures without making the email public
+      self.email_digest = Digest::MD5.hexdigest(new_email)
+    end
   end
 end

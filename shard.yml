@@ -13,6 +13,9 @@ dependencies:
   active-model:
     github: spider-gazelle/active-model
 
+  scrypt:
+    github: ysbaddaden/scrypt-crystal
+
 development_dependencies:
   faker:
     github: askn/faker
