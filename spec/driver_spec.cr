@@ -37,15 +37,16 @@ module Engine::Model
         Module.find(mod.id).should be_nil
       end
 
-      pending "#update_modules updates dependent modules' driver metadata" do
+      it "#update_modules updates dependent modules' driver metadata" do
         driver = Generator.driver(role: Driver::Role::Device).save!
-        mod = Generator.module(driver: driver)
+        mod = Generator.module(driver: driver).save!
 
         driver.persisted?.should be_true
         mod.persisted?.should be_true
 
         driver.role = Driver::Role::SSH
         driver.save!
+        driver.persisted?.should be_true
 
         Module.find!(mod.id).role.should eq Driver::Role::SSH
       end
