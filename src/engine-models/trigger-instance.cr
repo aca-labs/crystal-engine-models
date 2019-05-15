@@ -21,6 +21,8 @@ module Engine::Model
     attribute webhook_secret : String = ->{ Random::Secure.hex(32) }
     attribute trigger_count : Int32 = 0
 
+    before_create :set_importance
+
     # ----------------
     # PARENT ACCESSORS
     # ----------------
@@ -78,17 +80,17 @@ module Engine::Model
     # --------------------
 
     protected def set_importance
-      self.important = self.trigger.important
+      self.important = self.trigger.try &.important || self.important
     end
 
     # Enables the trigger
     def start
-      # TODO: implement
+      self.update_fields(enabled: true)
     end
 
     # Disables the trigger
     def stop
-      # TODO: implement
+      self.update_fields(enabled: false)
     end
 
     # -----------

@@ -8,6 +8,46 @@ module Engine::Model
       id.should eq inst.id
     end
 
+    it "sets importance before create" do
+      trigger = Generator.trigger
+      trigger.important = true
+
+      trigger_instance = Generator.trigger_instance(trigger.save!)
+
+      trigger_instance.important.should be_false
+      trigger_instance.save!
+      trigger_instance.important.should be_true
+
+      trigger.destroy
+      trigger_instance.destroy
+    end
+
+    describe "start/stop helpers" do
+      it "stop" do
+        inst = Generator.trigger_instance.save!
+        inst.enabled.should be_true
+        inst.stop
+
+        inst.enabled.should be_false
+        TriggerInstance.find!(inst.id).enabled.should be_false
+
+        inst.destroy
+      end
+
+      it "start" do
+        inst = Generator.trigger_instance
+        inst.enabled = false
+        inst.save!
+
+        inst.enabled.should be_false
+        inst.start
+        inst.enabled.should be_true
+
+        TriggerInstance.find!(inst.id).enabled.should be_true
+        inst.destroy
+      end
+    end
+
     describe "index view" do
       it "#of finds TriggerInstance by parent Trigger" do
         trigger = Trigger.create!(name: "ree")

@@ -18,6 +18,7 @@ module Engine::Model
         version: SemanticVersion.parse("1.1.1"),
         module_name: module_name,
       )
+
       driver.role = role
       driver
     end
@@ -39,8 +40,15 @@ module Engine::Model
 
     def self.trigger
       Trigger.new(
-        name: Faker::Hacker.noun
+        name: Faker::Hacker.noun,
       )
+    end
+
+    def self.trigger_instance(trigger = nil)
+      trigger = self.trigger.save! unless trigger
+      instance = TriggerInstance.new
+      instance.trigger = trigger
+      instance
     end
 
     def self.control_system
