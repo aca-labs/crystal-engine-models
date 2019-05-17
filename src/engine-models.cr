@@ -6,10 +6,12 @@ require "rethinkdb-orm"
 require "./utils"
 
 module Engine::Model
+  # Base class for all Engine models
   abstract class ModelBase < RethinkORM::Base
     include Neuroplastic
   end
 
+  # Validation for embedded objects in Engine models
   abstract class SubModel < ActiveModel::Model
     include ActiveModel::Validation
 

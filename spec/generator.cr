@@ -8,8 +8,9 @@ RANDOM = Random.new
 module Engine::Model
   # Defines generators for models
   module Generator
-    def self.driver(module_name : String? = nil, role : Driver::Role? = nil)
-      role = Generator.role unless role
+    def self.driver(role : Driver::Role? = nil, module_name : String? = nil, repo : DriverRepo? = nil)
+      role = self.role unless role
+      repo = self.driver_repo.save! unless repo
       module_name = Faker::Hacker.noun unless module_name
 
       driver = Driver.new(
@@ -20,6 +21,7 @@ module Engine::Model
       )
 
       driver.role = role
+      driver.driver_repo = repo
       driver
     end
 
@@ -38,16 +40,22 @@ module Engine::Model
       )
     end
 
-    def self.trigger
-      Trigger.new(
+    def self.trigger(system : ControlSystem? = nil)
+      trigger = Trigger.new(
         name: Faker::Hacker.noun,
       )
+      trigger.control_system = system if system
+      trigger
     end
 
-    def self.trigger_instance(trigger = nil)
+    def self.trigger_instance(trigger = nil, zone = nil, control_system = nil)
       trigger = self.trigger.save! unless trigger
       instance = TriggerInstance.new
       instance.trigger = trigger
+
+      instance.zone = zone if zone
+      instance.control_system = control_system if control_system
+
       instance
     end
 
