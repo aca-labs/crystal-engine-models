@@ -16,7 +16,7 @@ module Engine::Model
       Logic
     end
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute description : String
 
     attribute default_uri : String

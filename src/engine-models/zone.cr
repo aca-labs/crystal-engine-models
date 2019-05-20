@@ -6,7 +6,7 @@ module Engine::Model
   class Zone < ModelBase
     table :zone
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute description : String
     attribute tags : String
     attribute settings : String = "{}"

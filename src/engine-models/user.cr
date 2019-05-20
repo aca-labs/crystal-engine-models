@@ -16,7 +16,7 @@ module Engine::Model
       :country, :building, :created_at,
     }
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute email : String
     attribute phone : String
     attribute country : String

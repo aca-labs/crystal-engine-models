@@ -7,7 +7,7 @@ module Engine::Model
     table :repo
 
     # Repository metadata
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute description : String
     attribute uri : String
     attribute commit_hash : String

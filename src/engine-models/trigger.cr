@@ -7,7 +7,7 @@ module Engine::Model
   class Trigger < ModelBase
     table :trigger
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute description : String
     attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 

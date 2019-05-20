@@ -9,7 +9,7 @@ module Engine::Model
 
     before_save :update_features
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute description : String
 
     # Room search meta-data
