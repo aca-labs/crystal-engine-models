@@ -12,6 +12,7 @@ dependencies:
 
   active-model:
     github: spider-gazelle/active-model
+    branch: master
 
   scrypt:
     github: ysbaddaden/scrypt-crystal

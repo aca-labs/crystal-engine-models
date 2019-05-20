@@ -22,7 +22,7 @@ module Engine::Model
     attribute default_uri : String
     attribute default_port : Int32
 
-    enum_attribute role : Role
+    enum_attribute role : Role, es_type: "integer"
 
     # Driver version management
     attribute file_name : String

@@ -29,7 +29,7 @@ module Engine::Model
     attribute updated_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
     attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
-    enum_attribute role : Driver::Role # cache the driver role locally for load order
+    enum_attribute role : Driver::Role, es_type: "integer" # cache the driver role locally for load order
 
     # Connected state in model so we can filter and search on it
     attribute connected : Bool = true
