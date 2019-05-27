@@ -1,9 +1,11 @@
 require "uri"
+require "rethinkdb-orm"
 
 require "../engine-models"
 
 module Engine::Model
   class Module < ModelBase
+    include RethinkORM::Timestamps
     table :mod
 
     # The classes / files that this module requires to execute
@@ -25,9 +27,6 @@ module Engine::Model
     # Custom module names (in addition to what is defined in the driver)
     attribute custom_name : String
     attribute settings : String = "{}"
-
-    attribute updated_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
-    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
     enum_attribute role : Driver::Role, es_type: "integer" # cache the driver role locally for load order
 

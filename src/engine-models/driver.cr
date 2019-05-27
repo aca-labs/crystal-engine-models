@@ -1,9 +1,10 @@
 require "semantic_version"
-#
+
 require "../engine-models"
 
 module Engine::Model
   class Driver < ModelBase
+    include RethinkORM::Timestamps
     table :driver
 
     after_save :update_modules
@@ -28,12 +29,11 @@ module Engine::Model
     attribute file_name : String
     attribute commit : String
     attribute version : SemanticVersion, converter: SemanticVersion::Converter
-    belongs_to DriverRepo
+    belongs_to Repository
 
     # Module instance configuration
     attribute module_name : String
-    attribute settings : String = "{}"
-    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
+    attribute settings : String = "{}", es_keyword: "object"
 
     # Don't include this module in statistics or disconnected searches
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)
@@ -60,6 +60,13 @@ module Engine::Model
     validates :commit, presence: true
     validates :version, presence: true
     validates :module_name, presence: true
+
+    # Validate the repository type
+    #
+    validate ->(this : Driver) {
+      return unless (repo = this.repository)
+      this.validation_error(:repository, "should be a driver repository") unless repo.type == Repository::Type::Driver
+    }
 
     # Delete all the module references relying on this driver
     #

@@ -1,15 +1,16 @@
 require "json"
+require "rethinkdb-orm"
 require "time"
 
 require "../engine-models"
 
 module Engine::Model
   class Trigger < ModelBase
+    include RethinkORM::Timestamps
     table :trigger
 
     attribute name : String, es_type: "keyword"
     attribute description : String
-    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
     # Full path allows resolution in macros
     attribute actions : Engine::Model::Trigger::Actions = ->{ Actions.new }, es_type: "object"
@@ -26,7 +27,7 @@ module Engine::Model
 
     # TODO: before_destroy call to remove Trigger if it belongs to a ControlSystem
 
-    # TODO:
+    # TODO: Is this offloaded to core?
     #  Old engine: reloads the trigger instance to the module manager.
     #  New engine: hits the trigger service to re-enable the trigger
     # after_save :reload_all

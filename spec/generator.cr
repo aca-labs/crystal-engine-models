@@ -8,9 +8,9 @@ RANDOM = Random.new
 module Engine::Model
   # Defines generators for models
   module Generator
-    def self.driver(role : Driver::Role? = nil, module_name : String? = nil, repo : DriverRepo? = nil)
+    def self.driver(role : Driver::Role? = nil, module_name : String? = nil, repo : Repository? = nil)
       role = self.role unless role
-      repo = self.driver_repo.save! unless repo
+      repo = self.repository(type: Repository::Type::Driver).save! unless repo
       module_name = Faker::Hacker.noun unless module_name
 
       driver = Driver.new(
@@ -21,7 +21,7 @@ module Engine::Model
       )
 
       driver.role = role
-      driver.driver_repo = repo
+      driver.repository = repo
       driver
     end
 
@@ -30,13 +30,20 @@ module Engine::Model
       Driver::Role.parse(role_value)
     end
 
-    def self.driver_repo
-      DriverRepo.new(
+    def self.repository_type
+      type = Repository::Type.names.sample(1).first
+      Repository::Type.parse(type)
+    end
+
+    def self.repository(type : Repository::Type? = nil)
+      type = self.repository_type unless type
+      Repository.new(
         name: Faker::Hacker.noun,
+        type: type,
+        folder_name: Faker::Hacker.noun,
         description: Faker::Hacker.noun,
         uri: Faker::Internet.url,
-        commit_hash: RANDOM.hex(4),
-        branch: Faker::Hacker.noun,
+        commit_hash: "head",
       )
     end
 
@@ -79,14 +86,14 @@ module Engine::Model
                 custom_name: mod_name,
                 uri: Faker::Internet.url,
                 ip: Faker::Internet.ip_v4_address,
-                port: Random.rand((1..6555)),
+                port: rand((1..6555)),
               )
             when Driver::Role::SSH
               Module.new(
                 custom_name: mod_name,
                 uri: Faker::Internet.url,
                 ip: Faker::Internet.ip_v4_address,
-                port: Random.rand((1..65_535)),
+                port: rand((1..65_535)),
               )
             else
               # Driver::Role::Service
@@ -105,6 +112,51 @@ module Engine::Model
     def self.zone
       Zone.new(
         name: RANDOM.base64(10),
+      )
+    end
+
+    def self.authority
+      Authority.new(
+        name: Faker::Hacker.noun,
+        domain: Faker::Internet.url,
+      )
+    end
+
+    def self.user(authority : Authority? = nil)
+      authority = self.authority.save! unless authority
+      User.new(
+        name: Faker::Name.name,
+        email: Faker::Internet.email,
+        authority_id: authority.id,
+      )
+    end
+
+    def self.adfs_strat(authority : Authority? = nil)
+      authority = self.authority.save! unless authority
+      AdfsStrat.new(
+        name: Faker::Name.name,
+        authority_id: authority.id,
+        assertion_consumer_service_url: Faker::Internet.url,
+        idp_sso_target_url: Faker::Internet.url,
+      )
+    end
+
+    def self.oauth_strat(authority : Authority? = nil)
+      authority = self.authority.save! unless authority
+      OauthStrat.new(
+        name: Faker::Name.name,
+        authority_id: authority.id,
+      )
+    end
+
+    def self.ldap_strat(authority : Authority? = nil)
+      authority = self.authority.save! unless authority
+      LdapStrat.new(
+        name: Faker::Name.name,
+        authority_id: authority.id,
+        host: Faker::Internet.domain_name,
+        port: rand(1..65535),
+        base: "/",
       )
     end
   end

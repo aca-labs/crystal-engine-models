@@ -1,17 +1,17 @@
+require "rethinkdb-orm"
 require "time"
 
 require "../engine-models"
 
 module Engine::Model
   class Zone < ModelBase
+    include RethinkORM::Timestamps
     table :zone
 
     attribute name : String, es_type: "keyword"
     attribute description : String
     attribute tags : String
     attribute settings : String = "{}"
-
-    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
     attribute triggers : Array(String) = [] of String
 

@@ -1,22 +1,20 @@
+require "CrystalEmail"
 require "digest/md5"
+require "rethinkdb-orm"
 require "scrypt"
-require "time"
-
-# Ruby libraries
-# require 'email_validator'
 
 require "../engine-models"
+require "../utils"
 
 module Engine::Model
   class User < ModelBase
+    include RethinkORM::Timestamps
     table :user
 
-    PUBLIC_DATA = {
-      :id, :email_digest, :nickname, :name, :first_name, :last_name,
-      :country, :building, :created_at,
-    }
+    belongs_to Authority
 
     attribute name : String, es_type: "keyword"
+    attribute nickname : String
     attribute email : String
     attribute phone : String
     attribute country : String
@@ -33,32 +31,61 @@ module Engine::Model
     attribute email_digest : String
     attribute card_number : String
 
-    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
     attribute deleted : Bool = false
 
     validates :email, presence: true
+    validates :authority_id, presence: true
     validates :password, length: {minimum: 6, wrong_length: "must be at least 6 characters"}, allow_blank: true
 
-    # belongs_to Authority
-    # find_by_email(authority, email)
-    # ensure_unique [:authority_id, :email], :email do |authority_id, email|
-    #     "#{authority_id}-#{email.to_s.strip.downcase}"
-    # end
+    # Validate email format
+    validate ->(this : User) {
+      return unless (email = this.email)
+      this.validation_error(:email, "is an invalid email") unless email.is_email?
+    }
+
+    before_save :create_email_digest
+
+    # Sets email_digest to allow user look up without leaking emails
+    #
+    protected def create_email_digest
+      self.email_digest = Digest::MD5.hexdigest(self.email.not_nil!)
+    end
+
+    def find_by_email(authority, email)
+      User.get_all([internal_email_format(authority, email)], index: :email)
+    end
+
+    # Ensure email is unique, prepends authority id for searching
+    #
+    ensure_unique :email, scope: [:authority_id, :email] do |(authority_id, email)|
+      User.internal_email_format(authority_id, email)
+    end
+
+    def self.internal_email_format(authority_id : String, email : String)
+      "#{authority_id.strip.downcase}-#{email.strip.downcase}"
+    end
 
     ensure_unique :login_name
     ensure_unique :staff_id
 
+    # Publically visible fields
+    PUBLIC_DATA = {
+      :id, :email_digest, :nickname, :name, :first_name, :last_name,
+      :country, :building, {field: :created_at, serialise: :to_unix},
+    }
+
+    subset_json(:as_public_json, PUBLIC_DATA)
+
     def find_by_login_name(login_name)
-      User.where(login_name: login_name)
+      User.get_all([login_name], index: :login_name)
     end
 
     def find_by_staff_id(staff_id)
-      User.where(staff_id: staff_id)
+      User.get_all([staff_id], index: :staff_id)
     end
 
     # Create a secondary index on sys_admin field for quick lookup
     attribute sys_admin : Bool = false
-    secondary_index :sys_admin
 
     attribute support : Bool = false
 
@@ -73,10 +100,14 @@ module Engine::Model
     # ----------------
     # Indices
     # ----------------
-    # index_view :authority_id
-    # def self.all
-    # by_authority_id
-    # end
+
+    secondary_index :authority_id
+
+    def by_authority_id(auth_id)
+      User.get_all([auth_id], index: :authority_id)
+    end
+
+    secondary_index :sys_admin
 
     def self.find_sys_admins
       User.get_all([true], index: :sys_admin)
@@ -103,17 +134,11 @@ module Engine::Model
     def password=(unencrypted_password)
       @password = unencrypted_password
       unless unencrypted_password.empty?
-        self.password_digest = ::Bcrypt::Password.create(unencrypted_password)
+        self.password_digest = Scrypt::Password.create(unencrypted_password)
       end
     end
 
     # --------------------
     # END PASSWORD METHODS
-
-    # Make reference to the email= function of the model
-    def email=(new_email : String)
-      # For looking up user pictures without making the email public
-      self.email_digest = Digest::MD5.hexdigest(new_email)
-    end
   end
 end

@@ -1,10 +1,12 @@
 require "uri"
 require "time"
+require "rethinkdb-orm"
 
 require "../engine-models"
 
 module Engine::Model
   class ControlSystem < ModelBase
+    include RethinkORM::Timestamps
     table :sys
 
     before_save :update_features
@@ -57,8 +59,6 @@ module Engine::Model
 
     # YAML settings
     attribute settings : String = "{}"
-
-    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
     # Provide a field for simplifying support
     attribute support_url : String

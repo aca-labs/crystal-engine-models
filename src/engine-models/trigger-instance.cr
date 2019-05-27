@@ -1,18 +1,17 @@
 require "random"
+require "rethinkdb-orm"
 require "time"
 
 require "../engine-models"
 
 module Engine::Model
   class TriggerInstance < ModelBase
+    include RethinkORM::Timestamps
     table :trig
 
     belongs_to ControlSystem
     belongs_to Trigger
     belongs_to Zone
-
-    attribute created_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
-    attribute updated_at : Time = ->{ Time.utc_now }, converter: Time::EpochConverter
 
     attribute enabled : Bool = true
     attribute triggered : Bool = false
