@@ -10,6 +10,11 @@ module Engine::Model
     include RethinkORM::Timestamps
     table :repo
 
+    enum Type
+      Driver
+      Interface
+    end
+
     # Repository metadata
     attribute name : String, es_type: "keyword"
     attribute folder_name : String
@@ -17,12 +22,7 @@ module Engine::Model
     attribute uri : String
     attribute commit_hash : String = "head"
 
-    attribute type : Type
-
-    enum Type
-      Driver
-      Interface
-    end
+    enum_attribute type : Type, es_type: "integer"
 
     # Validations
     validates :name, presence: true
