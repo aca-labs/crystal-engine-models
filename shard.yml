@@ -18,7 +18,7 @@ dependencies:
     github: ysbaddaden/scrypt-crystal
 
   CrystalEmail:
-    git: https://git.sceptique.eu/Sceptique/CrystalEmail
+    github: Nephos/CrystalEmail
 
 development_dependencies:
   faker:
