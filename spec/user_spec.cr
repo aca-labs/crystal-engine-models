@@ -20,7 +20,7 @@ module Engine::Model
       user.email_digest.should eq expected_digest
     end
 
-    it "serialises public attributes" do
+    it "serialises public visible attributes" do
       user = Generator.user.save!
 
       public_user = JSON.parse(user.as_public_json).as_h
@@ -30,6 +30,17 @@ module Engine::Model
       end
 
       public_user.keys.sort.should eq public_attributes.sort
+    end
+
+    it "serialised admin visible attributes" do
+      user = Generator.user.save!
+      admin_user = JSON.parse(user.as_admin_json).as_h
+
+      admin_attributes = User::ADMIN_DATA.to_a.map do |field|
+        field.is_a?(NamedTuple) ? field[:field].to_s : field.to_s
+      end
+
+      admin_user.keys.sort.should eq admin_attributes.sort
     end
   end
 end

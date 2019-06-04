@@ -51,7 +51,7 @@ module Engine::Model
       self.email_digest = Digest::MD5.hexdigest(self.email.not_nil!)
     end
 
-    def find_by_email(authority, email)
+    def self.find_by_email(authority, email)
       User.get_all([internal_email_format(authority, email)], index: :email)
     end
 
@@ -74,13 +74,23 @@ module Engine::Model
       :country, :building, {field: :created_at, serialise: :to_unix},
     }
 
-    subset_json(:as_public_json, PUBLIC_DATA)
+    # Admin visible fields
+    ADMIN_DATA = {
+      # Public Visible
+      :id, :email_digest, :nickname, :name, :first_name, :last_name,
+      :country, :building, {field: :created_at, serialise: :to_unix},
+      # Admin Visible
+      :sys_admin, :support, :email, :phone,
+    }
 
-    def find_by_login_name(login_name)
+    subset_json(:as_public_json, PUBLIC_DATA)
+    subset_json(:as_admin_json, ADMIN_DATA)
+
+    def self.find_by_login_name(login_name)
       User.get_all([login_name], index: :login_name)
     end
 
-    def find_by_staff_id(staff_id)
+    def self.find_by_staff_id(staff_id)
       User.get_all([staff_id], index: :staff_id)
     end
 

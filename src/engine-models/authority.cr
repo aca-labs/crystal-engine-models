@@ -12,7 +12,8 @@ module Engine::Model
     ensure_unique :domain, create_index: true
 
     attribute description : String
-    attribute login_url : String = "/login?continue={{url}}"
+
+    attribute login_url : String = "/auth/login?continue={{url}}"
     attribute logout_url : String = "/auth/logout"
 
     attribute internals : String
@@ -29,8 +30,8 @@ module Engine::Model
 
     # Locates an Authority by its unique domain name
     #
-    def self.find_by_domain(name)
-      Authority.find_all([name], index: :name).first?
+    def self.find_by_domain(domain)
+      Authority.find_all([domain], index: :domain).first?
     end
   end
 end
