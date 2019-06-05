@@ -52,7 +52,7 @@ module Engine::Model
     end
 
     def self.find_by_email(authority, email)
-      User.get_all([internal_email_format(authority, email)], index: :email)
+      User.get_all([internal_email_format(authority, email)], index: :email).first?
     end
 
     # Ensure email is unique, prepends authority id for searching
@@ -87,11 +87,11 @@ module Engine::Model
     subset_json(:as_admin_json, ADMIN_DATA)
 
     def self.find_by_login_name(login_name)
-      User.get_all([login_name], index: :login_name)
+      User.get_all([login_name], index: :login_name).first?
     end
 
     def self.find_by_staff_id(staff_id)
-      User.get_all([staff_id], index: :staff_id)
+      User.get_all([staff_id], index: :staff_id).first?
     end
 
     # Create a secondary index on sys_admin field for quick lookup
