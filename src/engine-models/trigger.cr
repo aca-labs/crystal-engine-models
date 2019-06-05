@@ -25,9 +25,7 @@ module Engine::Model
     # Allows filtering in cases of a Trigger belonging to a single ControlSystem
     belongs_to ControlSystem
 
-    # TODO: before_destroy call to remove Trigger if it belongs to a ControlSystem
-
-    # TODO: Is this offloaded to core?
+    # FIXME: Is this offloaded to core?
     #  Old engine: reloads the trigger instance to the module manager.
     #  New engine: hits the trigger service to re-enable the trigger
     # after_save :reload_all
@@ -44,17 +42,15 @@ module Engine::Model
     validates :name, presence: true
 
     validate ->(this : Trigger) {
-      actions = this.actions
-      if actions && !actions.valid?
+      if (actions = this.actions) && !actions.valid?
         actions.errors.each do |e|
-          this.validation_error(:action, e.message)
+          this.validation_error(:action, e.to_s)
         end
       end
 
-      conditions = this.conditions
-      if conditions && !conditions.valid?
+      if (conditions = this.conditions) && !conditions.valid?
         conditions.errors.each do |e|
-          this.validation_error(:condition, e.message)
+          this.validation_error(:condition, e.to_s)
         end
       end
     }
@@ -63,36 +59,39 @@ module Engine::Model
     ###########################################################################
 
     class Conditions < SubModel
-      attribute dependent_conditions : Array(DependentCondition) = ->{ [] of DependentCondition }
-      attribute comparison_conditions : Array(ComparisonCondition) = ->{ [] of ComparisonCondition }
+      attribute dependents : Array(Dependent) = ->{ [] of Dependent }
+      attribute comparisons : Array(Comparison) = ->{ [] of Comparison }
 
       validate ->(this : Conditions) {
-        dependent_conditions = this.dependent_conditions
-        this.collect_errors(:dependent_conditions, dependent_conditions) if dependent_conditions
-
-        comparison_conditions = this.comparison_conditions
-        this.collect_errors(:comparison_conditions, comparison_conditions) if comparison_conditions
+        if (dependents = this.dependents)
+          this.collect_errors(:dependent, dependents)
+        end
+        if (comparisons = this.comparisons)
+          this.collect_errors(:comparison, comparisons)
+        end
       }
 
-      class DependentCondition < SubModel
-        attribute trigger_type : String, presence: true
+      class Dependent < SubModel
+        attribute type : String, presence: true
 
         attribute value : String
         attribute time : Time, converter: Time::EpochConverter
 
         TRIGGER_TYPES = {"at", "webhook", "cron"}
-        validates :trigger_type, inclusion: {in: TRIGGER_TYPES}
+        validates :type, inclusion: {in: TRIGGER_TYPES}
       end
 
-      class ComparisonCondition < SubModel
-        attribute left : StatusVariable
+      class Comparison < SubModel
+        attribute left : Value
         attribute operator : String
-        attribute right : StatusVariable
+        attribute right : Value
 
-        alias StatusValue = ConstantValue | StatusVariable
+        alias Value = StatusVariable | Constant
 
-        alias ConstantValue = NamedTuple(const: Int32 | Float32 | String | Bool)
+        # Constant value
+        alias Constant = Int32 | Float32 | String | Bool
 
+        # Status of a Module
         alias StatusVariable = NamedTuple(
           # Module that defines the status variable
           mod: String,
@@ -106,7 +105,8 @@ module Engine::Model
           "equal", "not_equal", "greater_than", "greater_than_or_equal",
           "less_than", "less_than_or_equal", "and", "or", "exclusive_or",
         }
-        validates :operator, inclusion: {in: OPERATORS}
+
+        validates :operator, inclusion: {in: OPERATORS}, presence: true
       end
     end
 
@@ -114,27 +114,32 @@ module Engine::Model
     ###########################################################################
 
     class Actions < SubModel
-      attribute function_actions : Array(FunctionAction) = ->{ [] of FunctionAction }
-      attribute email_actions : Array(EmailAction) = ->{ [] of EmailAction }
+      attribute functions : Array(Function) = ->{ [] of Function }
+      attribute mailers : Array(Email) = ->{ [] of Email }
 
       validate ->(this : Actions) {
-        function_actions = this.function_actions
-        this.collect_errors(:function_actions, function_actions) if function_actions
-
-        email_actions = this.email_actions
-        this.collect_errors(:email_actions, email_actions) if email_actions
+        if (mailers = this.mailers)
+          this.collect_errors(:mailers, mailers)
+        end
+        if (functions = this.functions)
+          this.collect_errors(:functions, functions)
+        end
       }
 
-      class EmailAction < SubModel
-        # Attributes that define an EmailAction
-        attribute emails : Array(String), presence: true
+      class Email < SubModel
+        attribute emails : Array(String)
         attribute content : String = ->{ "" }
+
+        validates :emails, presence: true
       end
 
-      class FunctionAction < SubModel
-        attribute mod : String, presence: true
-        attribute func : String, presence: true
+      class Function < SubModel
+        attribute mod : String
+        attribute method : String
         attribute args : Array(String) = ->{ [] of String }
+
+        validates :mod, presence: true
+        validates :method, presence: true
       end
     end
   end

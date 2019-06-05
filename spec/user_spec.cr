@@ -32,7 +32,7 @@ module Engine::Model
       public_user.keys.sort.should eq public_attributes.sort
     end
 
-    it "serialised admin visible attributes" do
+    it "serialises admin visible attributes" do
       user = Generator.user.save!
       admin_user = JSON.parse(user.as_admin_json).as_h
 

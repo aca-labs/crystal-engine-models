@@ -8,11 +8,9 @@ module Engine::Model
     include RethinkORM::Timestamps
     table :mod
 
-    # The classes / files that this module requires to execute
-    # Defines module type
-
-    # Requires driver_id to be set
+    # The classes/files that this module requires to execute
     belongs_to Driver
+
     belongs_to ControlSystem
 
     attribute ip : String
@@ -61,6 +59,7 @@ module Engine::Model
 
     # Setter for Device module ip
     def hostname=(host : String)
+      # TODO: resolve hostname?
       @ip = host
     end
 

@@ -26,7 +26,7 @@ module Engine::Model
         m.errors unless m.valid?
       end
       errors.flatten.each do |e|
-        self.validation_error(collection, e.message)
+        self.validation_error(field: collection, message: e.to_s.downcase)
       end
     end
   end
