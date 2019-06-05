@@ -33,6 +33,9 @@ module Engine::Model
     attribute zones : Array(String) = [] of String
     attribute modules : Array(String) = [] of String
 
+    # Single System triggers
+    has_many Trigger, dependent: :destroy, collection_name: :system_triggers
+
     def self.by_zone_id(id)
       ControlSystem.raw_query do |q|
         q.table(ControlSystem.table_name).filter do |doc|
