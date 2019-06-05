@@ -7,9 +7,9 @@ module Engine::Model
     include RethinkORM::Timestamps
 
     table :adfs_strat
-
-    attribute name : String
     belongs_to Authority
+
+    attribute name : String, es_type: "keyword"
 
     attribute issuer : String = "aca"
     attribute idp_sso_target_url_runtime_params : Hash(String, String)

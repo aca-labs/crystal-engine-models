@@ -5,11 +5,11 @@ require "../../engine-models"
 module Engine::Model
   class LdapStrat < ModelBase
     include RethinkORM::Timestamps
-    table :ldap_strat
 
+    table :ldap_strat
     belongs_to Authority
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
 
     attribute port : Int32 = 636, numericality: {greater_than: 0, less_than_or_equal_to: 65_535}
     attribute auth_method : String = "ssl"

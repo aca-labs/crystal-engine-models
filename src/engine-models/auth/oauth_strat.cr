@@ -7,9 +7,10 @@ module Engine::Model
   class OauthStrat < ModelBase
     include RethinkORM::Timestamps
 
+    table :oauth_strat
     belongs_to Authority
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
     attribute client_id : String
     attribute client_secret : String
 

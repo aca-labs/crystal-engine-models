@@ -6,7 +6,7 @@ module Engine::Model
   class Authority < ModelBase
     table :authority
 
-    attribute name : String
+    attribute name : String, es_type: "keyword"
 
     attribute domain : String
     ensure_unique :domain, create_index: true
