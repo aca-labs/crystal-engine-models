@@ -51,18 +51,14 @@ module Engine::Model
       self.email_digest = Digest::MD5.hexdigest(self.email.not_nil!)
     end
 
-    def self.find_by_email(authority, email)
-      User.get_all([internal_email_format(authority, email)], index: :email).first?
+    def self.find_by_email(authority_id, email)
+      User.where(email: email, authority_id: authority_id).first?
     end
 
     # Ensure email is unique, prepends authority id for searching
     #
-    ensure_unique :email, scope: [:authority_id, :email] do |(authority_id, email)|
-      User.internal_email_format(authority_id, email)
-    end
-
-    def self.internal_email_format(authority_id : String, email : String)
-      "#{authority_id.strip.downcase}-#{email.strip.downcase}"
+    ensure_unique :email, scope: [:authority_id, :email] do |authority_id, email|
+      {authority_id.strip.downcase, email.strip.downcase}
     end
 
     ensure_unique :login_name

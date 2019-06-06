@@ -11,7 +11,7 @@ module Engine::Model
 
     it "sets email digest on save" do
       user = Generator.user
-      expected_digest = Digest::MD5.hexdigest(User.internal_email_format(user.authority_id.not_nil!, user.email.not_nil!))
+      expected_digest = Digest::MD5.hexdigest(user.email.not_nil!)
 
       user.email_digest.should be_nil
       user.save!

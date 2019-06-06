@@ -21,7 +21,7 @@ module Engine::Model
       driver.persisted?.should be_true
       mod.persisted?.should be_true
 
-      Module.by_driver_id(driver.id).to_a.first.id.should eq mod.id
+      Module.by_driver_id(driver.id).first.id.should eq mod.id
     end
 
     describe "callbacks" do
@@ -32,7 +32,7 @@ module Engine::Model
         driver.persisted?.should be_true
         mod.persisted?.should be_true
 
-        Module.by_driver_id(driver.id).to_a.first.id.should eq mod.id
+        Module.by_driver_id(driver.id).first.id.should eq mod.id
         driver.destroy
         Module.find(mod.id).should be_nil
       end
