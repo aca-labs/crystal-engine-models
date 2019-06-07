@@ -58,7 +58,7 @@ module Engine::Model
     # Ensure email is unique, prepends authority id for searching
     #
     ensure_unique :email, scope: [:authority_id, :email] do |authority_id, email|
-      {authority_id.strip.downcase, email.strip.downcase}
+      {authority_id, email.strip.downcase}
     end
 
     ensure_unique :login_name
