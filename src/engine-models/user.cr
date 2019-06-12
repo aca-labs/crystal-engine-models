@@ -28,6 +28,7 @@ module Engine::Model
     attribute building : String
 
     attribute password_digest : Scrypt::Password, converter: Scrypt::Converter
+
     attribute email_digest : String
     attribute card_number : String
 
@@ -35,7 +36,6 @@ module Engine::Model
 
     validates :email, presence: true
     validates :authority_id, presence: true
-    validates :password, length: {minimum: 6, wrong_length: "must be at least 6 characters"}, allow_blank: true
 
     # Validate email format
     validate ->(this : User) {
@@ -122,9 +122,6 @@ module Engine::Model
     # PASSWORD ENCRYPTION::
     # ---------------------
 
-    attribute password : String, persistence: false
-    validates :password, confirmation: true
-
     def authenticate(unencrypted_password)
       # accounts created with social logins will have an empty password_digest
       return nil if unencrypted_password.size == 0
@@ -136,11 +133,37 @@ module Engine::Model
       end
     end
 
-    # Encrypts the password into the password_digest attribute.
-    def password=(unencrypted_password)
-      @password = unencrypted_password
-      unless unencrypted_password.empty?
-        self.password_digest = Scrypt::Password.create(unencrypted_password)
+    attribute password : String, persistence: false, allow_blank: true, confirmation: true, mass_assignment: false
+    validates :password, length: {minimum: 6, wrong_length: "must be at least 6 characters"}
+
+    # TODO: Allow interception of attribute setters in ActiveModel::Model
+    #
+    # def password=(unencrypted_password)
+    #   unless unencrypted_password.empty?
+    #     self.password_digest = Scrypt::Password.create(
+    #       password: unencrypted_password,
+    #       key_len: 32,
+    #       salt_size: 32,
+    #       max_mem: 16 * 1024 * 1024,
+    #       max_memfrac: 0.5,
+    #       max_time: 0.2,
+    #     )
+    #   end
+    # end
+
+    before_create :encrypt_password
+
+    protected def encrypt_password
+      password = self.password || ""
+      unless password.empty?
+        self.password_digest = Scrypt::Password.create(
+          password: password,
+          key_len: 32,
+          salt_size: 32,
+          max_mem: 16 * 1024 * 1024,
+          max_memfrac: 0.5,
+          max_time: 0.2,
+        )
       end
     end
 
