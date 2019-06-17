@@ -22,9 +22,20 @@ module Engine::Model
 
     before_create :set_importance
 
+    # Increment the trigger_count of a TriggerInstance in place
+    #
+    def self.increment_trigger_count(id : String)
+      TriggerInstance.table_query do |q|
+        q.get(id).update do |doc|
+          doc.merge({"trigger_count" => doc["trigger_count"].add(1)})
+        end
+      end
+    end
+
     # ----------------
     # PARENT ACCESSORS
     # ----------------
+
     def name
       self.trigger.try(&.name)
     end
