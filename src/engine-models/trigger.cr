@@ -59,26 +59,49 @@ module Engine::Model
     ###########################################################################
 
     class Conditions < SubModel
-      attribute dependents : Array(Dependent) = ->{ [] of Dependent }
       attribute comparisons : Array(Comparison) = ->{ [] of Comparison }
+      attribute time_dependents : Array(TimeDependent) = ->{ [] of TimeDependent }
+      attribute webhooks : Array(Webhook) = ->{ [] of Webhook }
 
       validate ->(this : Conditions) {
-        if (dependents = this.dependents)
-          this.collect_errors(:dependent, dependents)
+        if (time_dependents = this.time_dependents)
+          this.collect_errors(:time_dependents, time_dependents)
+        end
+        if (webhooks = this.webhooks)
+          this.collect_errors(:webhooks, webhooks)
         end
         if (comparisons = this.comparisons)
-          this.collect_errors(:comparison, comparisons)
+          this.collect_errors(:comparisons, comparisons)
         end
       }
 
-      class Dependent < SubModel
-        attribute type : String, presence: true
+      class Webhook < SubModel
+        enum Type
+          ExecuteBefore
+          ExecuteAfter
+          PayloadOnly
+          IgnorePayload
+        end
 
-        attribute value : String
+        enum_attribute type : Type, column_type: String
+
+        attribute payload : String
+
+        validates :type, presence: true
+      end
+
+      class TimeDependent < SubModel
+        enum Type
+          At
+          Cron
+        end
+
+        enum_attribute type : Type, column_type: String
+
         attribute time : Time, converter: Time::EpochConverter
+        attribute cron : String
 
-        TRIGGER_TYPES = {"at", "webhook", "cron"}
-        validates :type, inclusion: {in: TRIGGER_TYPES}
+        validates :type, presence: true
       end
 
       class Comparison < SubModel
@@ -136,7 +159,7 @@ module Engine::Model
       class Function < SubModel
         attribute mod : String
         attribute method : String
-        attribute args : Array(String) = ->{ [] of String }
+        attribute args : Hash(String, JSON::Any) = ->{ {} of String => JSON::Any }
 
         validates :mod, presence: true
         validates :method, presence: true

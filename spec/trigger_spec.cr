@@ -43,22 +43,22 @@ module Engine::Model
     end
 
     describe Trigger::Conditions do
-      it "validates dependent condition" do
+      it "validates time dependent condition" do
         model = Generator.trigger
 
-        valid = Trigger::Conditions::Dependent.new(
-          type: "at",
-          time: Time.now,
+        valid = Trigger::Conditions::TimeDependent.new(
+          type: Trigger::Conditions::TimeDependent::Type::At,
+          time: Time.utc,
         )
-        invalid = Trigger::Conditions::Dependent.new(
-          type: "maybe a cron",
-          value: "5 * * * *",
+
+        invalid = Trigger::Conditions::TimeDependent.new(
+          cron: "5 * * * *",
         )
-        model.conditions.try &.dependents = [valid, invalid]
+        model.conditions.try &.time_dependents = [valid, invalid]
 
         model.valid?.should be_false
         model.errors.size.should eq 1
-        model.errors.first.to_s.should end_with "type is not included in the list"
+        model.errors.first.to_s.should end_with "type is required"
       end
 
       it "validates comparison condition" do

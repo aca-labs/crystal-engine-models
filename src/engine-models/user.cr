@@ -133,28 +133,8 @@ module Engine::Model
       end
     end
 
-    attribute password : String, persistence: false, allow_blank: true, confirmation: true, mass_assignment: false
-    validates :password, length: {minimum: 6, wrong_length: "must be at least 6 characters"}
-
-    # TODO: Allow interception of attribute setters in ActiveModel::Model
-    #
-    # def password=(unencrypted_password)
-    #   unless unencrypted_password.empty?
-    #     self.password_digest = Scrypt::Password.create(
-    #       password: unencrypted_password,
-    #       key_len: 32,
-    #       salt_size: 32,
-    #       max_mem: 16 * 1024 * 1024,
-    #       max_memfrac: 0.5,
-    #       max_time: 0.2,
-    #     )
-    #   end
-    # end
-
-    before_create :encrypt_password
-
-    protected def encrypt_password
-      password = self.password || ""
+    attribute password : String, persistence: false, allow_blank: true, confirmation: true, mass_assignment: false do |p|
+      password = p || ""
       unless password.empty?
         self.password_digest = Scrypt::Password.create(
           password: password,
@@ -166,6 +146,8 @@ module Engine::Model
         )
       end
     end
+
+    validates :password, length: {minimum: 6, wrong_length: "must be at least 6 characters"}
 
     # --------------------
     # END PASSWORD METHODS
