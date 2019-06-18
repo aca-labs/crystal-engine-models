@@ -133,17 +133,18 @@ module Engine::Model
       end
     end
 
-    attribute password : String, persistence: false, allow_blank: true, confirmation: true, mass_assignment: false do |p|
-      password = p || ""
-      unless password.empty?
-        self.password_digest = Scrypt::Password.create(
-          password: password,
-          key_len: 32,
-          salt_size: 32,
-          max_mem: 16 * 1024 * 1024,
-          max_memfrac: 0.5,
-          max_time: 0.2,
-        )
+    attribute password : String, persistence: false, allow_blank: true, confirmation: true, mass_assignment: false do |password|
+      (password || "").tap do |p|
+        unless p.empty?
+          self.password_digest = Scrypt::Password.create(
+            password: p,
+            key_len: 32,
+            salt_size: 32,
+            max_mem: 16 * 1024 * 1024,
+            max_memfrac: 0.5,
+            max_time: 0.2,
+          )
+        end
       end
     end
 
