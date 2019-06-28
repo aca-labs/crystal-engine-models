@@ -159,5 +159,18 @@ module Engine::Model
         base: "/",
       )
     end
+
+    def self.bool
+      [true, false].sample(1).first
+    end
+
+    def self.user_jwt(id : String? = nil, email : String? = nil, support : Bool? = nil, admin : Bool? = nil)
+      UserJWT.new(
+        id: id || RANDOM.base64(10),
+        email: email || Faker::Internet.email,
+        support: support || self.bool,
+        admin: admin || self.bool,
+      )
+    end
   end
 end

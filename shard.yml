@@ -2,28 +2,31 @@ name: engine-models
 version: 1.0.0
 
 dependencies:
-  rethinkdb-orm:
-    github: spider-gazelle/rethinkdb-orm
+  active-model:
+    github: spider-gazelle/active-model
     branch: master
+
+  CrystalEmail:
+    github: Nephos/CrystalEmail
+
+  jwt:
+    github: crystal-community/jwt
 
   neuroplastic:
     github: aca-labs/neuroplastic
     branch: master
 
-  active-model:
-    github: spider-gazelle/active-model
+  rethinkdb-orm:
+    github: spider-gazelle/rethinkdb-orm
     branch: master
 
   scrypt:
     github: ysbaddaden/scrypt-crystal
 
-  CrystalEmail:
-    github: Nephos/CrystalEmail
-
 development_dependencies:
-  faker:
-    github: askn/faker
-
   ameba:
     github: veelenga/ameba
     version: ~> 0.10.0
+
+  faker:
+    github: askn/faker
