@@ -164,6 +164,16 @@ module Engine::Model
       [true, false].sample(1).first
     end
 
+    def self.jwt(user : User? = nil)
+      user = self.user.save! if user.nil?
+      UserJWT.new(
+        id: user.id,
+        email: user.email,
+        support: user.support,
+        admin: user.sys_admin,
+      )
+    end
+
     def self.user_jwt(id : String? = nil, email : String? = nil, support : Bool? = nil, admin : Bool? = nil)
       UserJWT.new(
         id: id || RANDOM.base64(10),
