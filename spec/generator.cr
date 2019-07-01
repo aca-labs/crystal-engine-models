@@ -131,6 +131,13 @@ module Engine::Model
       )
     end
 
+    def self.authenticated_user(authority = nil)
+      user = self.user(authority)
+      user.support = true
+      user.sys_admin = true
+      user
+    end
+
     def self.adfs_strat(authority : Authority? = nil)
       authority = self.authority.save! unless authority
       AdfsStrat.new(
