@@ -6,7 +6,7 @@ require "rethinkdb-orm"
 require "./generator"
 
 # Configure DB
-db_name = "engine_#{ENV["SG_ENV"]? || "development"}"
+db_name = "test"
 
 RethinkORM::Connection.configure do |settings|
   settings.db = db_name
