@@ -1,9 +1,27 @@
 sudo: required
 language: crystal
-services: redis-server
-addons:
-  rethinkdb: '2.3'
+
+services:
+  - docker
+
+before_install:
+  # Add rethinkdb 2.3.6
+  - docker run --net="host" -p "29015:29015" -p "28015:28015" -d acalabs/rethinkdb:2.3.6
+
+env:
+  - TRAVIS_TEST=true
+
 install:
   - shards install
+
+before_script:
+  # Wait for elasticsearch
+  - sleep 10
+
 script:
-  - crystal spec
+  # Specs
+  - crystal spec --no-debug
+  # Linter
+  - bin/ameba
+  # Formatter
+  - crystal tool format --check
