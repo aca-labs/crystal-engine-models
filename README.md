@@ -1,20 +1,9 @@
-# Crystal Lang Engine Models
+# Crystal ACAEngine Models
 
 [![Build Status](https://travis-ci.org/aca-labs/crystal-engine-models.svg?branch=master)](https://travis-ci.org/aca-labs/crystal-engine-models)
 
-The models for Crystal-Engine.
+The database models for ACAEngine on [crystal](https://crystal-lang.org/).
 
-## Control System
+## Testing
 
-## Dependency
-
-## Driver Repo
-
-## Module
-
-## Trigger
-
-## Trigger Instance
-
-## Zone
-
+`crystal spec` to run tests
