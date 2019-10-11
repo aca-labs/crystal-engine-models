@@ -1,7 +1,6 @@
 require "uuid"
 
 require "./helper"
-require "../src/encryption"
 
 module ACAEngine
   describe Encryption do
