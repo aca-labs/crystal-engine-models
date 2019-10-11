@@ -1,4 +1,4 @@
-require "../encryption"
+require "./utilities/encryption"
 
 module ACAEngine::Model
   # Common settings code

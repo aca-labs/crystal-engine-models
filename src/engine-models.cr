@@ -1,6 +1,6 @@
 require "rethinkdb-orm"
 
-require "./models/base/*"
+require "./engine-models/base/*"
 
 module ACAEngine::Model
   # Expose RethinkDB connection
@@ -9,4 +9,4 @@ module ACAEngine::Model
   end
 end
 
-require "./models/*"
+require "./engine-models/*"
