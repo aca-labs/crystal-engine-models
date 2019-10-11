@@ -1,12 +1,15 @@
-require "uri"
-require "time"
 require "rethinkdb-orm"
+require "time"
+require "uri"
 
-require "../engine-models"
+require "./base/model"
+require "./settings"
 
-module Engine::Model
+module ACAEngine::Model
   class ControlSystem < ModelBase
     include RethinkORM::Timestamps
+    include Settings
+
     table :sys
 
     before_save :update_features
@@ -59,9 +62,6 @@ module Engine::Model
     def self.using_module(id)
       self.by_module_id(id)
     end
-
-    # YAML settings
-    attribute settings : String = "{}"
 
     # Provide a field for simplifying support
     attribute support_url : String
@@ -123,22 +123,43 @@ module Engine::Model
     # Adds modules to the features field,
     # Extends features with extra_features field in settings if present
     protected def update_features
-      if self.id
-        system = ControlSystem.find(self.id)
+      if (id = @id)
+        system = ControlSystem.find(id)
         if system
           mods = system.modules || [] of String
           mods.reject! "__Triggers__"
-          self.features = mods.join " "
+          @features = mods.join " "
         end
       end
 
-      settings = self.settings
-      if settings
-        extra_features = JSON.parse(settings)["extra_features"]?
-        if extra_features
-          self.features = "#{self.features} #{extra_features}"
+      if (settings = @settings)
+        # Extra features stored in unencrypted settings
+        settings.find { |(level, _)| level == Encryption::Level::None }.try do |(_, setting_string)|
+          # Append any extra features
+          if (extra_features = YAML.parse(setting_string)["extra_features"]?)
+            @features = "#{@features} #{extra_features}"
+          end
         end
       end
+    end
+
+    # =======================
+    # Settings Management
+    # =======================
+
+    # Array of encrypted YAML setting and the encryption privilege
+    attribute settings : Array(Setting) = [] of Setting, es_keyword: "text"
+
+    # On save, after encryption, sets existing to previous settings. use settings_was
+    attribute settings_backup : Array(Setting) = [] of Setting, es_keyword: "text"
+
+    # Settings encryption
+    before_save do
+      # Set settings_backup to previous version of settings
+      @settings_backup = encrypt_settings(@settings_was || [] of Setting)
+
+      # Encrypt all settings
+      @settings = encrypt_settings(@settings.as(Array(Setting)))
     end
 
     # =======================

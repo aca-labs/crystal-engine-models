@@ -2,10 +2,11 @@ require "active-model"
 require "json"
 require "neuroplastic"
 require "rethinkdb-orm"
+require "semantic_version"
 
-require "./utils"
+require "../utilities/*"
 
-module Engine::Model
+module ACAEngine::Model
   # Base class for all Engine models
   abstract class ModelBase < RethinkORM::Base
     include Neuroplastic

@@ -1,11 +1,15 @@
-require "uri"
 require "rethinkdb-orm"
+require "uri"
 
-require "../engine-models"
+require "./base/model"
+require "./driver"
+require "./settings"
 
-module Engine::Model
+module ACAEngine::Model
   class Module < ModelBase
     include RethinkORM::Timestamps
+    include Settings
+
     table :mod
 
     # The classes/files that this module requires to execute
@@ -24,7 +28,9 @@ module Engine::Model
 
     # Custom module names (in addition to what is defined in the driver)
     attribute custom_name : String
-    attribute settings : String = "{}"
+
+    # Array of encrypted YAML setting and the encryption privilege
+    attribute settings : Array(Setting) = [] of Setting, es_keyword: "text"
 
     enum_attribute role : Driver::Role, es_type: "integer" # cache the driver role locally for load order
 
@@ -38,9 +44,60 @@ module Engine::Model
     attribute ignore_connected : Bool = false
     attribute ignore_startstop : Bool = false
 
+    # Settings encryption
+    before_save do
+      # Encrypt all settings
+      @settings = encrypt_settings(@settings.as(Array(Setting)))
+    end
+
     # Finds the systems for which this module is in use
     def systems
       ControlSystem.by_module_id(self.id)
+    end
+
+    # Traverse settings hierarchy, and merge settings
+    # Logic modules
+    # - Module
+    # - ControlSystem
+    # - ControlSystem's Zones (pop-off array)
+    # - Driver
+    # Others
+    # - Module
+    # - Driver
+    def merge_settings
+      # Module Settings
+      module_settings = settings_any
+
+      # Accumulate, then merge
+      settings = [module_settings]
+
+      if role == Driver::Role::Logic
+        cs = self.control_system
+        raise "Missing control system: module_id=#{@id} control_system_id=#{@control_system_id}" unless cs
+
+        # Control System Settings
+        settings.push(cs.settings_any)
+
+        # Zone Settings
+        zone_ids = cs.zones.as(Array(String))
+        zones = Model::Zone.get_all(zone_ids, index: :id)
+        # Merge by highest associated zone
+        zone_ids.reverse_each do |zone_id|
+          zone = zones.find { |found_zone| found_zone.id == zone_id }
+          # TODO: Warn that zone not present rather than error
+          raise "Missing zone: module_id=#{@id} zone_id=#{zone_id}" unless zone
+
+          settings.push(zone.settings_any)
+        end
+      end
+
+      # Driver Settings
+      settings.push(driver.as(Model::Driver).settings_any)
+
+      # Merge all settings, serialise to JSON
+      settings.compact.reverse.reduce({} of YAML::Any => YAML::Any) do |acc, setting_any|
+        acc.merge!(setting_any)
+      end.to_json
     end
 
     # Getter for the module's host
@@ -50,7 +107,7 @@ module Engine::Model
         self.ip
       when Driver::Role::Service
         uri = self.uri || self.driver.try &.default_uri
-        uri.try { |u| URI.parse(u).host }
+        uri.try(&->URI.parse(String)).try(&.host)
       else
         # No hostname for Logic module
         nil
@@ -67,6 +124,7 @@ module Engine::Model
     def driver=(driver : Driver)
       previous_def(driver)
       self.role = driver.role
+      self.custom_name = driver.module_name
     end
 
     validates :driver, presence: true

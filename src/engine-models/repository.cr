@@ -1,9 +1,9 @@
 require "rethinkdb-orm"
 require "time"
 
-require "../engine-models"
+require "./base/model"
 
-module Engine::Model
+module ACAEngine::Model
   # Class that pins engine's drivers to a specifc repository state
   # Allows external driver management from a VCS
   class Repository < ModelBase
@@ -22,7 +22,7 @@ module Engine::Model
     attribute uri : String
     attribute commit_hash : String = "head"
 
-    enum_attribute type : Type, es_type: "integer"
+    enum_attribute type : Type = Type::Driver, es_type: "integer"
 
     # Validations
     validates :name, presence: true

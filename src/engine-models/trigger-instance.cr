@@ -2,9 +2,9 @@ require "random"
 require "rethinkdb-orm"
 require "time"
 
-require "../engine-models"
+require "./base/model"
 
-module Engine::Model
+module ACAEngine::Model
   class TriggerInstance < ModelBase
     include RethinkORM::Timestamps
     table :trig
@@ -60,9 +60,9 @@ module Engine::Model
       self.id
     end
 
-    # # ------------
-    # # VIEWS ACCESS
-    # # ------------
+    # ------------
+    # VIEWS ACCESS
+    # ------------
 
     # Look up TriggerInstances by ControlSystem
     def self.for(control_system_id)

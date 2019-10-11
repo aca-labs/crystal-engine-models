@@ -1,17 +1,18 @@
 require "rethinkdb-orm"
 require "time"
 
-require "../engine-models"
+require "./base/model"
+require "./settings"
 
-module Engine::Model
+module ACAEngine::Model
   class Zone < ModelBase
     include RethinkORM::Timestamps
+    include Settings
     table :zone
 
     attribute name : String, es_type: "keyword"
     attribute description : String
     attribute tags : String
-    attribute settings : String = "{}"
 
     attribute triggers : Array(String) = [] of String
 
@@ -49,6 +50,19 @@ module Engine::Model
           cs.save!
         end
       end
+    end
+
+    # =======================
+    # Settings
+    # =======================
+
+    # Array of encrypted YAML setting and the encryption privilege
+    attribute settings : Array(Setting) = [] of Setting, es_keyword: "text"
+
+    # Settings encryption
+    before_save do
+      # Encrypt all settings
+      @settings = encrypt_settings(@settings.as(Array(Setting)))
     end
 
     # =======================

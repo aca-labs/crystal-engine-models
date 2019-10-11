@@ -5,7 +5,7 @@ require "../src/engine-models/**"
 
 RANDOM = Random.new
 
-module Engine::Model
+module ACAEngine::Model
   # Defines generators for models
   module Generator
     def self.driver(role : Driver::Role? = nil, module_name : String? = nil, repo : Repository? = nil)
@@ -57,11 +57,12 @@ module Engine::Model
 
     def self.trigger_instance(trigger = nil, zone = nil, control_system = nil)
       trigger = self.trigger.save! unless trigger
-      instance = TriggerInstance.new
+      instance = TriggerInstance.new(important: false)
       instance.trigger = trigger
 
       instance.zone = zone if zone
-      instance.control_system = control_system if control_system
+
+      instance.control_system = control_system ? control_system : self.control_system.save!
 
       instance
     end
@@ -118,12 +119,17 @@ module Engine::Model
     def self.authority
       Authority.new(
         name: Faker::Hacker.noun,
-        domain: Faker::Internet.url,
+        domain: "localhost",
       )
     end
 
     def self.user(authority : Authority? = nil)
-      authority = self.authority.save! unless authority
+      unless authority
+        # look up an existing authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
       User.new(
         name: Faker::Name.name,
         email: Faker::Internet.email,
@@ -139,7 +145,12 @@ module Engine::Model
     end
 
     def self.adfs_strat(authority : Authority? = nil)
-      authority = self.authority.save! unless authority
+      unless authority
+        # look up an existing authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
       AdfsStrat.new(
         name: Faker::Name.name,
         authority_id: authority.id,
@@ -149,7 +160,12 @@ module Engine::Model
     end
 
     def self.oauth_strat(authority : Authority? = nil)
-      authority = self.authority.save! unless authority
+      unless authority
+        # look up an existing authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
       OauthStrat.new(
         name: Faker::Name.name,
         authority_id: authority.id,
@@ -157,7 +173,12 @@ module Engine::Model
     end
 
     def self.ldap_strat(authority : Authority? = nil)
-      authority = self.authority.save! unless authority
+      unless authority
+        # look up an existing authority
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || self.authority.save!
+      end
+
       LdapStrat.new(
         name: Faker::Name.name,
         authority_id: authority.id,
@@ -173,20 +194,46 @@ module Engine::Model
 
     def self.jwt(user : User? = nil)
       user = self.user.save! if user.nil?
+
+      meta = UserJWT::Metadata.new(
+        name: user.name.as(String),
+        email: user.email.as(String),
+        support: user.support.as(Bool),
+        admin: user.sys_admin.as(Bool),
+      )
+
       UserJWT.new(
-        id: user.id,
-        email: user.email,
-        support: user.support,
-        admin: user.sys_admin,
+        iss: "ACAE",
+        iat: Time.utc,
+        exp: 2.weeks.from_now,
+        aud: Faker::Internet.email,
+        sub: user.id.as(String),
+        user: meta,
       )
     end
 
-    def self.user_jwt(id : String? = nil, email : String? = nil, support : Bool? = nil, admin : Bool? = nil)
-      UserJWT.new(
-        id: id || RANDOM.base64(10),
+    def self.user_jwt(
+      id : String? = nil,
+      domain : String? = nil,
+      name : String? = nil,
+      email : String? = nil,
+      support : Bool? = nil,
+      admin : Bool? = nil
+    )
+      meta = UserJWT::Metadata.new(
+        name: name || Faker::Hacker.noun,
         email: email || Faker::Internet.email,
         support: support || self.bool,
         admin: admin || self.bool,
+      )
+
+      UserJWT.new(
+        iss: "ACAE",
+        iat: Time.utc,
+        exp: 2.weeks.from_now,
+        aud: Faker::Internet.email,
+        sub: id || RANDOM.base64(10),
+        user: meta,
       )
     end
   end

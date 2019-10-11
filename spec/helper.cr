@@ -2,19 +2,27 @@ require "spec"
 require "random"
 require "rethinkdb-orm"
 
+# Generators for Engine models
 require "./generator"
 
-DB_NAME = "test_#{Time.now.to_unix}_#{rand(10000)}"
-Engine::Model::Connection.configure do |settings|
-  settings.db = DB_NAME
+# Configure DB
+db_name = "engine_#{ENV["SG_ENV"]? || "development"}"
+
+RethinkORM::Connection.configure do |settings|
+  settings.db = db_name
 end
 
-# Tear down the test database
+# Clear test tables on exit
 at_exit do
-  Engine::Model::Connection.raw do |q|
-    q.db_drop(DB_NAME)
+  RethinkORM::Connection.raw do |q|
+    q.db(db_name).table_list.for_each do |t|
+      q.db(db_name).table(t).delete
+    end
   end
 end
+
+# Models
+#################################################################
 
 # Pretty prints document errors
 def inspect_error(error : RethinkORM::Error::DocumentInvalid)
@@ -25,4 +33,9 @@ def inspect_error(error : RethinkORM::Error::DocumentInvalid)
     }
   end
   pp! errors
+end
+
+# Helper to check if string is encrypted
+def is_encrypted?(string : String)
+  string.starts_with? '\e'
 end
