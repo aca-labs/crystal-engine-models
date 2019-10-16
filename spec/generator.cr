@@ -20,6 +20,7 @@ module ACAEngine::Model
         module_name: module_name,
       )
 
+      driver.file_name = "drivers/#{repository.name}/#{driver.name}.cr"
       driver.role = role
       driver.repository = repo
       driver

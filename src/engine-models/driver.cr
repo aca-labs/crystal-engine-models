@@ -32,7 +32,7 @@ module ACAEngine::Model
     attribute file_name : String
     attribute commit : String
     attribute version : SemanticVersion, converter: SemanticVersion::Converter
-    belongs_to Repository
+    belongs_to Repository, dep
 
     # Module instance configuration
     attribute module_name : String
@@ -63,6 +63,8 @@ module ACAEngine::Model
     validates :commit, presence: true
     validates :version, presence: true
     validates :module_name, presence: true
+    validates :file_name, presence: true
+    validates :repository_id, presence: true
 
     # Validate the repository type
     #
