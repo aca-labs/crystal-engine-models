@@ -56,14 +56,7 @@ module ACAEngine::Model
     end
 
     # Traverse settings hierarchy, and merge settings
-    # Logic modules
-    # - Module
-    # - ControlSystem
-    # - ControlSystem's Zones (pop-off array)
-    # - Driver
-    # Others
-    # - Module
-    # - Driver
+    # [Read more](https://docs.google.com/document/d/1qAbdaYAl5f9rYU6xuT_3TXpnjCqsqeBezhDB-TbHvJA/edit#heading=h.ntoecut6aqkj)
     def merge_settings
       # Module Settings
       module_settings = settings_any

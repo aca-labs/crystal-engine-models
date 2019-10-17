@@ -1,4 +1,5 @@
 require "faker"
+require "random"
 
 require "../src/engine-models/*"
 require "../src/engine-models/**"
@@ -133,7 +134,7 @@ module ACAEngine::Model
 
       User.new(
         name: Faker::Name.name,
-        email: Faker::Internet.email,
+        email: Faker::Internet.email + Random.rand(9999).to_s,
         authority_id: authority.id,
       )
     end
