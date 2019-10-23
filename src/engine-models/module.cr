@@ -18,9 +18,9 @@ module ACAEngine::Model
     belongs_to ControlSystem
 
     attribute ip : String
-    attribute tls : Bool
-    attribute udp : Bool
     attribute port : Int32
+    attribute tls : Bool = false
+    attribute udp : Bool = false
     attribute makebreak : Bool = false
 
     # HTTP Service module

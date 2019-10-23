@@ -30,7 +30,7 @@ module ACAEngine::Model
 
     # Driver version management
 
-    attribute file_name : String # Path to driver, relative to repository root
+    attribute file_name : String # Path to driver, relative to repository directory
     attribute commit : String    # Commit/version of driver to compile
     attribute version : SemanticVersion, converter: SemanticVersion::Converter
 
