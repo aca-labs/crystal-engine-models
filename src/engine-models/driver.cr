@@ -29,10 +29,12 @@ module ACAEngine::Model
     enum_attribute role : Role, es_type: "integer"
 
     # Driver version management
-    attribute file_name : String
-    attribute commit : String
+
+    attribute file_name : String # Path to driver, relative to repository root
+    attribute commit : String    # Commit/version of driver to compile
     attribute version : SemanticVersion, converter: SemanticVersion::Converter
-    belongs_to Repository, dep
+
+    belongs_to Repository
 
     # Module instance configuration
     attribute module_name : String

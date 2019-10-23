@@ -134,7 +134,7 @@ module ACAEngine::Model
 
       User.new(
         name: Faker::Name.name,
-        email: Faker::Internet.email + Random.rand(9999).to_s,
+        email: Random.rand(9999).to_s + Faker::Internet.email,
         authority_id: authority.id,
       )
     end
