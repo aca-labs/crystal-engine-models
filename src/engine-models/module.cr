@@ -26,6 +26,9 @@ module ACAEngine::Model
     # HTTP Service module
     attribute uri : String
 
+    # Module name
+    attribute name : String, es_keyword: "keyword"
+
     # Custom module names (in addition to what is defined in the driver)
     attribute custom_name : String
 
@@ -117,6 +120,7 @@ module ACAEngine::Model
     def driver=(driver : Driver)
       previous_def(driver)
       self.role = driver.role
+      self.name = driver.module_name
       self.custom_name = driver.module_name
     end
 
