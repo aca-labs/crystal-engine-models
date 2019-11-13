@@ -3,7 +3,7 @@ require "time"
 
 module ACAEngine::Model
   # Base ORM for JWT
-  abstract class JWTBase
+  abstract struct JWTBase
     include JSON::Serializable
 
     ENC_KEY = ENV["SECRET_KEY_BASE"]?

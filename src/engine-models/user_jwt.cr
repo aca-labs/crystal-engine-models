@@ -1,31 +1,31 @@
 require "./base/jwt"
 
 module ACAEngine::Model
-  class UserJWT < JWTBase
-    property iss : String
+  struct UserJWT < JWTBase
+    getter iss : String
 
     @[JSON::Field(converter: Time::EpochConverter)]
-    property iat : Time
+    getter iat : Time
 
     @[JSON::Field(converter: Time::EpochConverter)]
-    property exp : Time
+    getter exp : Time
 
-    # property jti : String
+    # getter jti : String
 
     # Maps to authority domain
-    property aud : String
+    getter aud : String
 
     # Maps to user id
-    property sub : String
+    getter sub : String
 
-    property user : Metadata
+    getter user : Metadata
 
-    class Metadata
+    struct Metadata
       include JSON::Serializable
-      property name : String
-      property email : String
-      property admin : Bool
-      property support : Bool
+      getter name : String
+      getter email : String
+      getter admin : Bool
+      getter support : Bool
 
       def initialize(@name, @email, @admin, @support)
       end
