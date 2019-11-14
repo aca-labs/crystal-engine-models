@@ -204,7 +204,7 @@ module ACAEngine::Model
                       UserJWT::Permissions::Support
                     when {false, true}
                       UserJWT::Permissions::Admin
-                    when {false, false}
+                    else
                       UserJWT::Permissions::User
                     end
 
