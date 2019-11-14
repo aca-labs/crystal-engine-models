@@ -5,8 +5,7 @@ module ACAEngine::Model
   USER_META = UserJWT::Metadata.new(
     name: "abcde",
     email: "abcde@protonmail.com",
-    admin: true,
-    support: true,
+    permissions: UserJWT::Permissions::AdminSupport,
   )
 
   ATTRIBUTES = {
@@ -49,7 +48,7 @@ module ACAEngine::Model
   -----END RSA PRIVATE KEY-----
   KEY
 
-  SAMPLE_JWT = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJBQ0FFIiwiaWF0IjoxMDAwLCJleHAiOjIxNDc0ODM2NDcsImF1ZCI6InByb3Rvbm1haWwuY29tIiwic3ViIjoiMTIzNCIsInVzZXIiOnsibmFtZSI6ImFiY2RlIiwiZW1haWwiOiJhYmNkZUBwcm90b25tYWlsLmNvbSIsImFkbWluIjp0cnVlLCJzdXBwb3J0Ijp0cnVlfX0.OWem13XxhN9j-ivgR9tfmcnbqzk3J_d4buC_-UdDcxZ6mIHTVt2GrNoEHTJrcBIiBWAO_UsfSIy4lP-jNnRlHN9MSRzTQFLvHKxQbQNWEQ3vFwuTYscESDxjJWKd__RF_7t_J_AkYVraaiXKuHgXu5o4xJ9OR3JuW2Z4pVmq63gXcb5fdexE5jMUySQ6oZ8Pk7VxJdRMDhyMOfnK7aQ-UXL6Us9tXMD-_XItp9Ko_JOJkJeGtVEU4vIX5G6UdCMzCe5cGB1nbm_70MdCKNoqEopSuDn0JvMngh69_ylTlB1wvHHFIWsW9SDKDaWlfhs-YW10kIysKEq4bd3j-veWMA"
+  SAMPLE_JWT = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJBQ0FFIiwiaWF0IjoxMDAwLCJleHAiOjIxNDc0ODM2NDcsImF1ZCI6InByb3Rvbm1haWwuY29tIiwic3ViIjoiMTIzNCIsInUiOnsibiI6ImFiY2RlIiwiZSI6ImFiY2RlQHByb3Rvbm1haWwuY29tIiwicCI6M319.Vpw7paKnUMT3M-wLTd3TKoRIa8iBFc0uyz7GYIO4R-h8C9Dj5_a1OteNJ3xSgDHm6Rge8CxOKqIYkra19cjcJV15YDtsCk3ZVzoKy41wd_OVRanLpAvzVR8AF6fvZWoJDPmoVxF5Ov5CV2f0CmMsJJYUOmRqR4HUY7UO3hfglnBKCMKLNztFGgMCK4F7iDEjuho1boE8XuBOcpntPR7JsqvZy71q4Mg1btTWLTPQryjYp2-Z-tKQQMQ_genUNuqoS0_fXHTjlHAWkRbALE6H1wJGALxDROxlcLimxYZZsHIQS4H0KCPMg7EJPblVYEVvmpFnTzRQPwJGF_f1YNjSkg"
 
   describe UserJWT do
     it "satisfies round trip property" do
@@ -59,9 +58,9 @@ module ACAEngine::Model
 
       decoded_jwt.id.should eq user_jwt.id
       decoded_jwt.domain.should eq user_jwt.domain
-      decoded_jwt.user.email.should eq user_jwt.user.email
-      decoded_jwt.user.admin.should eq user_jwt.user.admin
-      decoded_jwt.user.support.should eq user_jwt.user.support
+      decoded_jwt.user.permissions.should eq user_jwt.user.permissions
+      decoded_jwt.is_admin?.should eq decoded_jwt.is_admin?
+      decoded_jwt.is_support?.should eq decoded_jwt.is_support?
     end
 
     it "encodes" do
@@ -75,9 +74,9 @@ module ACAEngine::Model
 
       decoded_jwt.id.should eq user_jwt.id
       decoded_jwt.domain.should eq user_jwt.domain
-      decoded_jwt.user.email.should eq user_jwt.user.email
-      decoded_jwt.user.admin.should eq user_jwt.user.admin
-      decoded_jwt.user.support.should eq user_jwt.user.support
+      decoded_jwt.user.permissions.should eq user_jwt.user.permissions
+      decoded_jwt.is_admin?.should be_true
+      decoded_jwt.is_support?.should be_true
     end
   end
 end

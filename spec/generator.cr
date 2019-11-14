@@ -197,11 +197,21 @@ module ACAEngine::Model
     def self.jwt(user : User? = nil)
       user = self.user.save! if user.nil?
 
+      permissions = case ({user.support.as(Bool), user.sys_admin.as(Bool)})
+                    when {true, true}
+                      UserJWT::Permissions::AdminSupport
+                    when {true, false}
+                      UserJWT::Permissions::Support
+                    when {false, true}
+                      UserJWT::Permissions::Admin
+                    when {false, false}
+                      UserJWT::Permissions::User
+                    end
+
       meta = UserJWT::Metadata.new(
         name: user.name.as(String),
         email: user.email.as(String),
-        support: user.support.as(Bool),
-        admin: user.sys_admin.as(Bool),
+        permissions: permissions
       )
 
       UserJWT.new(
@@ -214,19 +224,21 @@ module ACAEngine::Model
       )
     end
 
+    def self.permissions
+      UserJWT::Permissions.parse(UserJWT::Permissions.names.sample(1).first)
+    end
+
     def self.user_jwt(
       id : String? = nil,
       domain : String? = nil,
       name : String? = nil,
       email : String? = nil,
-      support : Bool? = nil,
-      admin : Bool? = nil
+      permission : UserJWT::Permissions? = nil
     )
       meta = UserJWT::Metadata.new(
         name: name || Faker::Hacker.noun,
         email: email || Faker::Internet.email,
-        support: support || self.bool,
-        admin: admin || self.bool,
+        permissions: permissions || self.permissions
       )
 
       UserJWT.new(

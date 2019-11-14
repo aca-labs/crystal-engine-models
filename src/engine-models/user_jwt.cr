@@ -18,16 +18,26 @@ module ACAEngine::Model
     # Maps to user id
     getter sub : String
 
+    @[JSON::Field(key: "u")]
     getter user : Metadata
+
+    enum Permissions
+      User         = 0
+      Support      = 1
+      Admin        = 2
+      AdminSupport = 3
+    end
 
     struct Metadata
       include JSON::Serializable
+      @[JSON::Field(key: "n")]
       getter name : String
+      @[JSON::Field(key: "e")]
       getter email : String
-      getter admin : Bool
-      getter support : Bool
+      @[JSON::Field(key: "p")]
+      getter permissions : Permissions
 
-      def initialize(@name, @email, @admin, @support)
+      def initialize(@name, @email, @permissions = Permissions::User)
       end
     end
 
@@ -43,11 +53,21 @@ module ACAEngine::Model
     end
 
     def is_admin?
-      @user.admin
+      case @user.permissions
+      when Permissions::Admin, Permissions::AdminSupport
+        true
+      else
+        false
+      end
     end
 
     def is_support?
-      @user.support
+      case @user.permissions
+      when Permissions::Support, Permissions::AdminSupport
+        true
+      else
+        false
+      end
     end
   end
 end
