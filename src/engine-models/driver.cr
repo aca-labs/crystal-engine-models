@@ -68,6 +68,11 @@ module ACAEngine::Model
     validates :file_name, presence: true
     validates :repository_id, presence: true
 
+    # All settings encrypted with the master Settings  id
+    def encryption_id
+      is_version? ? @id.as(String) : @settings_id.as(String)
+    end
+
     # Validate the repository type
     #
     validate ->(this : Driver) {
