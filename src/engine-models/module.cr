@@ -4,10 +4,12 @@ require "uri"
 require "./base/model"
 require "./driver"
 require "./settings"
+require "./utilities/settings_helpers"
 
 module ACAEngine::Model
   class Module < ModelBase
     include RethinkORM::Timestamps
+    include SettingsHelpers(Module)
 
     table :mod
 
@@ -32,7 +34,7 @@ module ACAEngine::Model
     attribute custom_name : String
 
     # Encrypted yaml settings, with metadata
-    has_many Settings, collection_name: "settings"
+    has_many Settings, collection_name: "settings", foreign_key: "module_id"
 
     enum_attribute role : Driver::Role, es_type: "integer" # cache the driver role locally for load order
 

@@ -4,10 +4,12 @@ require "uri"
 
 require "./base/model"
 require "./settings"
+require "./utilities/settings_helpers"
 
 module ACAEngine::Model
   class ControlSystem < ModelBase
     include RethinkORM::Timestamps
+    include SettingsHelpers(ControlSystem)
 
     table :sys
 

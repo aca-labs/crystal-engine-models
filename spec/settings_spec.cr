@@ -32,69 +32,68 @@ module ACAEngine::Model
     end
   end
 
-  pending "encryption methods" do
-    describe "#decrypt_for!" do
-      mock_settings = [
-        {Encryption::Level::None, %({"sla": "99.?"})},
-        {Encryption::Level::Support, %({"whales": "victor mcwhale"})},
-        {Encryption::Level::Admin, %({"tax_haven": "seychelles"})},
-        {Encryption::Level::NeverDisplay, %({"secret_key": "secret1234"})},
-      ]
+  pending "#decrypt_for!" do
 
-      it "decrypts for unprivileged" do
-        sys = Generator.control_system
-        user = Generator.user
+    mock_settings = [
+      {Encryption::Level::None, %({"sla": "99.?"})},
+      {Encryption::Level::Support, %({"whales": "victor mcwhale"})},
+      {Encryption::Level::Admin, %({"tax_haven": "seychelles"})},
+      {Encryption::Level::NeverDisplay, %({"secret_key": "secret1234"})},
+    ]
 
-        sys.settings = mock_settings.dup
-        sys.save!
+    it "decrypts for unprivileged" do
+      sys = Generator.control_system
+      user = Generator.user
 
-        encrypted_settings = sys.settings.not_nil!
-        encrypted_settings.all? { |s| is_encrypted?(s[1].as(String)) }
+      sys.settings = mock_settings.dup
+      sys.save!
 
-        sys.decrypt_for!(user)
+      encrypted_settings = sys.settings.not_nil!
+      encrypted_settings.all? { |s| is_encrypted?(s[1].as(String)) }
 
-        is_encrypted?(sys.settings_at(Encryption::Level::None).as(String)).should be_false
-        is_encrypted?(sys.settings_at(Encryption::Level::Support).as(String)).should be_true
-        is_encrypted?(sys.settings_at(Encryption::Level::Admin).as(String)).should be_true
-        is_encrypted?(sys.settings_at(Encryption::Level::NeverDisplay).as(String)).should be_true
-      end
+      sys.decrypt_for!(user)
 
-      it "decrypts for support" do
-        sys = Generator.control_system
-        user = Generator.user
-        user.support = true
+      is_encrypted?(sys.settings_at(Encryption::Level::None).as(String)).should be_false
+      is_encrypted?(sys.settings_at(Encryption::Level::Support).as(String)).should be_true
+      is_encrypted?(sys.settings_at(Encryption::Level::Admin).as(String)).should be_true
+      is_encrypted?(sys.settings_at(Encryption::Level::NeverDisplay).as(String)).should be_true
+    end
 
-        sys.settings = mock_settings.dup
-        sys.save!
+    it "decrypts for support" do
+      sys = Generator.control_system
+      user = Generator.user
+      user.support = true
 
-        encrypted_settings = sys.settings.not_nil!
-        encrypted_settings.all? { |s| is_encrypted?(s[1].as(String)) }
+      sys.settings = mock_settings.dup
+      sys.save!
 
-        sys.decrypt_for!(user)
+      encrypted_settings = sys.settings.not_nil!
+      encrypted_settings.all? { |s| is_encrypted?(s[1].as(String)) }
 
-        is_encrypted?(sys.settings_at(Encryption::Level::None).as(String)).should be_false
-        is_encrypted?(sys.settings_at(Encryption::Level::Support).as(String)).should be_false
-        is_encrypted?(sys.settings_at(Encryption::Level::Admin).as(String)).should be_true
-        is_encrypted?(sys.settings_at(Encryption::Level::NeverDisplay).as(String)).should be_true
-      end
+      sys.decrypt_for!(user)
 
-      it "decrypts for admin" do
-        sys = Generator.control_system
-        user = Generator.authenticated_user
+      is_encrypted?(sys.settings_at(Encryption::Level::None).as(String)).should be_false
+      is_encrypted?(sys.settings_at(Encryption::Level::Support).as(String)).should be_false
+      is_encrypted?(sys.settings_at(Encryption::Level::Admin).as(String)).should be_true
+      is_encrypted?(sys.settings_at(Encryption::Level::NeverDisplay).as(String)).should be_true
+    end
 
-        sys.settings = mock_settings.dup
-        sys.save!
+    it "decrypts for admin" do
+      sys = Generator.control_system
+      user = Generator.authenticated_user
 
-        encrypted_settings = sys.settings.not_nil!
-        encrypted_settings.all? { |s| is_encrypted?(s[1].as(String)) }
+      sys.settings = mock_settings.dup
+      sys.save!
 
-        sys.decrypt_for!(user)
+      encrypted_settings = sys.settings.not_nil!
+      encrypted_settings.all? { |s| is_encrypted?(s[1].as(String)) }
 
-        is_encrypted?(sys.settings_at(Encryption::Level::None).as(String)).should be_false
-        is_encrypted?(sys.settings_at(Encryption::Level::Support).as(String)).should be_false
-        is_encrypted?(sys.settings_at(Encryption::Level::Admin).as(String)).should be_false
-        is_encrypted?(sys.settings_at(Encryption::Level::NeverDisplay).as(String)).should be_true
-      end
+      sys.decrypt_for!(user)
+
+      is_encrypted?(sys.settings_at(Encryption::Level::None).as(String)).should be_false
+      is_encrypted?(sys.settings_at(Encryption::Level::Support).as(String)).should be_false
+      is_encrypted?(sys.settings_at(Encryption::Level::Admin).as(String)).should be_false
+      is_encrypted?(sys.settings_at(Encryption::Level::NeverDisplay).as(String)).should be_true
     end
   end
 end

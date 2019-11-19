@@ -2,10 +2,12 @@ require "semantic_version"
 
 require "./base/model"
 require "./settings"
+require "./utilities/settings_helpers"
 
 module ACAEngine::Model
   class Driver < ModelBase
     include RethinkORM::Timestamps
+    include SettingsHelpers(Driver)
 
     table :driver
 

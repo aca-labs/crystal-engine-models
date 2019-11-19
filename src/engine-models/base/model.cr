@@ -4,7 +4,9 @@ require "neuroplastic"
 require "rethinkdb-orm"
 require "semantic_version"
 
-require "../utilities/*"
+require "../utilities/encryption"
+require "../utilities/subset_json"
+require "../utilities/semver_converter"
 
 module ACAEngine::Model
   # Base class for all Engine models

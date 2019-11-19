@@ -16,7 +16,7 @@ module ACAEngine::Model
     table :sets
 
     attribute parent_id : String
-    attribute encryption : Encryption::Level
+    enum_attribute encryption : Encryption::Level
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String
 
@@ -35,13 +35,9 @@ module ACAEngine::Model
     before_save :encrypt_settings
 
     def build_keys : Array(String)
-      raise NoParentError.new unless (encryption_id = @parent_id)
-
       settings_string = @settings_string.as(String)
-      encryption = @encryption.as(Encryption::Level)
-      decrypted = Encryption.decrypt(string: settings_string, level: encryption, id: encryption_id)
-
-      self.keys = YAML.parse(decrypted).as_h.keys.map(&.to_s)
+      unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
+      self.keys = YAML.parse(unencrypted).as_h.keys.map(&.to_s)
     end
 
     # Encrypts all settings.
@@ -110,24 +106,32 @@ module ACAEngine::Model
       !!(@settings_id)
     end
 
-    # Decrypts settings dependent on user privileges
+    # Decrypts the model's setting string
+    #
+    def decrypt
+      raise NoParentError.new unless (encryption_id = @parent_id)
+      settings_string = @settings_string.as(String)
+      level = @encryption.as(Encryption::Level)
+
+      Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
+    end
+
+    # Decrypts the model's settings string dependent on user privileges
     #
     def decrypt_for!(user)
       self.settings_string = decrypt_for(user)
       self
     end
 
+    # Decrypts (if user has correct privilege) and returns the settings string
+    #
     def decrypt_for(user) : String
-      raise NoParentError.new unless (encryption_id = @parent_id)
-
       settings_string = @settings_string.as(String)
-      encryption = @encryption.as(Encryption::Level)
-
       case encryption
       when Encryption::Level::Support && (user.is_support? || user.is_admin?)
-        Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
+        decrypt
       when Encryption::Level::Admin && user.is_admin?
-        Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
+        decrypt
       else
         settings_string
       end
@@ -136,17 +140,20 @@ module ACAEngine::Model
     # Decrypt and pick off the setting
     #
     def get_setting_for(user, setting) : YAML::Any?
-      return unless @id
-
       decrypted_settings = decrypt_for(user)
       YAML.parse(decrypted)[setting]? unless Encryption.is_encrypted?(decrypted_settings)
     end
 
-    # Decrypts settings, merges into single JSON object
+    # Decrypts settings, encodes as a json object
     #
     def settings_json
-      raise NoParentError.new unless (encryption_id = @parent_id)
-      YAML.parse(ACAEngine::Encryption.decrypt(string: settings_string, level: level, id: encryption_id)).to_json
+      settings_any.to_json
+    end
+
+    # Decrypts settings, merges into single JSON object
+    #
+    def any : Hash(YAML::Any, YAML::Any)
+      YAML.parse(decrypt).as_h
     end
   end
 end

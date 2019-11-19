@@ -3,10 +3,13 @@ require "time"
 
 require "./base/model"
 require "./settings"
+require "./utilities/settings_helpers"
 
 module ACAEngine::Model
   class Zone < ModelBase
     include RethinkORM::Timestamps
+    include SettingsHelpers(Zone)
+
     table :zone
 
     attribute name : String, es_type: "keyword"
