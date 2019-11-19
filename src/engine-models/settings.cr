@@ -5,14 +5,11 @@ require "./base/model"
 require "./error"
 require "./utilities/encryption"
 
-
 # Could you parameterise on the parent model?
 # It sould be generic on the model...
 # So then you would have Settings(T), not sure that would work
 module ACAEngine::Model
-  # Settings mode
-  #
-  # TODO: statically ensure a single parent id exists on the table
+  # TODO: Statically ensure a single parent id exists on the table
   class Settings < ModelBase
     include RethinkORM::Timestamps
 
@@ -23,7 +20,7 @@ module ACAEngine::Model
     attribute settings : String
     attribute keys : Array(String) = [] of String
 
-    # Settings acts a 2-level tree
+    # Settings self-referential entity relationship acts as a 2-level tree
     has_many Settings, collection_name: "settings", dependent: :destroy
 
     belongs_to Zone, dependent: :destroy
@@ -32,9 +29,10 @@ module ACAEngine::Model
     belongs_to Module, dependent: :destroy
 
     validates :parent_id, prescence: true
-    validate ->single_parent(Setting)
+    validate ->single_parent?
 
     before_save :build_keys
+    before_save :encrypt_settings
 
     def build_keys : Array(String)
       raise NoParentError unless (encryption_id = @parent_id)
@@ -60,10 +58,13 @@ module ACAEngine::Model
     # Validators
     ###########################################################################
 
-    protected def single_parent(settings : Setting)
-      parent_ids = {settings.zone_id, settings.control_system_id, settings.driver_id, settings.module_id}
-      unless parent_ids.one?
-        this.validation_error(:parent_id, "there can only be a single parent id #{parent_ids.inspect}")
+    protected def single_parent? : Bool
+      parent_ids = {self.zone_id, self.control_system_id, self.driver_id, self.module_id}
+      if parent_ids.one?
+        true
+      else
+        self.validation_error(:parent_id, "there can only be a single parent id #{parent_ids.inspect}")
+        false
       end
     end
 
@@ -86,19 +87,14 @@ module ACAEngine::Model
     #
     def is_version? : Bool
       !!(@settings_id)
-    end6
+    end
 
     # Encrypts all settings.
     #
-    # We want encryption of unpersisted models, so we set the id if not present
-    # Setting of id here will not intefer with `persisted?` unless call made in a before_save
     def encrypt_settings(settings : Array(Setting))
       raise NoParentError unless (encryption_id = @parent_id)
 
-      settings.map do |setting|
-        level, setting_string = setting
-        {level, Encryption.encrypt(string: setting_string, level: level, id: encryption_id)}
-      end
+      Encryption.encrypt(string: setting_string, level: level, id: encryption_id)
     end
 
     # Decrypts settings dependent on user privileges

@@ -112,6 +112,40 @@ module ACAEngine::Model
       mod
     end
 
+    def self.encryption_level
+      Encryption::Level.names.sample(1).first
+    end
+
+    def self.settings(
+      settings_string = "{}",
+      encryption = self.encryption_level,
+      driver : Driver? = nil,
+      mod : Module? = nil,
+      control_system : ControlSystem? = nil,
+      zone : Zone? = nil
+    ) : Settings
+      settings = Settings.new(
+        encryption: encryption,
+      )
+
+      settings.driver if driver
+      settings.module if mod
+      settings.control_system if control_system
+      settings.zone if zone
+
+      unless {zone, driver, mod, control_system}.one?
+        # Generate a single parent for the settings model
+        {
+          ->{ settings.zone = self.zone.save! },
+          ->{ settings.control_system = self.control_system.save! },
+          ->{ settings.zone = self.zone.save! },
+          ->{ settinsg.module = self.module.save! },
+        }.sample(1).call
+      end
+
+      settings
+    end
+
     def self.zone
       Zone.new(
         name: RANDOM.base64(10),
