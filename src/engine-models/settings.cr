@@ -16,8 +16,8 @@ module ACAEngine::Model
     table :sets
 
     attribute parent_id : String
-    attribute encryption : Encryption
-    attribute settings : String
+    attribute encryption : Encryption::Level
+    attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String
 
     # Settings self-referential entity relationship acts as a 2-level tree
@@ -26,23 +26,33 @@ module ACAEngine::Model
     belongs_to Zone, dependent: :destroy
     belongs_to ControlSystem, dependent: :destroy
     belongs_to Driver, dependent: :destroy
-    belongs_to Module, dependent: :destroy
+    belongs_to Module, dependent: :destroy, association_name: :mod
 
     validates :parent_id, prescence: true
-    validate ->single_parent?
+    validate ->self.single_parent?(Settings)
 
     before_save :build_keys
     before_save :encrypt_settings
 
     def build_keys : Array(String)
-      raise NoParentError unless (encryption_id = @parent_id)
+      raise NoParentError.new unless (encryption_id = @parent_id)
 
-      settings = @settings.as(String)
+      settings_string = @settings_string.as(String)
       encryption = @encryption.as(Encryption::Level)
-      parent_id = @parent_id.as(String)
-      decrypted = Encryption.decrypt(string: settings, level: encryption, id: encryption_id)
+      decrypted = Encryption.decrypt(string: settings_string, level: encryption, id: encryption_id)
 
-      self.keys = YAML.parse(decrypted).to_h.keys.map(&.to_s)
+      self.keys = YAML.parse(decrypted).as_h.keys.map(&.to_s)
+    end
+
+    # Encrypts all settings.
+    #
+    def encrypt_settings
+      raise NoParentError.new unless (encryption_id = @parent_id)
+
+      settings_string = @settings_string.as(String)
+      encryption = @encryption.as(Encryption::Level)
+
+      self.settings_string = Encryption.encrypt(string: settings_string, level: encryption, id: encryption_id)
     end
 
     # Queries
@@ -58,12 +68,12 @@ module ACAEngine::Model
     # Validators
     ###########################################################################
 
-    protected def single_parent? : Bool
-      parent_ids = {self.zone_id, self.control_system_id, self.driver_id, self.module_id}
+    protected def self.single_parent?(this : Settings) : Bool
+      parent_ids = {this.zone_id, this.control_system_id, this.driver_id, this.mod_id}
       if parent_ids.one?
         true
       else
-        self.validation_error(:parent_id, "there can only be a single parent id #{parent_ids.inspect}")
+        this.validation_error(:parent_id, "there can only be a single parent id #{parent_ids.inspect}")
         false
       end
     end
@@ -71,13 +81,24 @@ module ACAEngine::Model
     # Parent accessors set the model id, used for encryption
     ###########################################################################
 
-    macro finished
-      {% for parent in {Zone, ControlSystem, Driver, Module} %}
-        def {{parent.id.downcase}}=(model : {{parent}})
-          parent_id = model.id
-          previous_def(model)
-        end
-      {% end %}
+    def zone=(zone : Zone)
+      self.parent_id = zone.id
+      previous_def(zone)
+    end
+
+    def control_system=(cs : ControlSystem)
+      self.parent_id = cs.id
+      previous_def(cs)
+    end
+
+    def driver=(driver : Driver)
+      self.parent_id = driver.id
+      previous_def(driver)
+    end
+
+    def mod=(mod : Module)
+      self.parent_id = mod.id
+      previous_def(mod)
     end
 
     # Helpers
@@ -89,34 +110,26 @@ module ACAEngine::Model
       !!(@settings_id)
     end
 
-    # Encrypts all settings.
-    #
-    def encrypt_settings(settings : Array(Setting))
-      raise NoParentError unless (encryption_id = @parent_id)
-
-      Encryption.encrypt(string: setting_string, level: level, id: encryption_id)
-    end
-
     # Decrypts settings dependent on user privileges
     #
     def decrypt_for!(user)
-      self.settings = decrypt_for(user)
+      self.settings_string = decrypt_for(user)
       self
     end
 
     def decrypt_for(user) : String
-      raise NoParentError unless (encryption_id = @parent_id)
+      raise NoParentError.new unless (encryption_id = @parent_id)
 
-      settings = @settings.as(String)
+      settings_string = @settings_string.as(String)
       encryption = @encryption.as(Encryption::Level)
 
       case encryption
       when Encryption::Level::Support && (user.is_support? || user.is_admin?)
-        Encryption.decrypt(string: settings, level: level, id: encryption_id)
+        Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
       when Encryption::Level::Admin && user.is_admin?
-        Encryption.decrypt(string: settings, level: level, id: encryption_id)
+        Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
       else
-        settings
+        settings_string
       end
     end
 
@@ -132,14 +145,8 @@ module ACAEngine::Model
     # Decrypts settings, merges into single JSON object
     #
     def settings_json
-      raise NoParentError unless (encryption_id = @parent_id)
-
-      @settings.as(Array(Setting)).reduce({} of YAML::Any => YAML::Any) { |acc, (level, settings_string)|
-        # Decrypt String
-        decrypted = ACAEngine::Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
-        # Parse and merge into accumulated settings hash
-        acc.merge!(YAML.parse(decrypted).as_h)
-      }.to_json
+      raise NoParentError.new unless (encryption_id = @parent_id)
+      YAML.parse(ACAEngine::Encryption.decrypt(string: settings_string, level: level, id: encryption_id)).to_json
     end
   end
 end

@@ -8,7 +8,7 @@ module ACAEngine::Model
       end
     end
 
-    describe "merge_settings" do
+    pending "merge_settings" do
       it "obeys logic module settings hierarchy" do
         driver = ACAEngine::Model::Generator.driver(role: Model::Driver::Role::Logic)
         driver.settings.not_nil!.push({Encryption::Level::None, %(value: 0\nscreen: 0\nfrangos: 0\nchop: 0)})

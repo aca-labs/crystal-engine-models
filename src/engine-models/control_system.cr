@@ -8,7 +8,6 @@ require "./settings"
 module ACAEngine::Model
   class ControlSystem < ModelBase
     include RethinkORM::Timestamps
-    include Settings
 
     table :sys
 
@@ -132,35 +131,27 @@ module ACAEngine::Model
         end
       end
 
-      if (settings = @settings)
-        # Extra features stored in unencrypted settings
-        settings.find { |(level, _)| level == Encryption::Level::None }.try do |(_, setting_string)|
-          # Append any extra features
-          if (extra_features = YAML.parse(setting_string)["extra_features"]?)
-            @features = "#{@features} #{extra_features}"
-          end
-        end
-      end
+      # TODO:
+      # Do a query for the unencrypted settings beloning to the system
+      # Append extra features
+      #
+      # if (settings = @settings)
+      #   # Extra features stored in unencrypted settings
+      #   settings.find { |(level, _)| level == Encryption::Level::None }.try do |(_, setting_string)|
+      #     # Append any extra features
+      #     if (extra_features = YAML.parse(setting_string)["extra_features"]?)
+      #       @features = "#{@features} #{extra_features}"
+      #     end
+      #   end
+      # end
     end
 
     # =======================
     # Settings Management
     # =======================
 
-    # Array of encrypted YAML setting and the encryption privilege
-    attribute settings : Array(Setting) = [] of Setting, es_keyword: "text"
-
-    # On save, after encryption, sets existing to previous settings. use settings_was
-    attribute settings_backup : Array(Setting) = [] of Setting, es_keyword: "text"
-
-    # Settings encryption
-    before_save do
-      # Set settings_backup to previous version of settings
-      @settings_backup = encrypt_settings(@settings_was || [] of Setting)
-
-      # Encrypt all settings
-      @settings = encrypt_settings(@settings.as(Array(Setting)))
-    end
+    # Encrypted yaml settings, with metadata
+    has_many Settings, collection_name: "settings"
 
     # =======================
     # Zone Trigger Management

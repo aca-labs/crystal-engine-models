@@ -113,34 +113,35 @@ module ACAEngine::Model
     end
 
     def self.encryption_level
-      Encryption::Level.names.sample(1).first
+      Encryption::Level.parse(Encryption::Level.names.sample(1).first)
     end
 
     def self.settings(
       settings_string = "{}",
-      encryption = self.encryption_level,
+      encryption_level = self.encryption_level,
       driver : Driver? = nil,
       mod : Module? = nil,
       control_system : ControlSystem? = nil,
       zone : Zone? = nil
     ) : Settings
       settings = Settings.new(
-        encryption: encryption,
+        settings_string: settings_string,
+        encryption: encryption_level,
       )
 
-      settings.driver if driver
-      settings.module if mod
       settings.control_system if control_system
+      settings.driver if driver
+      settings.mod if mod
       settings.zone if zone
 
-      unless {zone, driver, mod, control_system}.one?
+      unless {control_system, driver, mod, zone}.one?
         # Generate a single parent for the settings model
         {
-          ->{ settings.zone = self.zone.save! },
           ->{ settings.control_system = self.control_system.save! },
+          ->{ settings.driver = self.driver.save! },
+          ->{ settings.mod = self.module.save! },
           ->{ settings.zone = self.zone.save! },
-          ->{ settinsg.module = self.module.save! },
-        }.sample(1).call
+        }.sample.call
       end
 
       settings

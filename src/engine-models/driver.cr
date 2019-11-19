@@ -6,7 +6,6 @@ require "./settings"
 module ACAEngine::Model
   class Driver < ModelBase
     include RethinkORM::Timestamps
-    include Settings
 
     table :driver
 
@@ -38,7 +37,9 @@ module ACAEngine::Model
 
     # Module instance configuration
     attribute module_name : String
-    attribute settings : Array(Setting) = [] of Setting, es_keyword: "text"
+
+    # Encrypted yaml settings, with metadata
+    has_many Settings, collection_name: "settings"
 
     # Don't include this module in statistics or disconnected searches
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)
@@ -67,11 +68,6 @@ module ACAEngine::Model
     validates :module_name, presence: true
     validates :file_name, presence: true
     validates :repository_id, presence: true
-
-    # All settings encrypted with the master Settings  id
-    def encryption_id
-      is_version? ? @id.as(String) : @settings_id.as(String)
-    end
 
     # Validate the repository type
     #
