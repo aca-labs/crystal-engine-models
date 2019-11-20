@@ -33,7 +33,6 @@ module ACAEngine::Model
   end
 
   pending "#decrypt_for!" do
-
     mock_settings = [
       {Encryption::Level::None, %({"sla": "99.?"})},
       {Encryption::Level::Support, %({"whales": "victor mcwhale"})},

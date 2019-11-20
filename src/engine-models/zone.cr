@@ -8,7 +8,10 @@ require "./utilities/settings_helpers"
 module ACAEngine::Model
   class Zone < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelpers(Zone)
+
+    include SettingsHelpers
+    # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
+    settings_helper(Zone)
 
     table :zone
 

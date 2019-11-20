@@ -9,7 +9,10 @@ require "./utilities/settings_helpers"
 module ACAEngine::Model
   class ControlSystem < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelpers(ControlSystem)
+
+    include SettingsHelpers
+    # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
+    settings_helper(ControlSystem)
 
     table :sys
 

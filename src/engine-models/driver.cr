@@ -7,7 +7,10 @@ require "./utilities/settings_helpers"
 module ACAEngine::Model
   class Driver < ModelBase
     include RethinkORM::Timestamps
-    include SettingsHelpers(Driver)
+
+    include SettingsHelpers
+    # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
+    settings_helper(Driver)
 
     table :driver
 
