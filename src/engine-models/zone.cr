@@ -3,13 +3,13 @@ require "time"
 
 require "./base/model"
 require "./settings"
-require "./utilities/settings_helpers"
+require "./utilities/settings_helper"
 
 module ACAEngine::Model
   class Zone < ModelBase
     include RethinkORM::Timestamps
 
-    include SettingsHelpers
+    include SettingsHelper
     # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
     settings_helper(Zone)
 
@@ -22,6 +22,9 @@ module ACAEngine::Model
     attribute triggers : Array(String) = [] of String
 
     has_many TriggerInstance, collection_name: "trigger_instances", dependent: :destroy
+
+    # Encrypted yaml settings, with metadata
+    has_many Settings, collection_name: "settings", dependent: :destroy
 
     # Looks up the triggers attached to the zone
     def trigger_data : Array(Trigger)
@@ -56,13 +59,6 @@ module ACAEngine::Model
         end
       end
     end
-
-    # =======================
-    # Settings Management
-    # =======================
-
-    # Encrypted yaml settings, with metadata
-    has_many Settings, collection_name: "settings"
 
     # =======================
     # Zone Trigger Management

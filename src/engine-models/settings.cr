@@ -16,17 +16,18 @@ module ACAEngine::Model
     table :sets
 
     attribute parent_id : String
-    enum_attribute encryption : Encryption::Level
+    enum_attribute encryption_level : Encryption::Level
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String
+    attribute settings_id : String = nil
 
     # Settings self-referential entity relationship acts as a 2-level tree
-    has_many Settings, collection_name: "settings", dependent: :destroy
+    has_many Settings, collection_name: "settings"
 
-    belongs_to Zone, dependent: :destroy
-    belongs_to ControlSystem, dependent: :destroy
-    belongs_to Driver, dependent: :destroy
-    belongs_to Module, dependent: :destroy, association_name: :mod
+    belongs_to ControlSystem
+    belongs_to Driver
+    belongs_to Module, association_name: "mod"
+    belongs_to Zone
 
     validates :parent_id, prescence: true
     validate ->self.single_parent?(Settings)
@@ -46,9 +47,31 @@ module ACAEngine::Model
       raise NoParentError.new unless (encryption_id = @parent_id)
 
       settings_string = @settings_string.as(String)
-      encryption = @encryption.as(Encryption::Level)
+      encryption = @encryption_level.as(Encryption::Level)
 
       self.settings_string = Encryption.encrypt(string: settings_string, level: encryption, id: encryption_id)
+    end
+
+    def parent
+      [
+        self.control_system,
+        self.driver,
+        self.mod,
+        self.zone,
+      ].compact.first?
+    end
+
+    def parent=(parent : Union(Zone, ControlSystem, Driver, Module))
+      case parent
+      when ControlSystem
+        self.control_system = parent
+      when Driver
+        self.driver = parent
+      when Module
+        self.mod = parent
+      when Zone
+        self.zone = parent
+      end
     end
 
     # Queries
@@ -111,7 +134,7 @@ module ACAEngine::Model
     def decrypt
       raise NoParentError.new unless (encryption_id = @parent_id)
       settings_string = @settings_string.as(String)
-      level = @encryption.as(Encryption::Level)
+      level = @encryption_level.as(Encryption::Level)
 
       Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
     end

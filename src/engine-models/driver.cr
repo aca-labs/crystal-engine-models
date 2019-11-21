@@ -2,13 +2,13 @@ require "semantic_version"
 
 require "./base/model"
 require "./settings"
-require "./utilities/settings_helpers"
+require "./utilities/settings_helper"
 
 module ACAEngine::Model
   class Driver < ModelBase
     include RethinkORM::Timestamps
 
-    include SettingsHelpers
+    include SettingsHelper
     # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
     settings_helper(Driver)
 
@@ -40,11 +40,11 @@ module ACAEngine::Model
 
     belongs_to Repository
 
+    # Encrypted yaml settings, with metadata
+    has_many Settings, collection_name: "settings", dependent: :destroy
+
     # Module instance configuration
     attribute module_name : String
-
-    # Encrypted yaml settings, with metadata
-    has_many Settings, collection_name: "settings"
 
     # Don't include this module in statistics or disconnected searches
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)

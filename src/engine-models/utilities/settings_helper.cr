@@ -3,7 +3,7 @@ require "rethinkdb-orm"
 require "../settings"
 
 module ACAEngine::Model
-  module SettingsHelpers
+  module SettingsHelper
     abstract def settings_collection
 
     macro settings_helper(type)
@@ -15,7 +15,11 @@ module ACAEngine::Model
     # Get the settings at a particular encryption level
     #
     def settings_at(encryption_level : Encryption::Level)
-      settings_collection.where(encryption: encryption_level.to_i, settings_id: nil).to_a.first
+      Settings.raw_query do |q|
+        q.table(Settings.table_name).filter({parent_id: self.id.as(String)}).filter { |r|
+          r.has_fields(:settings_id).not
+        }
+      end.to_a.first
     end
 
     # Decrypts and merges all settings for the model

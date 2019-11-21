@@ -4,13 +4,13 @@ require "uri"
 
 require "./base/model"
 require "./settings"
-require "./utilities/settings_helpers"
+require "./utilities/settings_helper"
 
 module ACAEngine::Model
   class ControlSystem < ModelBase
     include RethinkORM::Timestamps
 
-    include SettingsHelpers
+    include SettingsHelper
     # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
     settings_helper(ControlSystem)
 
@@ -39,6 +39,14 @@ module ACAEngine::Model
     # IDs of associated models
     attribute zones : Array(String) = [] of String
     attribute modules : Array(String) = [] of String
+
+    # Encrypted yaml settings, with metadata
+    has_many(
+      child_class: Settings,
+      collection_name: "settings",
+      foreign_key: "control_system_id",
+      dependent: :destroy
+    )
 
     # Single System triggers
     has_many Trigger, dependent: :destroy, collection_name: :system_triggers
@@ -150,13 +158,6 @@ module ACAEngine::Model
       #   end
       # end
     end
-
-    # =======================
-    # Settings Management
-    # =======================
-
-    # Encrypted yaml settings, with metadata
-    has_many Settings, collection_name: "settings"
 
     # =======================
     # Zone Trigger Management

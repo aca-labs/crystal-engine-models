@@ -122,19 +122,21 @@ module ACAEngine::Model
       driver : Driver? = nil,
       mod : Module? = nil,
       control_system : ControlSystem? = nil,
-      zone : Zone? = nil
+      zone : Zone? = nil,
+      parent : Union(Zone, ControlSystem, Driver, Module)? = nil
     ) : Settings
       settings = Settings.new(
         settings_string: settings_string,
-        encryption: encryption_level,
+        encryption_level: encryption_level,
       )
 
-      settings.control_system if control_system
-      settings.driver if driver
-      settings.mod if mod
-      settings.zone if zone
+      settings.control_system = control_system if control_system
+      settings.driver = driver if driver
+      settings.mod = mod if mod
+      settings.zone = zone if zone
+      settings.parent = parent if parent
 
-      unless {control_system, driver, mod, zone}.one?
+      unless {parent, control_system, driver, mod, zone}.one?
         # Generate a single parent for the settings model
         {
           ->{ settings.control_system = self.control_system.save! },
