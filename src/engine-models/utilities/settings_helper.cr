@@ -15,17 +15,15 @@ module ACAEngine::Model
     # Get the settings at a particular encryption level
     #
     def settings_at(encryption_level : Encryption::Level)
-      Settings.raw_query do |q|
-        q.table(Settings.table_name).filter({parent_id: self.id.as(String)}).filter { |r|
-          r.has_fields(:settings_id).not
-        }
-      end.to_a.first
+      master_settings_query do |q|
+        q.filter({encryption_level: encryption_level.to_i})
+      end.first
     end
 
     # Decrypts and merges all settings for the model
     #
     def all_settings : Hash(YAML::Any, YAML::Any)
-      settings_collection.where(settings_id: nil).reduce({} of YAML::Any => YAML::Any) do |acc, settings|
+      master_settings.reduce({} of YAML::Any => YAML::Any) do |acc, settings|
         # Parse and merge into accumulated settings hash
         acc.merge!(settings.any)
       end
@@ -33,8 +31,23 @@ module ACAEngine::Model
 
     # Decrypted JSON object for configuring drivers
     #
-    def settings_json
+    def settings_json : String
       all_settings.to_json
+    end
+
+    def master_settings : Array(Settings)
+      master_settings_query { |q| q }
+    end
+
+    # Query for all master settings associated with a model
+    #
+    protected def master_settings_query
+      Settings.raw_query do |q|
+        yield q.table(Settings.table_name).filter({parent_id: self.id.as(String)}).filter { |r|
+          # Get documents where the settings_id does not exist, i.e. is the master
+          r.has_fields(:settings_id).not
+        }
+      end.to_a
     end
   end
 end

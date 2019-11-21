@@ -4,30 +4,36 @@ module ACAEngine::Model
   describe Module do
     describe "persistence" do
       Driver::Role.values.each do |role|
-        spec_module_persistence(role)
+        it "saves a #{role} module" do
+          driver = Generator.driver(role: role)
+          mod = Generator.module(driver: driver).save!
+          mod.persisted?.should be_true
+        end
       end
     end
 
-    pending "merge_settings" do
+    describe "merge_settings" do
       it "obeys logic module settings hierarchy" do
-        driver = ACAEngine::Model::Generator.driver(role: Model::Driver::Role::Logic)
-        driver.settings.not_nil!.push({Encryption::Level::None, %(value: 0\nscreen: 0\nfrangos: 0\nchop: 0)})
-        driver.save!
+        driver = Generator.driver(role: Driver::Role::Logic).save!
+        driver_settings_string = %(value: 0\nscreen: 0\nfrangos: 0\nchop: 0)
+        driver_settings = Generator.settings(driver: driver, settings_string: driver_settings_string).save!
 
-        cs = ACAEngine::Model::Generator.control_system
-        cs.settings.not_nil!.push({Encryption::Level::None, %(frangos: 1)})
-        cs.save!
+        control_system = Generator.control_system.save!
+        control_system_settings_string = %(frangos: 1)
+        control_system_settings = Generator.settings(control_system: control_system, settings_string: control_system_settings_string).save!
 
-        zone = Generator.zone
-        zone.settings.not_nil!.push({Encryption::Level::None, %(screen: 1)})
-        zone.save!
+        zone = Generator.zone.save!
+        zone_settings_string = %(screen: 1)
+        zone_settings = Generator.settings(zone: zone, settings_string: zone_settings_string).save!
 
-        cs.zones = [zone.id.as(String)]
-        cs.update!
+        control_system.zones = [zone.id.as(String)]
+        control_system.update!
 
-        mod = ACAEngine::Model::Generator.module(driver: driver, control_system: cs)
-        mod.settings.not_nil!.push({Encryption::Level::None, %(value: 2\n)})
+        mod = Generator.module(driver: driver, control_system: control_system)
         mod.save!
+
+        module_settings_string = %(value: 2\n)
+        module_settings = Generator.settings(mod: mod, settings_string: module_settings_string).save!
 
         merged_settings = JSON.parse(mod.merge_settings).as_h.transform_values { |v| v.as_i }
 
@@ -40,28 +46,32 @@ module ACAEngine::Model
         # Driver
         merged_settings["chop"].should eq 0
 
-        {driver, zone, cs, mod}.each &.destroy
+        {driver, zone, control_system, mod}.each &.destroy
+        {control_system_settings, driver_settings, module_settings, zone_settings}.each do |setting|
+          Settings.find(setting.id.as(String)).should be_nil
+        end
       end
 
       it "obeys driver-module settings hierarchy" do
-        driver = ACAEngine::Model::Generator.driver(role: Model::Driver::Role::Service)
-        driver.settings.not_nil!.push({Encryption::Level::None, %(value: 0\nscreen: 0\nfrangos: 0\nchop: 0)})
-        driver.save!
+        driver = Generator.driver(role: Model::Driver::Role::Service).save!
+        driver_settings_string = %(value: 0\nscreen: 0\nfrangos: 0\nchop: 0)
+        driver_settings = Generator.settings(driver: driver, settings_string: driver_settings_string).save!
 
-        cs = ACAEngine::Model::Generator.control_system
-        cs.settings.not_nil!.push({Encryption::Level::None, %(frangos: 1)})
-        cs.save!
+        control_system = Generator.control_system.save!
+        control_system_settings_string = %(frangos: 1)
+        control_system_settings = Generator.settings(control_system: control_system, settings_string: control_system_settings_string).save!
 
-        zone = Generator.zone
-        zone.settings.not_nil!.push({Encryption::Level::None, %(screen: 1)})
-        zone.save!
+        zone = Generator.zone.save!
+        zone_settings_string = %(screen: 1)
+        zone_settings = Generator.settings(zone: zone, settings_string: zone_settings_string).save!
 
-        cs.zones = [zone.id.as(String)]
-        cs.update!
+        control_system.zones = [zone.id.as(String)]
+        control_system.update!
 
-        mod = ACAEngine::Model::Generator.module(driver: driver, control_system: cs)
-        mod.settings.not_nil!.push({Encryption::Level::None, %(value: 2\n)})
-        mod.save!
+        mod = Generator.module(driver: driver, control_system: control_system).save!
+
+        module_settings_string = %(value: 2\n)
+        module_settings = Generator.settings(mod: mod, settings_string: module_settings_string).save!
 
         merged_settings = JSON.parse(mod.merge_settings).as_h.transform_values { |v| v.as_i }
 
@@ -74,22 +84,11 @@ module ACAEngine::Model
         # Driver
         merged_settings["chop"].should eq 0
 
-        {driver, zone, cs, mod}.each &.destroy
+        {driver, zone, control_system, mod}.each &.destroy
+        {control_system_settings, driver_settings, module_settings, zone_settings}.each do |setting|
+          Settings.find(setting.id.as(String)).should be_nil
+        end
       end
-    end
-  end
-end
-
-def spec_module_persistence(role)
-  it "saves a #{role} module" do
-    driver = ACAEngine::Model::Generator.driver(role: role)
-    mod = ACAEngine::Model::Generator.module(driver: driver)
-    begin
-      mod.save!
-      mod.persisted?.should be_true
-    rescue e : RethinkORM::Error::DocumentInvalid
-      inspect_error(e)
-      raise e
     end
   end
 end

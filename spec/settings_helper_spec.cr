@@ -2,7 +2,7 @@ require "./helper"
 
 module ACAEngine::Model
   macro test_settings(klass)
-    describe {{ klass }}, focus: true do
+    describe {{ klass }} do
       {% klass_name = klass.id.split("::").last.underscore.id %}
       describe "#settings_at" do
         Encryption::Level.values.each do |level|
@@ -30,7 +30,7 @@ module ACAEngine::Model
     end
   end
 
-  describe SettingsHelper, focus: true do
+  describe SettingsHelper do
     test_settings(ControlSystem)
     test_settings(Module)
     test_settings(Zone)

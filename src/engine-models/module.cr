@@ -59,18 +59,15 @@ module ACAEngine::Model
     # Traverse settings hierarchy, and merge settings
     # [Read more](https://docs.google.com/document/d/1qAbdaYAl5f9rYU6xuT_3TXpnjCqsqeBezhDB-TbHvJA/edit#heading=h.ntoecut6aqkj)
     def merge_settings
-      # Module Settings
-      module_settings = settings_any
-
-      # Accumulate, then merge
-      settings = [module_settings]
+      # Accumulate settings, starting with the module's
+      settings = [all_settings]
 
       if role == Driver::Role::Logic
         cs = self.control_system
         raise "Missing control system: module_id=#{@id} control_system_id=#{@control_system_id}" unless cs
 
         # Control System Settings
-        settings.push(cs.settings_any)
+        settings.push(cs.all_settings)
 
         # Zone Settings
         zone_ids = cs.zones.as(Array(String))
@@ -81,12 +78,12 @@ module ACAEngine::Model
           # TODO: Warn that zone not present rather than error
           raise "Missing zone: module_id=#{@id} zone_id=#{zone_id}" unless zone
 
-          settings.push(zone.settings_any)
+          settings.push(zone.all_settings)
         end
       end
 
       # Driver Settings
-      settings.push(driver.as(Model::Driver).settings_any)
+      settings.push(driver.as(Model::Driver).all_settings)
 
       # Merge all settings, serialise to JSON
       settings.compact.reverse.reduce({} of YAML::Any => YAML::Any) do |acc, setting_any|
