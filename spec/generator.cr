@@ -162,7 +162,7 @@ module ACAEngine::Model
       )
     end
 
-    def self.user(authority : Authority? = nil)
+    def self.user(authority : Authority? = nil, support : Bool = false, admin : Bool = false)
       unless authority
         # look up an existing authority
         existing = Authority.find_by_domain("localhost")
@@ -173,6 +173,8 @@ module ACAEngine::Model
         name: Faker::Name.name,
         email: Random.rand(9999).to_s + Faker::Internet.email,
         authority_id: authority.id,
+        sys_admin: admin,
+        support: support,
       )
     end
 

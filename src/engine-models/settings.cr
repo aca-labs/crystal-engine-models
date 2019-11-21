@@ -34,7 +34,18 @@ module ACAEngine::Model
 
     before_save :build_keys
     before_save :encrypt_settings
+    before_update :create_version
 
+    # Generate a version upon save of a master Settings
+    #
+    def create_version
+      raise "Cannot update a Settings version" if is_version?
+      version = Settings.new.assign_attributes(**attributes_tuple)
+      version.save!
+    end
+
+    # Generate keys for settings object
+    #
     def build_keys : Array(String)
       settings_string = @settings_string.as(String)
       unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
@@ -52,6 +63,15 @@ module ACAEngine::Model
       self.settings_string = Encryption.encrypt(string: settings_string, level: encryption, id: encryption_id)
     end
 
+    # Encrypt in place
+    #
+    def encrypt!
+      encrypt_settings
+      self
+    end
+
+    # Retrieve the parent relation
+    #
     def parent
       [
         self.control_system,
@@ -81,7 +101,7 @@ module ACAEngine::Model
     #
     # TODO: ranges
     def history
-      Settings.get_all([id], index: :settings_id).as_a.sort_by!(&.created_at)
+      Settings.get_all([id], index: :settings_id).to_a.sort_by!(&.created_at.as(Time))
     end
 
     # Validators
@@ -149,14 +169,12 @@ module ACAEngine::Model
     # Decrypts (if user has correct privilege) and returns the settings string
     #
     def decrypt_for(user) : String
-      settings_string = @settings_string.as(String)
-      case encryption
-      when Encryption::Level::Support && (user.is_support? || user.is_admin?)
+      if encryption_level == Encryption::Level::Support && (user.is_support? || user.is_admin?)
         decrypt
-      when Encryption::Level::Admin && user.is_admin?
+      elsif encryption_level == Encryption::Level::Admin && user.is_admin?
         decrypt
       else
-        settings_string
+        settings_string.as(String)
       end
     end
 
