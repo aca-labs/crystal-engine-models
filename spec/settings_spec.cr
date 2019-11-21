@@ -31,7 +31,7 @@ module ACAEngine::Model
       settings.keys.should eq ["secret_key"]
     end
 
-    pending "creates versions on updates to the master Settings", focus: true do
+    pending "creates versions on updates to the master Settings" do
       settings_history = ["a: 0\n", "a: 1\n", "a: 2\n", "a: 3\n"]
       settings = Generator.settings(
         encryption_level: Encryption::Level::None,

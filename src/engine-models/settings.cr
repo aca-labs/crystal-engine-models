@@ -5,9 +5,6 @@ require "./base/model"
 require "./error"
 require "./utilities/encryption"
 
-# Could you parameterise on the parent model?
-# It sould be generic on the model...
-# So then you would have Settings(T), not sure that would work
 module ACAEngine::Model
   # TODO: Statically ensure a single parent id exists on the table
   class Settings < ModelBase
@@ -15,7 +12,7 @@ module ACAEngine::Model
 
     table :sets
 
-    attribute parent_id : String
+    attribute parent_id : String, es_keyword: "keyword"
     enum_attribute encryption_level : Encryption::Level
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String
