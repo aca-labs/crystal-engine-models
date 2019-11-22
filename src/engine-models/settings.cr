@@ -31,6 +31,9 @@ module ACAEngine::Model
     validates :parent_id, prescence: true
     validate ->self.single_parent?(Settings)
 
+    # Callbacks
+    ###########################################################################
+
     before_save :build_keys
     before_save :encrypt_settings
     before_update :create_version
@@ -53,6 +56,36 @@ module ACAEngine::Model
       unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
       self.keys = YAML.parse(unencrypted).as_h.keys.map(&.to_s)
     end
+
+    # Queries
+    ###########################################################################
+
+    # Get version history
+    #
+    # TODO: support ranges
+    def history
+      Settings.get_all([id], index: :settings_id).to_a.sort_by!(&.created_at.as(Time))
+    end
+
+    # Get settings for a given parent id
+    #
+    def self.for_parent(parent_id : String) : Array(Settings)
+      master_settings_query(parent_id) { }
+    end
+
+    # Query on master settings associated with parent_id
+    #
+    def self.master_settings_query(parent_id : String)
+      Settings.raw_query do |q|
+        yield q.table(Settings.table_name).filter({parent_id: parent_id}).filter { |r|
+          # Get documents where the settings_id does not exist, i.e. is the master
+          r.has_fields(:settings_id).not
+        }
+      end.to_a
+    end
+
+    # Encryption methods
+    ###########################################################################
 
     protected def encrypt(string : String)
       raise NoParentError.new unless (encryption_id = @parent_id)
@@ -97,16 +130,6 @@ module ACAEngine::Model
       when Zone
         self.zone = parent
       end
-    end
-
-    # Queries
-    ###########################################################################
-
-    # Get version history
-    #
-    # TODO: ranges
-    def history
-      Settings.get_all([id], index: :settings_id).to_a.sort_by!(&.created_at.as(Time))
     end
 
     # Validators

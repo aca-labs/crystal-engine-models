@@ -15,7 +15,7 @@ module ACAEngine::Model
     # Get the settings at a particular encryption level
     #
     def settings_at(encryption_level : Encryption::Level)
-      master_settings_query do |q|
+      Settings.master_settings_query(self.id.as(String)) do |q|
         q.filter({encryption_level: encryption_level.to_i})
       end.first
     end
@@ -38,18 +38,7 @@ module ACAEngine::Model
     # Query the master settings attached to a model
     #
     def master_settings : Array(Settings)
-      master_settings_query { |q| q }
-    end
-
-    # Query for all master settings associated with a model
-    #
-    protected def master_settings_query
-      Settings.raw_query do |q|
-        yield q.table(Settings.table_name).filter({parent_id: self.id.as(String)}).filter { |r|
-          # Get documents where the settings_id does not exist, i.e. is the master
-          r.has_fields(:settings_id).not
-        }
-      end.to_a
+      Settings.master_settings_query(self.id.as(String)) { |q| q }
     end
   end
 end
