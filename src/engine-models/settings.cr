@@ -16,7 +16,9 @@ module ACAEngine::Model
     enum_attribute encryption_level : Encryption::Level
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String
+
     attribute settings_id : String = nil
+    secondary_index :settings_id
 
     # Settings self-referential entity relationship acts as a 2-level tree
     has_many Settings, collection_name: "settings"
@@ -37,7 +39,10 @@ module ACAEngine::Model
     #
     def create_version
       raise "Cannot update a Settings version" if is_version?
-      version = Settings.new.assign_attributes(**attributes_tuple)
+      old_settings = encrypt(settings_string_was || settings_string.as(String))
+      attrs = attributes_tuple.merge({id: nil, created_at: nil, updated_at: nil, settings_string: old_settings})
+      version = Settings.new(**attrs)
+      version.settings_id = self.id
       version.save!
     end
 
@@ -49,15 +54,18 @@ module ACAEngine::Model
       self.keys = YAML.parse(unencrypted).as_h.keys.map(&.to_s)
     end
 
+    protected def encrypt(string : String)
+      raise NoParentError.new unless (encryption_id = @parent_id)
+
+      encryption = @encryption_level.as(Encryption::Level)
+      Encryption.encrypt(string, level: encryption, id: encryption_id)
+    end
+
     # Encrypts all settings.
     #
     def encrypt_settings
-      raise NoParentError.new unless (encryption_id = @parent_id)
-
       settings_string = @settings_string.as(String)
-      encryption = @encryption_level.as(Encryption::Level)
-
-      self.settings_string = Encryption.encrypt(string: settings_string, level: encryption, id: encryption_id)
+      self.settings_string = encrypt(settings_string)
     end
 
     # Encrypt in place

@@ -35,6 +35,8 @@ module ACAEngine::Model
       all_settings.to_json
     end
 
+    # Query the master settings attached to a model
+    #
     def master_settings : Array(Settings)
       master_settings_query { |q| q }
     end

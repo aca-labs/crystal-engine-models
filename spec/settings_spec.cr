@@ -18,7 +18,7 @@ module ACAEngine::Model
 
     it "encrypts on save" do
       unencrypted = %({"secret_key": "secret1234"})
-      settings = Generator.settings(settings_string: unencrypted).save!
+      settings = Generator.settings(settings_string: unencrypted, encryption_level: Encryption::Level::Admin).save!
       encrypted = settings.settings_string.as(String)
 
       encrypted.should_not eq unencrypted
@@ -31,7 +31,7 @@ module ACAEngine::Model
       settings.keys.should eq ["secret_key"]
     end
 
-    pending "creates versions on updates to the master Settings" do
+    it "creates versions on updates to the master Settings" do
       settings_history = ["a: 0\n", "a: 1\n", "a: 2\n", "a: 3\n"]
       settings = Generator.settings(
         encryption_level: Encryption::Level::None,
@@ -39,11 +39,13 @@ module ACAEngine::Model
       ).save!
 
       settings_history[1..].each do |string|
+        # 1 second sleep as the resolution of timestamps are terrible
+        sleep 1
         settings.settings_string = string
         settings.update!
       end
 
-      settings.history.map(&.any["a"]).should eq [0, 1, 2, 3]
+      settings.history.map(&.any["a"]).should eq [0, 1, 2]
     end
   end
 
