@@ -70,7 +70,7 @@ module ACAEngine::Model
     # Get settings for a given parent id
     #
     def self.for_parent(parent_id : String) : Array(Settings)
-      master_settings_query(parent_id) { }
+      master_settings_query(parent_id) { |q| q }
     end
 
     # Query on master settings associated with parent_id
