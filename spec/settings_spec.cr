@@ -1,6 +1,13 @@
 require "./helper"
 
 module ACAEngine::Model
+  mock_data = {
+    {Encryption::Level::None, %({"sla": "99.?"})},
+    {Encryption::Level::Support, %({"whales": "victor mcwhale"})},
+    {Encryption::Level::Admin, %({"tax_haven": "seychelles"})},
+    {Encryption::Level::NeverDisplay, %({"secret_key": "secret1234"})},
+  }
+
   describe Settings do
     it "saves a settings" do
       settings = Generator.settings
@@ -49,13 +56,19 @@ module ACAEngine::Model
     end
   end
 
+  it "#get_setting_for" do
+    settings = mock_data.map do |level, string|
+      sets = Settings.new(encryption_level: level, settings_string: string, parent_id: "1234")
+      sets.build_keys
+      sets.encrypt!
+    end
+
+    Settings.get_setting_for?(Generator.user, "tax_haven", settings.to_a).should be_nil
+    Settings.get_setting_for?(Generator.user(admin: true), "tax_haven", settings.to_a).should eq "seychelles"
+  end
+
   describe "#decrypt_for" do
-    {
-      {Encryption::Level::None, %({"sla": "99.?"})},
-      {Encryption::Level::Support, %({"whales": "victor mcwhale"})},
-      {Encryption::Level::Admin, %({"tax_haven": "seychelles"})},
-      {Encryption::Level::NeverDisplay, %({"secret_key": "secret1234"})},
-    }.each do |level, string|
+    mock_data.each do |level, string|
       it "decrypts for #{level}" do
         user = Generator.user
         support = Generator.user(support: true)

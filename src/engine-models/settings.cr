@@ -108,6 +108,35 @@ module ACAEngine::Model
       self
     end
 
+    # Decrypts the model's setting string
+    #
+    def decrypt
+      raise NoParentError.new unless (encryption_id = @parent_id)
+      settings_string = @settings_string.as(String)
+      level = @encryption_level.as(Encryption::Level)
+
+      Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
+    end
+
+    # Decrypts the model's settings string dependent on user privileges
+    #
+    def decrypt_for!(user)
+      self.settings_string = decrypt_for(user)
+      self
+    end
+
+    # Decrypts (if user has correct privilege) and returns the settings string
+    #
+    def decrypt_for(user) : String
+      if encryption_level == Encryption::Level::Support && (user.is_support? || user.is_admin?)
+        decrypt
+      elsif encryption_level == Encryption::Level::Admin && user.is_admin?
+        decrypt
+      else
+        settings_string.as(String)
+      end
+    end
+
     # Retrieve the parent relation
     #
     def parent
@@ -171,52 +200,64 @@ module ACAEngine::Model
     # Helpers
     ###########################################################################
 
+    def self.has_privilege?(user, encryption_level)
+      case encryption_level
+      when Encryption::Level::None
+        true
+      when Encryption::Level::Support
+        user.is_admin?
+      when Encryption::Level::Admin
+        user.is_admin?
+      else
+        false
+      end
+    end
+
+    # Look up a settings key, if it exists and the user has the correct privilege
+    #
+    def self.get_setting_for?(user : Model::User, key : String, settings : Array(Settings) = [] of Settings) : YAML::Any?
+      # First check if key present, then deserialise
+      if settings.any?(&.has_key_for?(user, key))
+        settings
+          # Sort on privilege
+          .sort_by(&.encryption_level.as(Encryption::Level))
+          # Attain (if exists) setting for given key
+          .compact_map(&.any[key]?)
+          # Get the highest privilege setting
+          .last
+      end
+    end
+
+    # Decrypt and pick off the setting
+    #
+    def get_setting_for?(user, setting) : YAML::Any?
+      Settings.get_setting_for(user, setting, [self])
+    end
+
+    # Check if top-level settings key present for the supplied user
+    #
+    def has_key_for?(user, key)
+      has_key = keys.try(&.includes?(key))
+      has_privilege = Settings.has_privilege?(user, encryption_level)
+      has_key && has_privilege
+    end
+
     # If a Settings has a parent, it's a version
     #
     def is_version? : Bool
       !!(@settings_id)
     end
 
-    # Decrypts the model's setting string
-    #
-    def decrypt
-      raise NoParentError.new unless (encryption_id = @parent_id)
-      settings_string = @settings_string.as(String)
-      level = @encryption_level.as(Encryption::Level)
-
-      Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
-    end
-
-    # Decrypts the model's settings string dependent on user privileges
-    #
-    def decrypt_for!(user)
-      self.settings_string = decrypt_for(user)
-      self
-    end
-
-    # Decrypts (if user has correct privilege) and returns the settings string
-    #
-    def decrypt_for(user) : String
-      if encryption_level == Encryption::Level::Support && (user.is_support? || user.is_admin?)
-        decrypt
-      elsif encryption_level == Encryption::Level::Admin && user.is_admin?
-        decrypt
-      else
-        settings_string.as(String)
-      end
-    end
-
-    # Decrypt and pick off the setting
-    #
-    def get_setting_for(user, setting) : YAML::Any?
-      decrypted_settings = decrypt_for(user)
-      YAML.parse(decrypted)[setting]? unless Encryption.is_encrypted?(decrypted_settings)
-    end
-
     # Decrypts settings, encodes as a json object
     #
     def settings_json
       settings_any.to_json
+    end
+
+    # Decrypts settings for a user, merges into single JSON object
+    #
+    def any(user : User) : Hash(YAML::Any, YAML::Any)?
+      decrypt_for(user).try(&->YAML.parse(String).as_h)
     end
 
     # Decrypts settings, merges into single JSON object
