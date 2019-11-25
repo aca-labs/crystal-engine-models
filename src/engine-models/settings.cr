@@ -248,6 +248,12 @@ module ACAEngine::Model
       !!(@settings_id)
     end
 
+    # Determine if setting_string is encrypted
+    #
+    def is_encrypted? : Bool
+      !!(@settings_string.try &->Encryption.is_encrypted?(String))
+    end
+
     # Decrypts settings, encodes as a json object
     #
     def settings_json
