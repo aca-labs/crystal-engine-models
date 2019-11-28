@@ -17,7 +17,7 @@ module ACAEngine::Model
 
     enum_attribute encryption_level : Encryption::Level
     attribute settings_string : String = "{}"
-    attribute keys : Array(String) = [] of String
+    attribute keys : Array(String) = [] of String, es_keyword: "text"
 
     attribute settings_id : String = nil
     secondary_index :settings_id
@@ -177,29 +177,6 @@ module ACAEngine::Model
       when Zone
         self.zone = parent
       end
-    end
-
-    # Parent accessors set the model id, used for encryption
-    ###########################################################################
-
-    def zone=(zone : Zone)
-      self.parent_id = zone.id
-      previous_def(zone)
-    end
-
-    def control_system=(cs : ControlSystem)
-      self.parent_id = cs.id
-      previous_def(cs)
-    end
-
-    def driver=(driver : Driver)
-      self.parent_id = driver.id
-      previous_def(driver)
-    end
-
-    def mod=(mod : Module)
-      self.parent_id = mod.id
-      previous_def(mod)
     end
 
     # Helpers
