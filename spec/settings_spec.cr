@@ -56,6 +56,34 @@ module ACAEngine::Model
     end
   end
 
+  describe "#for_parent" do
+    it "queries for a single parent_ids" do
+      Settings.clear
+
+      id = "1234"
+      settings = mock_data.map do |level, string|
+        Settings.new(encryption_level: level, settings_string: string, parent_id: id).save!
+      end.to_a
+
+      ids = settings.map(&.id.as(String)).sort
+      Settings.for_parent(id).map(&.id.as(String)).sort.should eq ids
+      settings.each &.destroy
+    end
+
+    it "queries for a collection of parent_ids" do
+      Settings.clear
+
+      mock_ids = Array.new(mock_data.size) { rand(9999).to_s }
+      settings = mock_data.zip(mock_ids).map do |(level, string), id|
+        Settings.new(encryption_level: level, settings_string: string, parent_id: id).save!
+      end.to_a
+
+      ids = settings.map(&.id.as(String)).sort
+      Settings.for_parent(mock_ids).map(&.id.as(String)).sort.should eq ids
+      settings.each &.destroy
+    end
+  end
+
   it "#get_setting_for" do
     settings = mock_data.map do |level, string|
       sets = Settings.new(encryption_level: level, settings_string: string, parent_id: "1234")

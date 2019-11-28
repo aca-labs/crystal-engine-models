@@ -37,7 +37,12 @@ module ACAEngine::Model
     attribute custom_name : String
 
     # Encrypted yaml settings, with metadata
-    has_many Settings, collection_name: "settings", foreign_key: "mod_id", dependent: :destroy
+    has_many(
+      child_class: Settings,
+      collection_name: "settings",
+      foreign_key: "parent_id",
+      dependent: :destroy
+    )
 
     enum_attribute role : Driver::Role, es_type: "integer" # cache the driver role locally for load order
 

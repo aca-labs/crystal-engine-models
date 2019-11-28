@@ -24,7 +24,12 @@ module ACAEngine::Model
     has_many TriggerInstance, collection_name: "trigger_instances", dependent: :destroy
 
     # Encrypted yaml settings, with metadata
-    has_many Settings, collection_name: "settings", dependent: :destroy
+    has_many(
+      child_class: Settings,
+      collection_name: "settings",
+      foreign_key: "parent_id",
+      dependent: :destroy
+    )
 
     # Looks up the triggers attached to the zone
     def trigger_data : Array(Trigger)

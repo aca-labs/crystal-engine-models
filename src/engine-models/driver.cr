@@ -41,7 +41,12 @@ module ACAEngine::Model
     belongs_to Repository
 
     # Encrypted yaml settings, with metadata
-    has_many Settings, collection_name: "settings", dependent: :destroy
+    has_many(
+      child_class: Settings,
+      collection_name: "settings",
+      foreign_key: "parent_id",
+      dependent: :destroy
+    )
 
     # Module instance configuration
     attribute module_name : String

@@ -44,7 +44,7 @@ module ACAEngine::Model
     has_many(
       child_class: Settings,
       collection_name: "settings",
-      foreign_key: "control_system_id",
+      foreign_key: "parent_id",
       dependent: :destroy
     )
 

@@ -13,6 +13,8 @@ module ACAEngine::Model
     table :sets
 
     attribute parent_id : String, es_keyword: "keyword"
+    secondary_index :parent_id
+
     enum_attribute encryption_level : Encryption::Level
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String
@@ -21,15 +23,20 @@ module ACAEngine::Model
     secondary_index :settings_id
 
     # Settings self-referential entity relationship acts as a 2-level tree
-    has_many Settings, collection_name: "settings"
+    has_many(
+      child_class: Settings,
+      collection_name: "settings",
+      foreign_key: "settings_id",
+      dependent: :destroy
+    )
 
-    belongs_to ControlSystem
-    belongs_to Driver
-    belongs_to Module, association_name: "mod"
-    belongs_to Zone
+    belongs_to ControlSystem, foreign_key: "parent_id"
+    belongs_to Driver, foreign_key: "parent_id"
+    belongs_to Module, foreign_key: "parent_id", association_name: "mod"
+    belongs_to Zone, foreign_key: "parent_id"
 
+    validates :encryption_level, prescence: true
     validates :parent_id, prescence: true
-    validate ->self.single_parent?(Settings)
 
     # Callbacks
     ###########################################################################
@@ -70,7 +77,18 @@ module ACAEngine::Model
     # Get settings for a given parent id
     #
     def self.for_parent(parent_id : String) : Array(Settings)
-      master_settings_query(parent_id) { |q| q }
+      for_parent([parent_id])
+    end
+
+    # Get settings for given parent ids
+    #
+    def self.for_parent(parent_ids : Array(String)) : Array(Settings)
+      Settings.raw_query do |q|
+        q.table(Settings.table_name).get_all(parent_ids, index: :parent_id).filter { |r|
+          # Get documents where the settings_id does not exist, i.e. the masters
+          r.has_fields(:settings_id).not
+        }
+      end.to_a
     end
 
     # Query on master settings associated with parent_id
@@ -158,19 +176,6 @@ module ACAEngine::Model
         self.mod = parent
       when Zone
         self.zone = parent
-      end
-    end
-
-    # Validators
-    ###########################################################################
-
-    protected def self.single_parent?(this : Settings) : Bool
-      parent_ids = {this.zone_id, this.control_system_id, this.driver_id, this.mod_id}
-      if parent_ids.one?
-        true
-      else
-        this.validation_error(:parent_id, "there can only be a single parent id #{parent_ids.inspect}")
-        false
       end
     end
 
