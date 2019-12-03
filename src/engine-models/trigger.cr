@@ -16,7 +16,7 @@ module ACAEngine::Model
     attribute actions : ACAEngine::Model::Trigger::Actions = ->{ Actions.new }, es_type: "object"
     attribute conditions : ACAEngine::Model::Trigger::Conditions = ->{ Conditions.new }, es_type: "object"
 
-    # In seconds
+    # In milliseconds
     attribute debounce_period : Int32 = 0
     attribute important : Bool = false
 
@@ -112,7 +112,7 @@ module ACAEngine::Model
         alias Value = StatusVariable | Constant
 
         # Constant value
-        alias Constant = Int32 | Float32 | String | Bool
+        alias Constant = Int64 | Float64 | String | Bool
 
         # Status of a Module
         alias StatusVariable = NamedTuple(
