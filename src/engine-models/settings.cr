@@ -168,14 +168,10 @@ module ACAEngine::Model
 
     def parent=(parent : Union(Zone, ControlSystem, Driver, Module))
       case parent
-      when ControlSystem
-        self.control_system = parent
-      when Driver
-        self.driver = parent
-      when Module
-        self.mod = parent
-      when Zone
-        self.zone = parent
+      when ControlSystem then self.control_system = parent
+      when Driver        then self.driver = parent
+      when Module        then self.mod = parent
+      when Zone          then self.zone = parent
       end
     end
 
@@ -184,14 +180,10 @@ module ACAEngine::Model
 
     def self.has_privilege?(user, encryption_level)
       case encryption_level
-      when Encryption::Level::None
-        true
-      when Encryption::Level::Support
-        user.is_admin?
-      when Encryption::Level::Admin
-        user.is_admin?
-      else
-        false
+      when Encryption::Level::None    then true
+      when Encryption::Level::Support then user.is_admin?
+      when Encryption::Level::Admin   then user.is_admin?
+      else                                 false
       end
     end
 

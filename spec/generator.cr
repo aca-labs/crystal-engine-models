@@ -237,14 +237,10 @@ module ACAEngine::Model
       user = self.user.save! if user.nil?
 
       permissions = case ({user.support.as(Bool), user.sys_admin.as(Bool)})
-                    when {true, true}
-                      UserJWT::Permissions::AdminSupport
-                    when {true, false}
-                      UserJWT::Permissions::Support
-                    when {false, true}
-                      UserJWT::Permissions::Admin
-                    else
-                      UserJWT::Permissions::User
+                    when {true, true}  then UserJWT::Permissions::AdminSupport
+                    when {true, false} then UserJWT::Permissions::Support
+                    when {false, true} then UserJWT::Permissions::Admin
+                    else                    UserJWT::Permissions::User
                     end
 
       meta = UserJWT::Metadata.new(
