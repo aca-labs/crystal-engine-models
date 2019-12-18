@@ -7,6 +7,18 @@ module ACAEngine::Model
       Trigger.find!(inst.id).id.should eq inst.id
     end
 
+    it "validates webhook methods" do
+      invalid_model = Generator.trigger
+      invalid_model.supported_methods = ["NUGGET", "GET"]
+      valid_model = Generator.trigger
+      valid_model.supported_methods = ["POST", "GET"]
+
+      valid_model.valid?.should be_true
+      invalid_model.valid?.should be_false
+      invalid_model.errors.size.should eq 1
+      invalid_model.errors.first.to_s.should end_with "supported_methods contains invalid methods: NUGGET"
+    end
+
     describe Trigger::Actions do
       it "validates function action" do
         model = Generator.trigger
@@ -43,23 +55,6 @@ module ACAEngine::Model
     end
 
     describe Trigger::Conditions do
-      it "validates webhook methods" do
-        model = Generator.trigger
-
-        valid = Trigger::Conditions::Webhook.new(
-          supported_methods: ["POST", "GET"],
-        )
-        invalid = Trigger::Conditions::Webhook.new(
-          supported_methods: ["NUGGET", "GET"],
-        )
-
-        model.conditions.try &.webhooks = [valid, invalid]
-
-        model.valid?.should be_false
-        model.errors.size.should eq 1
-        model.errors.first.to_s.should end_with "supported_methods contains invalid methods: NUGGET"
-      end
-
       it "validates time dependent condition" do
         model = Generator.trigger
 

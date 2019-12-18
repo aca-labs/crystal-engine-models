@@ -20,6 +20,14 @@ module ACAEngine::Model
     attribute debounce_period : Int32 = 0
     attribute important : Bool = false
 
+    METHODS = ["POST", "GET", "WS"]
+    attribute enable_webhook : Bool = false
+    attribute supported_methods : Array(String) = ["POST"]
+
+    def supported_method?(method)
+      !!(supported_methods.try &.includes?(method))
+    end
+
     has_many TriggerInstance, dependent: :destroy, collection_name: :trigger_instances
 
     # Allows filtering in cases of a Trigger belonging to a single ControlSystem
@@ -28,6 +36,12 @@ module ACAEngine::Model
     # ---------------------------
     # VALIDATIONS
     # ---------------------------
+
+    validate ->(this : Trigger) {
+      return unless (supported_methods = this.supported_methods)
+      invalid = supported_methods - METHODS
+      this.validation_error(:supported_methods, "contains invalid methods: #{invalid.join(", ")}") unless invalid.empty?
+    }
 
     validates :name, presence: true
 
@@ -51,47 +65,16 @@ module ACAEngine::Model
     class Conditions < SubModel
       attribute comparisons : Array(Comparison) = ->{ [] of Comparison }
       attribute time_dependents : Array(TimeDependent) = ->{ [] of TimeDependent }
-      attribute webhooks : Array(Webhook) = ->{ [] of Webhook }
 
       validate ->(this : Conditions) {
         if (time_dependents = this.time_dependents)
           this.collect_errors(:time_dependents, time_dependents)
         end
-        if (webhooks = this.webhooks)
-          this.collect_errors(:webhooks, webhooks)
-        end
+
         if (comparisons = this.comparisons)
           this.collect_errors(:comparisons, comparisons)
         end
       }
-
-      class Webhook < SubModel
-        attribute execute_expected : Bool = false
-        attribute supported_methods : Array(String) = ["POST", "GET", "WS"]
-        attribute payload : String
-
-        METHODS = [
-          "POST",
-          "GET",
-          "WS",
-        ]
-
-        # Validation
-
-        validates :supported_methods, presence: true
-
-        validate ->(this : Webhook) {
-          return unless (supported_methods = this.supported_methods)
-          invalid = supported_methods - METHODS
-          this.validation_error(:supported_methods, "contains invalid methods: #{invalid.join(", ")}") unless invalid.empty?
-        }
-
-        # Helpers
-
-        def method_supported?(method)
-          !!(supported_methods.try &.includes?(method))
-        end
-      end
 
       class TimeDependent < SubModel
         enum Type

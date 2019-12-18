@@ -28,6 +28,7 @@ module ACAEngine::Model
       errors = models.compact_map do |m|
         m.errors unless m.valid?
       end
+
       errors.flatten.each do |e|
         validation_error(field: collection, message: e.to_s)
       end
