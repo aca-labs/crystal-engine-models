@@ -29,7 +29,7 @@ module ACAEngine::Model
         m.errors unless m.valid?
       end
       errors.flatten.each do |e|
-        self.validation_error(field: collection, message: e.to_s.downcase)
+        validation_error(field: collection, message: e.to_s)
       end
     end
   end

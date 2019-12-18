@@ -25,16 +25,6 @@ module ACAEngine::Model
     # Allows filtering in cases of a Trigger belonging to a single ControlSystem
     belongs_to ControlSystem
 
-    # FIXME: Is this offloaded to core?
-    #  Old engine: reloads the trigger instance to the module manager.
-    #  New engine: hits the trigger service to re-enable the trigger
-    # after_save :reload_all
-    # protected def reload_all
-    #   trigger_instances.each do |trig|
-    #     trig.reload
-    #   end
-    # end
-
     # ---------------------------
     # VALIDATIONS
     # ---------------------------
@@ -76,18 +66,31 @@ module ACAEngine::Model
       }
 
       class Webhook < SubModel
-        enum Type
-          ExecuteBefore
-          ExecuteAfter
-          PayloadOnly
-          IgnorePayload
-        end
-
-        enum_attribute type : Type, column_type: String
-
+        attribute execute_expected : Bool = false
+        attribute supported_methods : Array(String) = ["POST", "GET", "WS"]
         attribute payload : String
 
-        validates :type, presence: true
+        METHODS = [
+          "POST",
+          "GET",
+          "WS",
+        ]
+
+        # Validation
+
+        validates :supported_methods, presence: true
+
+        validate ->(this : Webhook) {
+          return unless (supported_methods = this.supported_methods)
+          invalid = supported_methods - METHODS
+          this.validation_error(:supported_methods, "contains invalid methods: #{invalid.join(", ")}") unless invalid.empty?
+        }
+
+        # Helpers
+
+        def method_supported?(method)
+          !!(supported_methods.try &.includes?(method))
+        end
       end
 
       class TimeDependent < SubModel
