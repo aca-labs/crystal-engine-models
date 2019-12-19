@@ -21,7 +21,12 @@ module ACAEngine::Model
 
     attribute triggers : Array(String) = [] of String
 
-    has_many TriggerInstance, collection_name: "trigger_instances", dependent: :destroy
+    has_many(
+      child_class: TriggerInstance,
+      collection_name: "trigger_instances",
+      foreign_key: "zone_id",
+      dependent: :destroy,
+    )
 
     # Encrypted yaml settings, with metadata
     has_many(

@@ -17,9 +17,9 @@ module ACAEngine::Model
     table :mod
 
     # The classes/files that this module requires to execute
-    belongs_to Driver
+    belongs_to Driver, foreign_key: "driver_id"
 
-    belongs_to ControlSystem
+    belongs_to ControlSystem, foreign_key: "control_system_id"
 
     attribute ip : String
     attribute port : Int32

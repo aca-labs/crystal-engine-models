@@ -9,9 +9,9 @@ module ACAEngine::Model
     include RethinkORM::Timestamps
     table :trig
 
-    belongs_to ControlSystem
-    belongs_to Trigger
-    belongs_to Zone
+    belongs_to ControlSystem, foreign_key: "control_system_id"
+    belongs_to Trigger, foreign_key: "trigger_id"
+    belongs_to Zone, foreign_key: "zone_id"
 
     attribute enabled : Bool = true
     attribute triggered : Bool = false

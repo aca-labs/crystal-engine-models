@@ -28,10 +28,15 @@ module ACAEngine::Model
       !!(supported_methods.try &.includes?(method))
     end
 
-    has_many TriggerInstance, dependent: :destroy, collection_name: :trigger_instances
+    has_many(
+      child_class: TriggerInstance,
+      dependent: :destroy,
+      foreign_key: "trigger_id",
+      collection_name: :trigger_instances
+    )
 
     # Allows filtering in cases of a Trigger belonging to a single ControlSystem
-    belongs_to ControlSystem
+    belongs_to ControlSystem, foreign_key: "control_system_id"
 
     # ---------------------------
     # VALIDATIONS

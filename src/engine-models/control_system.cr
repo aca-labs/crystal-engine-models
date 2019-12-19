@@ -49,7 +49,12 @@ module ACAEngine::Model
     )
 
     # Single System triggers
-    has_many Trigger, dependent: :destroy, collection_name: :system_triggers
+    has_many(
+      child_class: Trigger,
+      dependent: :destroy,
+      collection_name: :system_triggers,
+      foreign_key: "control_system_id"
+    )
 
     def self.by_zone_id(id)
       ControlSystem.raw_query do |q|
