@@ -38,7 +38,7 @@ module ACAEngine::Model
     attribute commit : String    # Commit/version of driver to compile
     attribute version : SemanticVersion, converter: SemanticVersion::Converter
 
-    belongs_to Repository
+    belongs_to Repository, foreign_key: "repository_id"
 
     # Encrypted yaml settings, with metadata
     has_many(

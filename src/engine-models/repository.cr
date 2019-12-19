@@ -46,6 +46,6 @@ module ACAEngine::Model
     attribute password : String
     attribute key : String
 
-    has_many Driver, collection_name: "drivers"
+    has_many Driver, collection_name: "drivers", foreign_key: "repository_id"
   end
 end
