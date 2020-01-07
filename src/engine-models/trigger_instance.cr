@@ -16,6 +16,7 @@ module ACAEngine::Model
     attribute enabled : Bool = true
     attribute triggered : Bool = false
     attribute important : Bool = false
+    attribute exec_enabled : Bool = false
 
     attribute webhook_secret : String = ->{ Random::Secure.hex(32) }
     attribute trigger_count : Int32 = 0
