@@ -21,7 +21,8 @@ module ACAEngine::Model
       SSH
       Device
       Service
-      Logic
+      Websocket
+      Logic = 99
     end
 
     attribute name : String, es_type: "keyword"

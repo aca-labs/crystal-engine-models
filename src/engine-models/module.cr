@@ -101,7 +101,7 @@ module ACAEngine::Model
       case role
       when Driver::Role::SSH, Driver::Role::Device
         self.ip
-      when Driver::Role::Service
+      when Driver::Role::Service, Driver::Role::Websocket
         uri = self.uri || self.driver.try &.default_uri
         uri.try(&->URI.parse(String)).try(&.host)
       else
@@ -130,8 +130,8 @@ module ACAEngine::Model
       driver = this.driver
       return if driver.nil?
       case driver.role
-      when Driver::Role::Service
-        this.validate_service_module
+      when Driver::Role::Service, Driver::Role::Websocket
+        this.validate_service_module(driver.role)
       when Driver::Role::Logic
         this.validate_logic_module
       when Driver::Role::Device, Driver::Role::SSH
@@ -139,8 +139,8 @@ module ACAEngine::Model
       end
     }
 
-    protected def validate_service_module
-      self.role = Driver::Role::Service
+    protected def validate_service_module(driver_role)
+      self.role = driver_role
       self.udp = false
 
       driver = self.driver
