@@ -61,7 +61,7 @@ module ACAEngine::Model
     def build_keys : Array(String)
       settings_string = @settings_string.as(String)
       unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
-      self.keys = YAML.parse(unencrypted).as_h.keys.map(&.to_s)
+      self.keys = YAML.parse(unencrypted).as_h?.try(&.keys.map(&.to_s)) || [] of String
     end
 
     # Queries

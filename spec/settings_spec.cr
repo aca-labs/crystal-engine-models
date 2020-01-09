@@ -23,6 +23,21 @@ module ACAEngine::Model
       settings.id.as(String).should start_with "sets-"
     end
 
+    it "accepts empty settings strings" do
+      settings = Generator.settings
+      settings.settings_string = ""
+      begin
+        settings.save!
+      rescue e : RethinkORM::Error::DocumentInvalid
+        inspect_error(e)
+        raise e
+      end
+
+      settings.should_not be_nil
+      settings.persisted?.should be_true
+      settings.keys.not_nil!.should be_empty
+    end
+
     it "encrypts on save" do
       unencrypted = %({"secret_key": "secret1234"})
       settings = Generator.settings(settings_string: unencrypted, encryption_level: Encryption::Level::Admin).save!

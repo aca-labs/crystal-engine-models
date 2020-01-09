@@ -22,7 +22,7 @@ module ACAEngine::Model
       Device
       Service
       Websocket
-      Logic = 99
+      Logic     = 99
     end
 
     attribute name : String, es_type: "keyword"
