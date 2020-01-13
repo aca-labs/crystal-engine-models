@@ -20,7 +20,7 @@ module ACAEngine::Model
     attribute debounce_period : Int32 = 0
     attribute important : Bool = false
 
-    METHODS = ["POST", "GET", "WS"]
+    METHODS = %w(GET POST PUT PATCH DELETE)
     attribute enable_webhook : Bool = false
     attribute supported_methods : Array(String) = ["POST"]
 
