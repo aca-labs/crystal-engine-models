@@ -84,7 +84,7 @@ module ACAEngine::Model
     #
     validate ->(this : Driver) {
       return unless (repo = this.repository)
-      this.validation_error(:repository, "should be a driver repository") unless repo.type == Repository::Type::Driver
+      this.validation_error(:repository, "should be a driver repository") unless repo.repo_type == Repository::Type::Driver
     }
 
     # Delete all the module references relying on this driver

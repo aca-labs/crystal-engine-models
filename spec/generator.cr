@@ -41,7 +41,7 @@ module ACAEngine::Model
       type = self.repository_type unless type
       Repository.new(
         name: Faker::Hacker.noun,
-        type: type,
+        repo_type: type,
         folder_name: Faker::Hacker.noun,
         description: Faker::Hacker.noun,
         uri: Faker::Internet.url,

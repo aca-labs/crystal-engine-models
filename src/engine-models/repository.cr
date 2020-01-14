@@ -22,12 +22,12 @@ module ACAEngine::Model
     attribute uri : String
     attribute commit_hash : String = "head"
 
-    enum_attribute type : Type = Type::Driver, es_type: "integer"
+    enum_attribute repo_type : Type = Type::Driver, column_type: String, es_type: "text"
 
     # Validations
     validates :name, presence: true
     validates :folder_name, presence: true
-    validates :type, presence: true
+    validates :repo_type, presence: true
     validates :uri, presence: true
     validates :commit_hash, presence: true
 
