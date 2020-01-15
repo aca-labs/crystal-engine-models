@@ -15,9 +15,16 @@ module ACAEngine::Model
     # Get the settings at a particular encryption level
     #
     def settings_at(encryption_level : Encryption::Level)
+      raise IndexError.new unless (settings = settings_at?(encryption_level))
+      settings
+    end
+
+    # Get the settings at a particular encryption level
+    #
+    def settings_at?(encryption_level : Encryption::Level)
       Settings.master_settings_query(self.id.as(String)) do |q|
         q.filter({encryption_level: encryption_level.to_i})
-      end.first
+      end.first?
     end
 
     # Decrypts and merges all settings for the model
