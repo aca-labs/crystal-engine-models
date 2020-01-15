@@ -99,7 +99,7 @@ module ACAEngine::Model
           # Get documents where the settings_id does not exist, i.e. is the master
           r.has_fields(:settings_id).not
         }
-      end.to_a
+      end.to_a.sort_by!(&.encryption_level.as(Encryption::Level)).reverse
     end
 
     # Encryption methods
