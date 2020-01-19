@@ -1,24 +1,24 @@
 require "uri"
-
+require "json"
 require "./base/model"
 
 module ACAEngine::Model
   class Authority < ModelBase
+    include RethinkORM::Timestamps
+
     table :authority
 
     attribute name : String, es_type: "keyword"
-
+    attribute description : String
     attribute domain : String
     ensure_unique :domain, create_index: true
-
-    attribute description : String
 
     # TODO: feature request: autogenerate login url
     attribute login_url : String = "/auth/login?continue={{url}}"
     attribute logout_url : String = "/auth/logout"
 
-    attribute internals : Hash(String, String) = {} of String => String
-    attribute config : Hash(String, String) = {} of String => String
+    attribute internals : Hash(String, JSON::Any) = {} of String => JSON::Any
+    attribute config : Hash(String, JSON::Any) = {} of String => JSON::Any
 
     validates :name, presence: true
 
