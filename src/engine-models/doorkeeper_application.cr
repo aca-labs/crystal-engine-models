@@ -15,7 +15,7 @@ module ACAEngine::Model
     attribute redirect_uri : String
     attribute skip_authorization : Bool = false
     attribute confidential : Bool = false
-    attribute revoked_at : Integer
+    attribute revoked_at : UInt64
 
     attribute uid : String
     ensure_unique :uid, create_index: true
