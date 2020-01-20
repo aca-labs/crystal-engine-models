@@ -13,8 +13,8 @@ module ACAEngine::Model
     attribute scopes : String = "public"
     attribute owner_id : String
     attribute redirect_uri : String
-    attribute skip_authorization : Boolean = false
-    attribute confidential : Boolean = false
+    attribute skip_authorization : Bool = false
+    attribute confidential : Bool = false
     attribute revoked_at : Integer
 
     attribute uid : String
