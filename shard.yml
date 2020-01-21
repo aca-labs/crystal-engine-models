@@ -1,5 +1,5 @@
 name: engine-models
-version: 0.2.2
+version: 0.3.0
 
 dependencies:
   # Data validation library
@@ -18,7 +18,7 @@ dependencies:
   # Elasticsearch extension for RethinkORM
   neuroplastic:
     github: aca-labs/neuroplastic
-    version: 1.3.1
+    branch: master
 
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
