@@ -37,8 +37,8 @@ module ACAEngine::Model
     attribute installed_ui_devices : Int32 = 0
 
     # IDs of associated models
-    attribute zones : Array(String) = [] of String
-    attribute modules : Array(String) = [] of String
+    attribute zones : Array(String) = [] of String, es_type: "keyword"
+    attribute modules : Array(String) = [] of String, es_type: "keyword"
 
     # Encrypted yaml settings, with metadata
     has_many(
