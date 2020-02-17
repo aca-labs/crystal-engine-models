@@ -17,6 +17,6 @@ macro subset_json(method_name, fields)
           {{ raise "expected Enumerable(Symbol | NamedTuple(field: Symbol, serialise: Symbol)), got element #{field}" }}
         {% end %}
       {% end %}
-    }.to_json
+    }
   end
 end
