@@ -3,7 +3,6 @@ require "json"
 require "./base/model"
 
 module ACAEngine::Model
-
   # See: https://github.com/omniauth/omniauth-oauth2
   # https://github.com/oauth-xx/oauth2
   class OAuthAuthentication < ModelBase
@@ -44,7 +43,7 @@ module ACAEngine::Model
     # URL to call with a valid token to obtain the users profile data (name, email etc)
     attribute raw_info_url : String
 
-    validates :name,         presence: true
+    validates :name, presence: true
     validates :authority_id, presence: true
 
     def type

@@ -3,7 +3,6 @@ require "json"
 require "./base/model"
 
 module ACAEngine::Model
-
   # see: https://github.com/omniauth/omniauth-ldap
   class LdapAuthentication < ModelBase
     include RethinkORM::Timestamps
@@ -16,7 +15,7 @@ module ACAEngine::Model
     attribute port : Int32 = 636
 
     # Options are: plain, ssl, tls
-    attribute auth_method : String ="ssl"
+    attribute auth_method : String = "ssl"
     attribute uid : String = "sAMAccountName"
     attribute host : String
 
@@ -32,9 +31,9 @@ module ACAEngine::Model
     attribute filter : String
 
     validates :authority_id, presence: true
-    validates :name,         presence: true
-    validates :host,         presence: true
-    validates :base,         presence: true
+    validates :name, presence: true
+    validates :host, presence: true
+    validates :base, presence: true
 
     def type
       "ldaps"

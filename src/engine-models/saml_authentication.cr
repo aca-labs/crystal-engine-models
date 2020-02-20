@@ -3,7 +3,6 @@ require "json"
 require "./base/model"
 
 module ACAEngine::Model
-
   # See: https://github.com/omniauth/omniauth-saml
   class SamlAuthentication < ModelBase
     include RethinkORM::Timestamps
@@ -43,18 +42,14 @@ module ACAEngine::Model
 
     # Used to map Attribute Names in a SAMLResponse to entries in the OmniAuth info hash
     attribute attribute_statements : Hash(String, Array(String)) = {
-      "name" => ["name"],
-      "email" => ["email", "mail"],
-      "last_name" => ["last_name", "lastname", "lastName", "surname"],
+      "name"       => ["name"],
+      "email"      => ["email", "mail"],
+      "last_name"  => ["last_name", "lastname", "lastName", "surname"],
       "first_name" => ["first_name", "firstname", "firstName", "givenname"],
     }
 
     # Used to map Attribute Names in a SAMLResponse to entries in the OmniAuth info hash
-    attribute request_attributes : Array(NamedTuple(
-      name: String,
-      name_format: String,
-      friendly_name: String
-    )) = [
+    attribute request_attributes : Array(NamedTuple(name: String, name_format: String, friendly_name: String)) = [
       {name: "ImmutableID", name_format: "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", friendly_name: "Login Name"},
       {name: "email", name_format: "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", friendly_name: "Email address"},
       {name: "name", name_format: "urn:oasis:names:tc:SAML:2.0:attrname-format:basic", friendly_name: "Full name"},
@@ -68,13 +63,13 @@ module ACAEngine::Model
     # The value to use as default RelayState for single log outs
     attribute slo_default_relay_state : String
 
-    validates :authority_id,                   presence: true
-    validates :name,                           presence: true
-    validates :issuer,                         presence: true
-    validates :idp_sso_target_url,             presence: true
-    validates :name_identifier_format,         presence: true
+    validates :authority_id, presence: true
+    validates :name, presence: true
+    validates :issuer, presence: true
+    validates :idp_sso_target_url, presence: true
+    validates :name_identifier_format, presence: true
     validates :assertion_consumer_service_url, presence: true
-    validates :request_attributes,             presence: true
+    validates :request_attributes, presence: true
 
     def type
       "adfs"
