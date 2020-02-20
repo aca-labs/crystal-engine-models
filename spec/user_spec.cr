@@ -23,7 +23,7 @@ module ACAEngine::Model
     it "serialises public visible attributes" do
       user = Generator.user.save!
 
-      public_user = JSON.parse(user.as_public_json).as_h
+      public_user = JSON.parse(user.as_public_json.to_json).as_h
 
       public_attributes = User::PUBLIC_DATA.to_a.map do |field|
         field.is_a?(NamedTuple) ? field[:field].to_s : field.to_s
@@ -34,7 +34,7 @@ module ACAEngine::Model
 
     it "serialises admin visible attributes" do
       user = Generator.user.save!
-      admin_user = JSON.parse(user.as_admin_json).as_h
+      admin_user = JSON.parse(user.as_admin_json.to_json).as_h
 
       admin_attributes = User::ADMIN_DATA.to_a.map do |field|
         field.is_a?(NamedTuple) ? field[:field].to_s : field.to_s
