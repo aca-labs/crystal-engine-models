@@ -154,10 +154,10 @@ module ACAEngine::Model
       )
     end
 
-    def self.authority
+    def self.authority(domain : String = "localhost")
       Authority.new(
         name: Faker::Hacker.noun,
-        domain: "localhost",
+        domain: domain,
       )
     end
 
