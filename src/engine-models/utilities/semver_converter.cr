@@ -1,7 +1,8 @@
 require "json"
 require "semantic_version"
 
-# Reopen the SemanticVersion class
+# NOTE: Previously used in `ACAEngine::Model::Driver`
+#
 struct SemanticVersion
   # Allows serialization to rethinkDB query language
   def to_reql

@@ -17,7 +17,6 @@ module ACAEngine::Model
       driver = Driver.new(
         name: RANDOM.base64(10),
         commit: RANDOM.hex(7),
-        version: SemanticVersion.parse("1.1.1"),
         module_name: module_name,
       )
 

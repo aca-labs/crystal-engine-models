@@ -1,5 +1,3 @@
-require "semantic_version"
-
 require "./base/model"
 require "./settings"
 require "./utilities/settings_helper"
@@ -37,7 +35,6 @@ module ACAEngine::Model
 
     attribute file_name : String # Path to driver, relative to repository directory
     attribute commit : String    # Commit/version of driver to compile
-    attribute version : SemanticVersion, converter: SemanticVersion::Converter
 
     belongs_to Repository, foreign_key: "repository_id"
 
@@ -75,7 +72,6 @@ module ACAEngine::Model
     validates :name, presence: true
     validates :role, presence: true
     validates :commit, presence: true
-    validates :version, presence: true
     validates :module_name, presence: true
     validates :file_name, presence: true
     validates :repository_id, presence: true

@@ -4,14 +4,12 @@ module ACAEngine::Model
   describe Driver do
     it "creates a driver" do
       driver = Generator.driver(role: Driver::Role::Service)
-      driver.version = SemanticVersion.parse("1.1.1")
       driver.save!
 
       driver.persisted?.should be_true
 
       driver.id.try &.should start_with "driver-"
       driver.role.should eq Driver::Role::Service
-      driver.version.should eq SemanticVersion.parse("1.1.1")
     end
 
     it "finds modules by driver" do
