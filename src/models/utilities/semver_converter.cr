@@ -1,7 +1,7 @@
 require "json"
 require "semantic_version"
 
-# NOTE: Previously used in `ACAEngine::Model::Driver`
+# NOTE: Previously used in `PlaceOS::Model::Driver`
 #
 struct SemanticVersion
   # Allows serialization to rethinkDB query language

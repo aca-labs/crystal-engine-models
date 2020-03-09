@@ -2,7 +2,7 @@ require "./base/model"
 require "./settings"
 require "./utilities/settings_helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   class Driver < ModelBase
     include RethinkORM::Timestamps
 

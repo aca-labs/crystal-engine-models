@@ -2,7 +2,7 @@ require "uri"
 require "json"
 require "./base/model"
 
-module ACAEngine::Model
+module PlaceOS::Model
   class Authority < ModelBase
     include RethinkORM::Timestamps
 

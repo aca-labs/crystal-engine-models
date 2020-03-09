@@ -1,12 +1,12 @@
 require "faker"
 require "random"
 
-require "../src/engine-models/*"
-require "../src/engine-models/**"
+require "../src/models/*"
+require "../src/models/**"
 
 RANDOM = Random.new
 
-module ACAEngine::Model
+module PlaceOS::Model
   # Defines generators for models
   module Generator
     def self.driver(role : Driver::Role? = nil, module_name : String? = nil, repo : Repository? = nil)
@@ -249,7 +249,7 @@ module ACAEngine::Model
       )
 
       UserJWT.new(
-        iss: "ACAE",
+        iss: "POS",
         iat: Time.utc,
         exp: 2.weeks.from_now,
         aud: Faker::Internet.email,
@@ -276,7 +276,7 @@ module ACAEngine::Model
       )
 
       UserJWT.new(
-        iss: "ACAE",
+        iss: "POS",
         iat: Time.utc,
         exp: 2.weeks.from_now,
         aud: Faker::Internet.email,

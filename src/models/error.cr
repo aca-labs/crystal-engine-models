@@ -1,4 +1,4 @@
-module ACAEngine::Model
+module PlaceOS::Model
   class Error < Exception
     getter message
   end

@@ -5,7 +5,7 @@ require "crypto/bcrypt/password"
 require "./authority"
 require "./base/model"
 
-module ACAEngine::Model
+module PlaceOS::Model
   class User < ModelBase
     include RethinkORM::Timestamps
     table :user

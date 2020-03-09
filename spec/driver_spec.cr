@@ -1,6 +1,6 @@
 require "./helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   describe Driver do
     it "creates a driver" do
       driver = Generator.driver(role: Driver::Role::Service)

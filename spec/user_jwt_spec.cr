@@ -1,6 +1,6 @@
 require "./helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   # Sample data
   USER_META = UserJWT::Metadata.new(
     name: "abcde",
@@ -9,7 +9,7 @@ module ACAEngine::Model
   )
 
   ATTRIBUTES = {
-    iss:  "ACAE",
+    iss:  "POS",
     iat:  Time.unix(1000),
     exp:  Time.unix(Int32::MAX),
     aud:  "protonmail.com",
@@ -48,7 +48,7 @@ module ACAEngine::Model
   -----END RSA PRIVATE KEY-----
   KEY
 
-  SAMPLE_JWT = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJBQ0FFIiwiaWF0IjoxMDAwLCJleHAiOjIxNDc0ODM2NDcsImF1ZCI6InByb3Rvbm1haWwuY29tIiwic3ViIjoiMTIzNCIsInUiOnsibiI6ImFiY2RlIiwiZSI6ImFiY2RlQHByb3Rvbm1haWwuY29tIiwicCI6M319.Vpw7paKnUMT3M-wLTd3TKoRIa8iBFc0uyz7GYIO4R-h8C9Dj5_a1OteNJ3xSgDHm6Rge8CxOKqIYkra19cjcJV15YDtsCk3ZVzoKy41wd_OVRanLpAvzVR8AF6fvZWoJDPmoVxF5Ov5CV2f0CmMsJJYUOmRqR4HUY7UO3hfglnBKCMKLNztFGgMCK4F7iDEjuho1boE8XuBOcpntPR7JsqvZy71q4Mg1btTWLTPQryjYp2-Z-tKQQMQ_genUNuqoS0_fXHTjlHAWkRbALE6H1wJGALxDROxlcLimxYZZsHIQS4H0KCPMg7EJPblVYEVvmpFnTzRQPwJGF_f1YNjSkg"
+  SAMPLE_JWT = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJQT1MiLCJpYXQiOjEwMDAsImV4cCI6MjE0NzQ4MzY0NywiYXVkIjoicHJvdG9ubWFpbC5jb20iLCJzdWIiOiIxMjM0IiwidSI6eyJuIjoiYWJjZGUiLCJlIjoiYWJjZGVAcHJvdG9ubWFpbC5jb20iLCJwIjozfX0.GZ9K-1a8Hqi3GDqS8p7KkU1WU6gFG83cMc5S3fBXTpX5jNUrJ_QcYmqE9MkE8uqsJFFzTCWS784dH0oqdseIxj0WT0nhC0bISRe4hRfuQXScxsIwG4XXIhZTLVssOT8I8McrsHKcVr-DnqjH0kHVea7Dx2sqan4kUQqgDEXsc7GqjCpBmd46kwuU4X3DdxGUP6g2bNuyXdkB_KuBW8D8CFsS4kRAyJMlzyYx3yJIzrhd5SYVtiQ0lejFrmSoIPqiHc7eFN6BB21U21JeblG11z4oMPbMUtX9OaKiBqNHgQMPdwv59Y--GcfBXLb7TbTdrI7s0m2mPZkyD6GH2_uKfw"
 
   describe UserJWT do
     it "satisfies round trip property" do

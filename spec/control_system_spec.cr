@@ -1,6 +1,6 @@
 require "./helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   describe ControlSystem do
     it "saves a control system" do
       cs = Generator.control_system

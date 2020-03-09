@@ -1,6 +1,6 @@
 require "./helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   mock_data = {
     {Encryption::Level::None, %({"sla": "99.?"})},
     {Encryption::Level::Support, %({"whales": "victor mcwhale"})},

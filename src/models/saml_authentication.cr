@@ -2,7 +2,7 @@ require "uri"
 require "json"
 require "./base/model"
 
-module ACAEngine::Model
+module PlaceOS::Model
   # See: https://github.com/omniauth/omniauth-saml
   class SamlAuthentication < ModelBase
     include RethinkORM::Timestamps
@@ -13,7 +13,7 @@ module ACAEngine::Model
     belongs_to Authority, foreign_key: "authority_id"
 
     # The name of your application
-    attribute issuer : String = "acaengine.com"
+    attribute issuer : String = "place.technology"
 
     # mapping of request params that exist during the request phase of OmniAuth that should to be sent to the IdP
     attribute idp_sso_target_url_runtime_params : Hash(String, String) = {} of String => String

@@ -2,7 +2,7 @@ require "uuid"
 
 require "./helper"
 
-module ACAEngine
+module PlaceOS
   describe Encryption do
     describe Encryption::Level::None do
       it "preserves plaintext" do

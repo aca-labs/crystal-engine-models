@@ -3,7 +3,7 @@ require "time"
 
 require "./base/model"
 
-module ACAEngine::Model
+module PlaceOS::Model
   # Class that pins engine's drivers to a specifc repository state
   # Allows external driver management from a VCS
   class Repository < ModelBase

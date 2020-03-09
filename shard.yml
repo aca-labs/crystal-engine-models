@@ -1,5 +1,5 @@
-name: engine-models
-version: 0.4.1
+name: models
+version: 0.5.0
 
 dependencies:
   # Data validation library

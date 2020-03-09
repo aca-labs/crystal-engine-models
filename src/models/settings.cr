@@ -5,7 +5,7 @@ require "./base/model"
 require "./error"
 require "./utilities/encryption"
 
-module ACAEngine::Model
+module PlaceOS::Model
   # TODO: Statically ensure a single parent id exists on the table
   class Settings < ModelBase
     include RethinkORM::Timestamps

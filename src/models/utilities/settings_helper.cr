@@ -2,7 +2,7 @@ require "rethinkdb-orm"
 
 require "../settings"
 
-module ACAEngine::Model
+module PlaceOS::Model
   module SettingsHelper
     abstract def settings_collection
 

@@ -1,6 +1,6 @@
 require "./helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   macro test_settings(klass)
     describe {{ klass }} do
       {% klass_name = klass.id.split("::").last.underscore.id %}

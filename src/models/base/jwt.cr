@@ -1,7 +1,7 @@
 require "jwt"
 require "time"
 
-module ACAEngine::Model
+module PlaceOS::Model
   # Base ORM for JWT
   abstract struct JWTBase
     include JSON::Serializable

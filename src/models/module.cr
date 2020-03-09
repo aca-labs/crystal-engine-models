@@ -6,7 +6,7 @@ require "./driver"
 require "./settings"
 require "./utilities/settings_helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   class Module < ModelBase
     include RethinkORM::Timestamps
     include SettingsHelper

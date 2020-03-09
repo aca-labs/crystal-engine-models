@@ -6,7 +6,7 @@ require "rethinkdb-orm"
 require "../utilities/encryption"
 require "../utilities/subset_json"
 
-module ACAEngine::Model
+module PlaceOS::Model
   # Base class for all Engine models
   abstract class ModelBase < RethinkORM::Base
     include Neuroplastic

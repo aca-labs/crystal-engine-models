@@ -1,12 +1,12 @@
 require "rethinkdb-orm"
 
-require "./engine-models/base/*"
+require "./models/base/*"
 
-module ACAEngine::Model
+module PlaceOS::Model
   # Expose RethinkDB connection
   # Use for configuration, raw queries
   class Connection < RethinkORM::Connection
   end
 end
 
-require "./engine-models/*"
+require "./models/*"

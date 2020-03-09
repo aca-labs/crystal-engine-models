@@ -1,6 +1,6 @@
 require "./base/jwt"
 
-module ACAEngine::Model
+module PlaceOS::Model
   struct UserJWT < JWTBase
     getter iss : String
 

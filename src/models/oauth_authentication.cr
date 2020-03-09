@@ -2,7 +2,7 @@ require "uri"
 require "json"
 require "./base/model"
 
-module ACAEngine::Model
+module PlaceOS::Model
   # See: https://github.com/omniauth/omniauth-oauth2
   # https://github.com/oauth-xx/oauth2
   class OAuthAuthentication < ModelBase

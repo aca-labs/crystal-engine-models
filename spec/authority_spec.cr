@@ -1,6 +1,6 @@
 require "./helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   describe Authority do
     it "saves an Authority" do
       inst = Generator.authority.save!

@@ -1,6 +1,6 @@
 require "./helper"
 
-module ACAEngine::Model
+module PlaceOS::Model
   describe Module do
     describe "persistence" do
       Driver::Role.values.each do |role|
