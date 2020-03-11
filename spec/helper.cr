@@ -8,7 +8,7 @@ require "./generator"
 # Configure DB
 db_name = "test"
 
-RethinkORM::Connection.configure do |settings|
+RethinkORM.configure do |settings|
   settings.db = db_name
 end
 

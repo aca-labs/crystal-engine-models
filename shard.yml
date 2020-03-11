@@ -23,7 +23,7 @@ dependencies:
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
-    version: ~> 2.4.3
+    version: ~> 2.6.1
 
 development_dependencies:
   faker:
