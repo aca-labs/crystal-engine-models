@@ -10,6 +10,14 @@ module PlaceOS::Model
           mod.persisted?.should be_true
         end
       end
+
+      it "adds a Logic module to parent system" do
+        driver = Generator.driver(role: Driver::Role::Logic)
+        mod = Generator.module(driver: driver).save!
+        mod.persisted?.should be_true
+
+        mod.control_system.not_nil!.modules.not_nil!.should contain(mod.id)
+      end
     end
 
     describe "merge_settings" do
@@ -29,8 +37,7 @@ module PlaceOS::Model
         control_system.zones = [zone.id.as(String)]
         control_system.update!
 
-        mod = Generator.module(driver: driver, control_system: control_system)
-        mod.save!
+        mod = Generator.module(driver: driver, control_system: control_system).save!
 
         module_settings_string = %(value: 2\n)
         module_settings = Generator.settings(mod: mod, settings_string: module_settings_string).save!
@@ -46,7 +53,8 @@ module PlaceOS::Model
         # Driver
         merged_settings["chop"].should eq 0
 
-        {driver, zone, control_system, mod}.each &.destroy
+        # Reset the parent association reference through `reload!`
+        {driver, zone, control_system, mod.reload!}.each &.destroy
         {control_system_settings, driver_settings, module_settings, zone_settings}.each do |setting|
           Settings.find(setting.id.as(String)).should be_nil
         end
@@ -84,7 +92,8 @@ module PlaceOS::Model
         # Driver
         merged_settings["chop"].should eq 0
 
-        {driver, zone, control_system, mod}.each &.destroy
+        # Reset the parent association reference through `reload!`
+        {driver, zone, control_system, mod.reload!}.each &.destroy
         {control_system_settings, driver_settings, module_settings, zone_settings}.each do |setting|
           Settings.find(setting.id.as(String)).should be_nil
         end

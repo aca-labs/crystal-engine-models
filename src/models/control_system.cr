@@ -82,6 +82,8 @@ module PlaceOS::Model
 
     # Provide a field for simplifying support
     attribute support_url : String
+
+    # TODO: add auto update of version in before_save
     attribute version : Int32 = 0
 
     ensure_unique :name do |name|
@@ -150,7 +152,7 @@ module PlaceOS::Model
       end
 
       # TODO:
-      # Do a query for the unencrypted settings beloning to the system
+      # Do a query for the unencrypted settings belonging to the system
       # Append extra features
       #
       # if (settings = @settings)

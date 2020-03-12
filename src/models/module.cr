@@ -56,6 +56,9 @@ module PlaceOS::Model
     attribute ignore_connected : Bool = false
     attribute ignore_startstop : Bool = false
 
+    # Add the Logic module directly to parent ControlSystem
+    after_create :add_logic_module
+
     # Finds the systems for which this module is in use
     def systems
       ControlSystem.by_module_id(self.id)
@@ -192,6 +195,20 @@ module PlaceOS::Model
       url_parsed = !!(url.scheme && url.host)
 
       self.validation_error(:ip, "address / hostname or port are not valid") unless url_parsed
+    end
+
+    # Logic modules are automatically added to the ControlSystem
+    #
+    protected def add_logic_module
+      return if role != Driver::Role::Logic
+      return unless (cs = self.control_system)
+
+      modules = cs.modules
+      if modules
+        cs.modules = modules << self.id.as(String)
+        cs.version = cs.version.as(Int32) + 1
+        cs.save!
+      end
     end
   end
 end
