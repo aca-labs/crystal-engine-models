@@ -13,7 +13,7 @@ RethinkORM.configure do |settings|
 end
 
 # Clear test tables on exit
-at_exit do
+Spec.after_suite do
   RethinkORM::Connection.raw do |q|
     q.db(db_name).table_list.for_each do |t|
       q.db(db_name).table(t).delete

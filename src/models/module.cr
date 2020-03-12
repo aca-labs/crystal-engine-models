@@ -59,6 +59,9 @@ module PlaceOS::Model
     # Add the Logic module directly to parent ControlSystem
     after_create :add_logic_module
 
+    # Remove the module from associated (if any) ControlSystem
+    before_destroy :remove_module
+
     # Finds the systems for which this module is in use
     def systems
       ControlSystem.by_module_id(self.id)
@@ -203,12 +206,28 @@ module PlaceOS::Model
       return if role != Driver::Role::Logic
       return unless (cs = self.control_system)
 
-      modules = cs.modules
-      if modules
-        cs.modules = modules << self.id.as(String)
-        cs.version = cs.version.as(Int32) + 1
-        cs.save!
+      modules = cs.modules.as(Array(String))
+      cs.modules = modules << self.id.as(String)
+      cs.version = cs.version.as(Int32) + 1
+      cs.save!
+    end
+
+    # Remove the module from associated ControlSystem
+    #
+    protected def remove_module
+      mod_id = self.id.as(String)
+
+      ControlSystem.table_query do |q|
+        q
+          .filter { |sys| sys["modules"].contains(mod_id) }
+          .replace { |sys|
+            sys.merge({
+              "modules" => sys["modules"].set_difference([mod_id]),
+              "version" => sys["version"] + 1,
+            })
+          }
       end
+      # TODO: log if there were failures
     end
   end
 end

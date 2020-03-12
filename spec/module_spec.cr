@@ -18,6 +18,27 @@ module PlaceOS::Model
 
         mod.control_system.not_nil!.modules.not_nil!.should contain(mod.id)
       end
+
+      it "removes module from parent system on destroy" do
+        random_id = UUID.random.to_s
+        control_system = Generator.control_system
+        control_system.modules = [random_id]
+        control_system.save!
+
+        driver = Generator.driver(role: Driver::Role::Logic)
+        mod = Generator.module(driver: driver, control_system: control_system).save!
+        mod.persisted?.should be_true
+        mod.control_system.not_nil!.modules.not_nil!.should contain(mod.id)
+
+        mod.destroy
+
+        control_system_modules = ControlSystem.find!(control_system.id).modules.not_nil!
+
+        # Removes the module reference on destroy
+        control_system_modules.should_not contain(mod.id)
+        # Preserves the existing modules
+        control_system_modules.should contain(random_id)
+      end
     end
 
     describe "merge_settings" do
