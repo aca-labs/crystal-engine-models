@@ -83,11 +83,11 @@ module PlaceOS::Model
     # Provide a field for simplifying support
     attribute support_url : String
 
-    # TODO: add auto update of version in before_save
     attribute version : Int32 = 0
 
+    # TODO: Ensure unique regardless of casing
     ensure_unique :name do |name|
-      "#{name.to_s.strip.downcase}"
+      "#{name.as(String).strip}"
     end
 
     # Obtains the control system's modules as json
