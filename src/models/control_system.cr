@@ -167,6 +167,34 @@ module PlaceOS::Model
     end
 
     # =======================
+    # Module Management
+    # =======================
+
+    before_destroy :cleanup_modules
+
+    # Remove Modules not associated with any other systems
+    # NOTE: Includes compulsory associated Logic Modules
+    def cleanup_modules
+      modules = self.modules.as(Array(String))
+      return if modules.empty?
+
+      # Locate modules that have no other associated ControlSystems
+      lonesome_modules = Module.raw_query do |r|
+        r.table(Module.table_name).get_all(modules).filter do |mod|
+          # Find the control systems that have the module
+          r.table(ControlSystem.table_name).filter do |sys|
+            sys["modules"].contains(mod["id"])
+          end.count.eq(1)
+        end
+      end
+
+      # Asynchronously remove the modules
+      lonesome_modules.map do |m|
+        future { m.destroy }
+      end.each(&.get)
+    end
+
+    # =======================
     # Zone Trigger Management
     # =======================
 

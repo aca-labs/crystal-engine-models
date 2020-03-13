@@ -17,6 +17,21 @@ module PlaceOS::Model
       cs.persisted?.should be_true
     end
 
+    it "removes modules with only self as parent on destroy" do
+      control_system = Generator.control_system
+      control_system.save!
+
+      driver = Generator.driver(role: Driver::Role::Logic)
+      mod = Generator.module(driver: driver, control_system: control_system).save!
+      mod.control_system.not_nil!.modules.not_nil!.should contain(mod.id)
+
+      control_system = ControlSystem.find!(control_system.id.as(String))
+      control_system.destroy
+
+      Module.find(mod.id.as(String)).should be_nil
+      driver.destroy
+    end
+
     describe "generation of json data" do
       it "#module_data" do
         cs = Generator.control_system.save!
