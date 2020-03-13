@@ -16,10 +16,10 @@ module PlaceOS::Model
     before_destroy :cleanup_modules
 
     enum Role
-      SSH
-      Device
-      Service
-      Websocket
+      SSH       =  0
+      Device    =  1
+      Service   =  2
+      Websocket =  3
       Logic     = 99
     end
 
