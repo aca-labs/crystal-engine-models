@@ -1,5 +1,5 @@
 name: models
-version: 0.5.1
+version: 0.5.2
 
 dependencies:
   # Data validation library
@@ -17,8 +17,7 @@ dependencies:
 
   # Elasticsearch extension for RethinkORM
   neuroplastic:
-    github: aca-labs/neuroplastic
-    branch: master
+    github: spider-gazelle/neuroplastic
 
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
