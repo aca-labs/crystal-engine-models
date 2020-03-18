@@ -233,8 +233,9 @@ module PlaceOS::Model
     end
 
     protected def set_name_and_role
-      self.role = driver.role
-      self.name = driver.module_name
+      driver_ref = driver.not_nil!
+      self.role = driver_ref.role
+      self.name = driver_ref.module_name
     end
   end
 end
