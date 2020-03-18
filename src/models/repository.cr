@@ -31,6 +31,8 @@ module PlaceOS::Model
     validates :uri, presence: true
     validates :commit_hash, presence: true
 
+    ensure_unique :folder_name
+
     def pull!
       if self.commit_hash == "head"
         self.updated_at = Time.utc
