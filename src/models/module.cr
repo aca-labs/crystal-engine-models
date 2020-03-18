@@ -31,7 +31,7 @@ module PlaceOS::Model
     attribute uri : String
 
     # Module name
-    attribute name : String, es_keyword: "keyword"
+    attribute name : String, es_keyword: "keyword", mass_assignment: false
 
     # Custom module names (in addition to what is defined in the driver)
     attribute custom_name : String
@@ -61,6 +61,9 @@ module PlaceOS::Model
 
     # Remove the module from associated (if any) ControlSystem
     before_destroy :remove_module
+
+    # ensure the fields are set correctly
+    before_save :set_name_and_role
 
     # Finds the systems for which this module is in use
     def systems
@@ -127,7 +130,6 @@ module PlaceOS::Model
       previous_def(driver)
       self.role = driver.role
       self.name = driver.module_name
-      self.custom_name = driver.module_name
     end
 
     validates :driver, presence: true
@@ -228,6 +230,11 @@ module PlaceOS::Model
           }
       end
       # TODO: log if there were failures
+    end
+
+    protected def set_name_and_role
+      self.role = driver.role
+      self.name = driver.module_name
     end
   end
 end
