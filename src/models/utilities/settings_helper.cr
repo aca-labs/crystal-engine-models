@@ -4,12 +4,10 @@ require "../settings"
 
 module PlaceOS::Model
   module SettingsHelper
-    abstract def settings_collection
-
-    macro settings_helper(type)
-      def settings_collection
-        RethinkORM::AssociationCollection({{ type }}, Settings).new(self)
-      end
+    # Attain the settings associated with the model
+    #
+    def settings_collection
+      RethinkORM::AssociationCollection(self.class, Settings).new(self)
     end
 
     # Get the settings at a particular encryption level

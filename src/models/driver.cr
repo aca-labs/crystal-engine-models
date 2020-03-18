@@ -5,10 +5,7 @@ require "./utilities/settings_helper"
 module PlaceOS::Model
   class Driver < ModelBase
     include RethinkORM::Timestamps
-
     include SettingsHelper
-    # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
-    settings_helper(Driver)
 
     table :driver
 

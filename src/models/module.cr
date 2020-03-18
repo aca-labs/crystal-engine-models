@@ -11,9 +11,6 @@ module PlaceOS::Model
     include RethinkORM::Timestamps
     include SettingsHelper
 
-    # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
-    settings_helper(Module)
-
     table :mod
 
     # The classes/files that this module requires to execute

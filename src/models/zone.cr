@@ -8,10 +8,7 @@ require "./utilities/settings_helper"
 module PlaceOS::Model
   class Zone < ModelBase
     include RethinkORM::Timestamps
-
     include SettingsHelper
-    # TODO: Remove once resolved https://github.com/crystal-lang/crystal/issues/5757
-    settings_helper(Zone)
 
     table :zone
 
