@@ -26,9 +26,8 @@ module PlaceOS::Model
     attribute last_name : String
     attribute building : String
 
-    attribute password_digest : String
-
-    attribute email_digest : String
+    attribute password_digest : String, mass_assignment: false
+    attribute email_digest : String, mass_assignment: false
     attribute card_number : String
 
     attribute deleted : Bool = false
