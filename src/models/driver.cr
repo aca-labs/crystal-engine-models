@@ -1,6 +1,8 @@
 require "./base/model"
-require "./settings"
 require "./utilities/settings_helper"
+
+require "./repository"
+require "./settings"
 
 module PlaceOS::Model
   class Driver < ModelBase

@@ -5,6 +5,11 @@ require "./base/model"
 require "./error"
 require "./utilities/encryption"
 
+require "./control_system"
+require "./driver"
+require "./module"
+require "./zone"
+
 module PlaceOS::Model
   # TODO: Statically ensure a single parent id exists on the table
   class Settings < ModelBase
