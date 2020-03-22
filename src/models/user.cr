@@ -18,6 +18,7 @@ module PlaceOS::Model
     attribute phone : String
     attribute country : String
     attribute image : String
+    attribute ui_theme : String
     attribute metadata : String
 
     attribute login_name : String

@@ -59,7 +59,7 @@ module PlaceOS::Model
     # Remove the module from associated (if any) ControlSystem
     before_destroy :remove_module
 
-    # ensure the fields are set correctly
+    # Ensure fields inherited from Driver are set correctly
     before_save :set_name_and_role
 
     # Finds the systems for which this module is in use
@@ -229,6 +229,8 @@ module PlaceOS::Model
       # TODO: log if there were failures
     end
 
+    # Set the name/role from the associated Driver
+    #
     protected def set_name_and_role
       driver_ref = driver.not_nil!
       self.role = driver_ref.role

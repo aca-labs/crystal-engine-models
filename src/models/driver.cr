@@ -88,7 +88,7 @@ module PlaceOS::Model
       self.modules.each &.destroy
     end
 
-    # Reload all modules to update their settings
+    # Reload all modules to update their name
     #
     protected def update_modules
       self.modules.each do |mod|
