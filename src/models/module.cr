@@ -129,6 +129,12 @@ module PlaceOS::Model
       self.name = driver.module_name
     end
 
+    # Use custom name if it is defined and non-empty, otherwise use module name
+    #
+    def resolved_name
+      self.custom_name.try { |n| !n.empty? } ? self.custom_name : self.name
+    end
+
     validates :driver, presence: true
 
     validate ->(this : Module) {

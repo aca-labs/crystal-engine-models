@@ -41,6 +41,25 @@ module PlaceOS::Model
       end
     end
 
+    describe "resolved_name" do
+      it "is the module name if no custom_name" do
+        mod = Generator.module
+        mod.resolved_name.should eq mod.name
+      end
+
+      it "is the module name if custom_name is empty" do
+        mod = Generator.module
+        mod.custom_name = ""
+        mod.resolved_name.should eq mod.name
+      end
+
+      it "is the custom_name if set" do
+        mod = Generator.module
+        mod.custom_name = UUID.random.to_s
+        mod.resolved_name.should eq mod.custom_name
+      end
+    end
+
     describe "merge_settings" do
       it "obeys logic module settings hierarchy" do
         driver = Generator.driver(role: Driver::Role::Logic).save!
