@@ -67,11 +67,11 @@ module PlaceOS::Model
       ControlSystem.by_module_id(self.id)
     end
 
-    # Traverse settings hierarchy, and merge settings
-    # [Read more](https://docs.google.com/document/d/1qAbdaYAl5f9rYU6xuT_3TXpnjCqsqeBezhDB-TbHvJA/edit#heading=h.ntoecut6aqkj)
-    def merge_settings
-      # Accumulate settings, starting with the module's
-      settings = [all_settings]
+    # Collect Settings ordered by hierarchy
+    #
+    def settings_hierarchy
+      # Accumulate settings, starting with the Module's
+      settings = master_settings
 
       if role == Driver::Role::Logic
         cs = self.control_system
@@ -94,15 +94,23 @@ module PlaceOS::Model
       end
 
       # Driver Settings
-      settings.push(driver.as(Model::Driver).all_settings)
+      settings.concat(driver.as(Model::Driver).master_settings)
 
+      settings.compact
+    end
+
+    # Merge settings hierarchy to JSON
+    #
+    # [Read more](https://docs.google.com/document/d/1qAbdaYAl5f9rYU6xuT_3TXpnjCqsqeBezhDB-TbHvJA/edit#heading=h.ntoecut6aqkj)
+    def merge_settings
       # Merge all settings, serialise to JSON
-      settings.compact.reverse.reduce({} of YAML::Any => YAML::Any) do |acc, setting_any|
-        acc.merge!(setting_any)
+      settings_hierarchy.reverse.reduce({} of YAML::Any => YAML::Any) do |merged, setting|
+        merged.merge!(setting.any)
       end.to_json
     end
 
     # Getter for the module's host
+    #
     def hostname
       case role
       when Driver::Role::SSH, Driver::Role::Device

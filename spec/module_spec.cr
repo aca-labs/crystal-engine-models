@@ -60,6 +60,42 @@ module PlaceOS::Model
       end
     end
 
+    describe "settings_hierarchy" do
+      it "obeys logic module settings hierarchy" do
+        driver = Generator.driver(role: Driver::Role::Logic).save!
+        driver_settings_string = %(value: 0\nscreen: 0\nfrangos: 0\nchop: 0)
+        Generator.settings(driver: driver, settings_string: driver_settings_string).save!
+
+        control_system = Generator.control_system.save!
+        control_system_settings_string = %(frangos: 1)
+        Generator.settings(control_system: control_system, settings_string: control_system_settings_string).save!
+
+        zone = Generator.zone.save!
+        zone_settings_string = %(screen: 1)
+        Generator.settings(zone: zone, settings_string: zone_settings_string).save!
+
+        control_system.zones = [zone.id.as(String)]
+        control_system.update!
+
+        mod = Generator.module(driver: driver, control_system: control_system).save!
+        module_settings_string = %(value: 2\n)
+        Generator.settings(mod: mod, settings_string: module_settings_string).save!
+
+        expected_settings_ids = [
+          mod.master_settings,
+          control_system.master_settings,
+          zone.master_settings,
+          driver.master_settings,
+        ].flat_map(&.compact_map(&.id))
+
+        settings_hierarchy_ids = mod.settings_hierarchy.compact_map(&.id)
+
+        settings_hierarchy_ids.should eq expected_settings_ids
+
+        {mod, control_system, zone, driver}.each &.destroy
+      end
+    end
+
     describe "merge_settings" do
       it "obeys logic module settings hierarchy" do
         driver = Generator.driver(role: Driver::Role::Logic).save!
