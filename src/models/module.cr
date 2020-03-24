@@ -69,6 +69,7 @@ module PlaceOS::Model
 
     # Collect Settings ordered by hierarchy
     #
+    # Module > (Control System > Zones) > Driver
     def settings_hierarchy
       # Accumulate settings, starting with the Module's
       settings = master_settings
