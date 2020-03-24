@@ -76,21 +76,8 @@ module PlaceOS::Model
       if role == Driver::Role::Logic
         cs = self.control_system
         raise "Missing control system: module_id=#{@id} control_system_id=#{@control_system_id}" unless cs
-
-        # Control System Settings
-        settings.push(cs.all_settings)
-
-        # Zone Settings
-        zone_ids = cs.zones.as(Array(String))
-        zones = Model::Zone.get_all(zone_ids, index: :id)
-        # Merge by highest associated zone
-        zone_ids.reverse_each do |zone_id|
-          zone = zones.find { |found_zone| found_zone.id == zone_id }
-          # TODO: Warn that zone not present rather than error
-          raise "Missing zone: module_id=#{@id} zone_id=#{zone_id}" unless zone
-
-          settings.push(zone.all_settings)
-        end
+        # Control System < Zone Settings
+        settings.concat(cs.settings_hierarchy)
       end
 
       # Driver Settings
