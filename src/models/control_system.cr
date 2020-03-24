@@ -82,6 +82,9 @@ module PlaceOS::Model
 
     attribute version : Int32 = 0
 
+    # Zones and settings are only required for confident coding
+    validates :name, presence: true
+
     # TODO: Ensure unique regardless of casing
     ensure_unique :name do |name|
       "#{name.as(String).strip}"
@@ -121,8 +124,27 @@ module PlaceOS::Model
       TriggerInstance.for(self.id)
     end
 
-    # Zones and settings are only required for confident coding
-    validates :name, presence: true
+    # Collect Settings ordered by hierarchy
+    #
+    # Control System < Zone/n < Zone/(n-1) < ... < Zone/0
+    def settings_hierarchy
+      # Start with Control System Settings
+      settings = master_settings
+
+      # Zone Settings
+      zone_ids = zones.as(Array(String))
+      zones = Model::Zone.get_all(zone_ids, index: :id)
+      # Merge by highest associated zone
+      zone_ids.reverse_each do |zone_id|
+        zone = zones.find { |found_zone| found_zone.id == zone_id }
+        # TODO: Warn that zone not present rather than error
+        raise "Missing zone: control_system_id=#{@id} zone_id=#{zone_id}" unless zone
+
+        settings.concat(zone.master_settings)
+      end
+
+      settings.compact
+    end
 
     # Validate support URI
     validate ->(this : ControlSystem) {
