@@ -79,28 +79,18 @@ module PlaceOS::Model
       Settings.get_all([id], index: :settings_id).to_a.sort_by!(&.created_at.as(Time))
     end
 
-    # Get settings for a given parent id
+    # Get settings for given parent id/s
     #
-    def self.for_parent(parent_id : String) : Array(Settings)
-      for_parent([parent_id])
+    def self.for_parent(parent_ids : String | Array(String)) : Array(Settings)
+      master_settings_query(parent_ids) { |q| q }
     end
 
-    # Get settings for given parent ids
+    # Query on master settings associated with ids
     #
-    def self.for_parent(parent_ids : Array(String)) : Array(Settings)
+    def self.master_settings_query(ids : String | Array(String))
+      ids = ids.is_a?(Array) ? ids : [ids]
       Settings.raw_query do |q|
-        q.table(Settings.table_name).get_all(parent_ids, index: :parent_id).filter { |r|
-          # Get documents where the settings_id does not exist, i.e. the masters
-          r.has_fields(:settings_id).not
-        }
-      end.to_a
-    end
-
-    # Query on master settings associated with parent_id
-    #
-    def self.master_settings_query(parent_id : String)
-      Settings.raw_query do |q|
-        yield q.table(Settings.table_name).filter({parent_id: parent_id}).filter { |r|
+        yield q.table(Settings.table_name).get_all(ids, index: :parent_id).filter { |r|
           # Get documents where the settings_id does not exist, i.e. is the master
           r.has_fields(:settings_id).not
         }
