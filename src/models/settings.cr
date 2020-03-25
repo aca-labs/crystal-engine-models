@@ -48,13 +48,14 @@ module PlaceOS::Model
 
     before_save :build_keys
     before_save :encrypt_settings
-    before_update :create_version
+    after_save :create_version
 
     # Generate a version upon save of a master Settings
     #
     def create_version
-      raise "Cannot update a Settings version" if is_version?
-      old_settings = encrypt(settings_string_was || settings_string.as(String))
+      return if is_version?
+
+      old_settings = encrypt(settings_string.as(String))
       attrs = attributes_tuple.merge({id: nil, created_at: nil, updated_at: nil, settings_string: old_settings})
       version = Settings.new(**attrs)
       version.settings_id = self.id
@@ -69,15 +70,27 @@ module PlaceOS::Model
       self.keys = YAML.parse(unencrypted).as_h?.try(&.keys.map(&.to_s)) || [] of String
     end
 
-    # Queries
-    ###########################################################################
-
     # Get version history
     #
-    # TODO: support ranges
-    def history
-      Settings.get_all([id], index: :settings_id).to_a.sort_by!(&.created_at.as(Time))
+    # Versions are in descending order of creation
+    def history(offset : Int32 = 0, limit : Int32 = 10)
+      slice_start = offset
+      slice_end = offset + limit
+
+      versions = Settings.raw_query do |r|
+        r
+          .table(Settings.table_name)
+          .get_all([parent_id.as(String)], index: :parent_id)
+          .filter({settings_id: id.as(String)})
+          .order_by(r.desc(:created_at))
+          .slice(slice_start, slice_end)
+      end
+
+      versions.to_a
     end
+
+    # Queries
+    ###########################################################################
 
     # Get settings for given parent id/s
     #
@@ -88,13 +101,24 @@ module PlaceOS::Model
     # Query on master settings associated with ids
     #
     def self.master_settings_query(ids : String | Array(String))
+      # Get documents where the settings_id does not exist, i.e. is the master
+      cursor = query(ids) do |q|
+        yield q.filter { |s| s.has_fields(:settings_id).not }
+      end
+
+      cursor
+        .to_a
+        .sort_by!(&.encryption_level.as(Encryption::Level))
+        .reverse
+    end
+
+    # Query all settings under parent_id
+    #
+    def self.query(ids : String | Array(String))
       ids = ids.is_a?(Array) ? ids : [ids]
       Settings.raw_query do |q|
-        yield q.table(Settings.table_name).get_all(ids, index: :parent_id).filter { |r|
-          # Get documents where the settings_id does not exist, i.e. is the master
-          r.has_fields(:settings_id).not
-        }
-      end.to_a.sort_by!(&.encryption_level.as(Encryption::Level)).reverse
+        yield q.table(Settings.table_name).get_all(ids, index: :parent_id)
+      end
     end
 
     # Encryption methods

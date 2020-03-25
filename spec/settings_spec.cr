@@ -67,7 +67,9 @@ module PlaceOS::Model
         settings.update!
       end
 
-      settings.history.map(&.any["a"]).should eq [0, 1, 2]
+      settings.history.map(&.any["a"]).should eq [3, 2, 1, 0]
+
+      settings.history(limit: 3).size.should eq 3
     end
   end
 
