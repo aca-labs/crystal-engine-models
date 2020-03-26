@@ -16,6 +16,14 @@ module PlaceOS::Model
     attribute description : String
     attribute tags : String
 
+    belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
+    has_many(
+      child_class: Zone,
+      collection_name: "children",
+      foreign_key: "parent_id",
+      dependent: :destroy
+    )
+
     attribute triggers : Array(String) = [] of String
 
     has_many(
