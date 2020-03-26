@@ -19,6 +19,42 @@ module PlaceOS::Model
       zone.persisted?.should be_true
     end
 
+    it "supports zone hierarchies" do
+      zone = Generator.zone
+
+      begin
+        zone.save!
+      rescue e : RethinkORM::Error::DocumentInvalid
+        inspect_error(e)
+        raise e
+      end
+
+      zone.should_not be_nil
+      id = zone.id.not_nil!
+      id.should start_with "zone-"
+      zone.persisted?.should be_true
+
+      zone2 = Generator.zone
+      zone2.parent_id = id
+      begin
+        zone2.save!
+      rescue e : RethinkORM::Error::DocumentInvalid
+        inspect_error(e)
+        raise e
+      end
+
+      id2 = zone2.id.not_nil!
+      id2.should start_with "zone-"
+
+      zone.children.all.map(&.id).should eq([id2])
+      zone2.parent.not_nil!.id.should eq(id)
+
+      # show that deleting the parent deletes the children
+      Zone.find!(id2).id.should eq(id2)
+      zone.destroy
+      Zone.find(id2).should eq(nil)
+    end
+
     it "should create triggers when added and removed from a zone" do
       # Set up
       zone = Generator.zone.save!
