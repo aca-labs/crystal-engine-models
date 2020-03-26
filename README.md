@@ -5,7 +5,7 @@
 The database models for PlaceOS in [crystal](https://crystal-lang.org/).
 
 PlaceOS is a distributed application, with many concurrent event sources that require persistence.
-We use [RethinkDB](https://rethinkdb.com) unify the database and the event bus, offering a consistent interface to state in the system.
+We use [RethinkDB](https://rethinkdb.com) to unify our database and event bus, giving us a consistent interface to state and events across the system.
 
 ## Testing
 
