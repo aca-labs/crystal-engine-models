@@ -46,7 +46,7 @@ module PlaceOS::Model
       id2 = zone2.id.not_nil!
       id2.should start_with "zone-"
 
-      zone.children.all.map(&.id).should eq([id2])
+      zone.children.to_a.map(&.id).should eq([id2])
       zone2.parent.not_nil!.id.should eq(id)
 
       # show that deleting the parent deletes the children
