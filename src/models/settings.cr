@@ -17,6 +17,7 @@ module PlaceOS::Model
 
     table :sets
 
+    attribute parent_type : ParentType
     attribute parent_id : String, es_keyword: "keyword"
     secondary_index :parent_id
 
@@ -42,6 +43,21 @@ module PlaceOS::Model
 
     validates :encryption_level, prescence: true
     validates :parent_id, prescence: true
+
+    # Parse `parent_id` and set the `parent_type` of the `Settings`
+    #
+    validate ->(this : Settings) {
+      return unless (parent_id = this.parent_id)
+      return if this.parent_type
+
+      if (parent_type = ParentType.from_id?(parent_id))
+        this.parent_type = parent_type
+      else
+        this.validation_error(:parent_type, "couldn't parse type from parent_id")
+      end
+    }
+
+    validates :parent_type, presence: true
 
     # Callbacks
     ###########################################################################
@@ -263,6 +279,28 @@ module PlaceOS::Model
     #
     def any : Hash(YAML::Any, YAML::Any)
       YAML.parse(decrypt).as_h
+    end
+
+    enum ParentType
+      ControlSystem
+      Driver
+      Module
+      Zone
+
+      def to_json(json)
+        json.string(to_s)
+      end
+
+      def self.from_id?(id) : ParentType?
+        case id
+        when .starts_with?(Model::ControlSystem.table_name) then ControlSystem
+        when .starts_with?(Model::Driver.table_name)        then Driver
+        when .starts_with?(Model::Module.table_name)        then Module
+        when .starts_with?(Model::Zone.table_name)          then Zone
+        else
+          nil
+        end
+      end
     end
   end
 end
