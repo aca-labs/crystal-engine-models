@@ -6,7 +6,7 @@ module PlaceOS::Model
       zone = Generator.zone
       zone.save!
 
-      meta = ZoneMetadata.new
+      meta = Zone::Metadata.new
       meta.zone_id = zone.id
       meta.name = "test"
 
