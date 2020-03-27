@@ -33,7 +33,15 @@ module PlaceOS::Model
       dependent: :destroy,
     )
 
-    # Encrypted yaml settings, with metadata
+    # Metadata belonging to this zone
+    has_many(
+      child_class: ZoneMetadata,
+      collection_name: "metadata",
+      foreign_key: "zone_id",
+      dependent: :destroy
+    )
+
+    # Encrypted yaml settings
     has_many(
       child_class: Settings,
       collection_name: "settings",
