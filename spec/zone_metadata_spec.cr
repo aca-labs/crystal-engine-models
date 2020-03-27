@@ -20,7 +20,7 @@ module PlaceOS::Model
 
       zone.metadata.to_a.first.id.should eq(meta.id)
       meta_find = ZoneMetadata.find(meta.id).not_nil!
-      meta_find.zone.not_nil!.id.should eq(meta.id)
+      meta_find.zone.not_nil!.id.should eq(zone.id)
     end
   end
 end
