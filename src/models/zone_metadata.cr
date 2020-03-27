@@ -5,7 +5,7 @@ require "./base/model"
 require "./zone"
 
 module PlaceOS::Model
-  class ZoneMetadata < ModelBase
+  class Zone::Metadata < ModelBase
     include RethinkORM::Timestamps
 
     table :metadata
