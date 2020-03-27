@@ -67,6 +67,38 @@ module PlaceOS::Model
       ControlSystem.by_module_id(self.id)
     end
 
+    def self.in_control_system(control_system_id : String)
+      Module.raw_query do |q|
+        q
+          .table(PlaceOS::Model::ControlSystem.table_name)
+          # Find the control system
+          .get(control_system_id)["modules"]
+          # Find the module ids for the control systems
+          .map { |id| q.table(PlaceOS::Model::Module.table_name).get(id) }
+          # Return all modules located
+          .filter { |m| m.has_fields("id") }
+          # Unique module ids
+          .distinct
+      end
+    end
+
+    def self.in_zone(zone_id : String)
+      Module.raw_query do |q|
+        q
+          .table(PlaceOS::Model::ControlSystem.table_name)
+          # Find control systems that have the zone
+          .filter { |sys| sys["zones"].contains(zone_id) }
+          # Find the module ids for the control systems
+          .concat_map { |sys|
+            sys["modules"].map { |id| q.table(PlaceOS::Model::Module.table_name).get(id) }
+          }
+          # Return all modules located
+          .filter { |m| m.has_fields("id") }
+          # Unique module ids
+          .distinct
+      end
+    end
+
     # Collect Settings ordered by hierarchy
     #
     # Module > (Control System > Zones) > Driver
