@@ -35,7 +35,7 @@ module PlaceOS::Model
 
     # Metadata belonging to this zone
     has_many(
-      child_class: ZoneMetadata,
+      child_class: Zone::Metadata,
       collection_name: "metadata",
       foreign_key: "zone_id",
       dependent: :destroy
