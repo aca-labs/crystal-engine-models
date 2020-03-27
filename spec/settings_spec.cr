@@ -100,6 +100,71 @@ module PlaceOS::Model
       end
     end
 
+    describe "#dependent_modules" do
+      it "gets modules dependent on setting for Driver" do
+        driver = Generator.driver(role: Driver::Role::SSH).save!
+        settings = Generator.settings(driver: driver).save!
+        mod = Generator.module(driver: driver).save!
+
+        settings
+          .dependent_modules
+          .first
+          .id
+          .should eq mod.id
+
+        {mod, driver}.each &.destroy
+      end
+
+      it "gets modules dependent on setting for Module" do
+        mod = Generator.module.save!
+        settings = Generator.settings(mod: mod).save!
+
+        settings
+          .dependent_modules
+          .first
+          .id
+          .should eq mod.id
+
+        mod.destroy
+      end
+
+      it "gets logic modules dependent on setting for ControlSystem" do
+        control_system = Generator.control_system.save!
+        settings = Generator.settings(control_system: control_system).save!
+        driver = Generator.driver(role: Driver::Role::Logic).save!
+        mod = Generator.module(driver: driver).save!
+
+        control_system.modules = [mod.id.as(String)]
+        control_system.update!
+
+        settings
+          .dependent_modules
+          .first
+          .id
+          .should eq mod.id
+
+        {control_system, driver, mod}.each &.destroy
+      end
+
+      it "gets logic modules dependent on setting for Zone" do
+        control_system = Generator.control_system.save!
+        zone = Generator.zone.save!
+        settings = Generator.settings(zone: zone).save!
+        driver = Generator.driver(role: Driver::Role::Logic).save!
+        mod = Generator.module(driver: driver).save!
+
+        control_system.zones = [zone.id.as(String)]
+        control_system.modules = [mod.id.as(String)]
+        control_system.update!
+
+        settings
+          .dependent_modules
+          .first
+          .id
+          .should eq mod.id
+
+        {control_system, zone, driver, mod}.each &.destroy
+      end
     end
 
     it "#get_setting_for" do

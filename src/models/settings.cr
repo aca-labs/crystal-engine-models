@@ -59,6 +59,30 @@ module PlaceOS::Model
 
     validates :parent_type, presence: true
 
+    # Locate the modules that will be affected by the change of this setting
+    #
+    def dependent_modules : Array(Model::Module)
+      model_id = parent_id
+      return [] of Module if model_id.nil? || parent_type.nil?
+
+      case parent_type
+      when ParentType::Module
+        [Module.find!(model_id)]
+      when ParentType::Driver
+        Module.by_driver_id(model_id).to_a
+      when ParentType::ControlSystem
+        Module
+          .in_control_system(model_id)
+          .select { |m| m.role == Driver::Role::Logic }
+          .to_a
+      when ParentType::Zone
+        Module
+          .in_zone(model_id)
+          .select { |m| m.role == Driver::Role::Logic }
+          .to_a
+      end.as(Array(Module))
+    end
+
     # Callbacks
     ###########################################################################
 
