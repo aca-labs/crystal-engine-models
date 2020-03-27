@@ -41,6 +41,36 @@ module PlaceOS::Model
       end
     end
 
+    describe "locating modules" do
+      it "in_zone" do
+        control_system = Generator.control_system.save!
+        zone = Generator.zone.save!
+        mod = Generator.module(control_system: control_system).save!
+        control_system.zones = [zone.id.as(String)]
+        control_system.modules = [mod.id.as(String)]
+        control_system.update!
+
+        Module
+          .in_zone(zone.id.as(String))
+          .first
+          .id
+          .should eq mod.id
+      end
+
+      it "in_control_system" do
+        control_system = Generator.control_system.save!
+        mod = Generator.module(control_system: control_system).save!
+        control_system.modules = [mod.id.as(String)]
+        control_system.save!
+
+        Module
+          .in_control_system(control_system.id.as(String))
+          .first
+          .id
+          .should eq mod.id
+      end
+    end
+
     describe "resolved_name" do
       it "is the module name if no custom_name" do
         mod = Generator.module
