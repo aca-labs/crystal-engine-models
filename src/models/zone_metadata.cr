@@ -18,6 +18,9 @@ module PlaceOS::Model
 
     validates :zone, presence: true
     validates :name, presence: true
-    ensure_unique :name
+
+    ensure_unique :name, scope: [:zone_id, :name] do |zone_id, name|
+      {zone_id, name.strip.downcase}
+    end
   end
 end

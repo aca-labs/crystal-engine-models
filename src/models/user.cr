@@ -60,8 +60,13 @@ module PlaceOS::Model
       {authority_id, email.strip.downcase}
     end
 
-    ensure_unique :login_name
-    ensure_unique :staff_id
+    ensure_unique :login_name, scope: [:authority_id, :login_name] do |authority_id, login_name|
+      {authority_id, login_name.strip.downcase}
+    end
+
+    ensure_unique :staff_id, scope: [:authority_id, :staff_id] do |authority_id, staff_id|
+      {authority_id, staff_id.strip.downcase}
+    end
 
     # Publically visible fields
     PUBLIC_DATA = {
