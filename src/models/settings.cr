@@ -149,7 +149,7 @@ module PlaceOS::Model
       cursor
         .to_a
         .sort_by!(&.encryption_level.as(Encryption::Level))
-        .reverse
+        .reverse!
     end
 
     # Query all settings under parent_id
