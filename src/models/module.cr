@@ -236,7 +236,6 @@ module PlaceOS::Model
     # Logic modules are automatically added to the ControlSystem
     #
     protected def add_logic_module
-      return if role != Driver::Role::Logic
       return unless (cs = self.control_system)
 
       modules = cs.modules.as(Array(String))

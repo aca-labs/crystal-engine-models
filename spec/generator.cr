@@ -105,8 +105,10 @@ module PlaceOS::Model
       # Set driver
       mod.driver = driver
 
-      # Set cs
-      mod.control_system = !control_system ? Generator.control_system.save! : control_system
+      if driver.role == Driver::Role::Logic
+        # Set cs
+        mod.control_system = !control_system ? Generator.control_system.save! : control_system
+      end
 
       mod
     end
