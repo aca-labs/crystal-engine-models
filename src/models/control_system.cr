@@ -214,6 +214,71 @@ module PlaceOS::Model
       end.each(&.get)
     end
 
+    # Removes the module from the system and deletes it if not used elsewhere
+    #
+    def add_module(module_id : String)
+      mods = self.modules
+      if mods && !mods.includes?(module_id) && ControlSystem.add_module(id.as(String), module_id)
+        self.modules = mods | [module_id]
+        self.version = ControlSystem.table_query(&.get(id.as(String))["version"]).as_i
+      end
+    end
+
+    def self.add_module(control_system_id : String, module_id : String)
+      response = Model::ControlSystem.table_query do |q|
+        q
+          .get(control_system_id)
+          .update { |sys|
+            {
+              "modules" => sys["modules"].set_insert(module_id),
+              "version" => sys["version"] + 1,
+            }
+          }
+      end
+
+      {"replaced", "updated"}.any? { |k| response[k].try(&.as_i) || 0 > 0 }
+    end
+
+    # Removes the module from the system and deletes it if not used elsewhere
+    #
+    def remove_module(module_id : String)
+      mods = self.modules
+      if mods && mods.includes?(module_id) && ControlSystem.remove_module(id.as(String), module_id)
+        mods.delete(module_id)
+        self.version = ControlSystem.table_query(&.get(id.as(String))["version"]).as_i
+      end
+    end
+
+    def self.remove_module(control_system_id, module_id)
+      response = ControlSystem.table_query do |q|
+        q
+          .get(control_system_id)
+          .update { |sys|
+            {
+              "modules" => sys["modules"].set_difference([module_id]),
+              "version" => sys["version"] + 1,
+            }
+          }
+      end
+
+      return false unless {"replaced", "updated"}.any? { |k| response[k].try(&.as_i) || 0 > 0 }
+
+      # Keep if any other ControlSystem is using the module
+      still_in_use = ControlSystem.using_module(module_id).any? do |sys|
+        sys.id != control_system_id
+      end
+
+      if !still_in_use
+        # TODO: Global Logger
+        #   logger.info "module (#{module_id}) removed as not in any other systems"
+        Module.find(module_id).try(&.destroy)
+        # else
+        #   logger.info "module (#{module_id}) still in use"
+      end
+
+      true
+    end
+
     # =======================
     # Zone Trigger Management
     # =======================
