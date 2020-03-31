@@ -249,17 +249,17 @@ module PlaceOS::Model
     protected def remove_module
       mod_id = self.id.as(String)
 
+      # TODO: log if there were failures
       ControlSystem.table_query do |q|
         q
           .filter { |sys| sys["modules"].contains(mod_id) }
-          .replace { |sys|
-            sys.merge({
+          .update { |sys|
+            {
               "modules" => sys["modules"].set_difference([mod_id]),
               "version" => sys["version"] + 1,
-            })
+            }
           }
       end
-      # TODO: log if there were failures
     end
 
     # Set the name/role from the associated Driver
