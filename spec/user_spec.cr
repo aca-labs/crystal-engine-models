@@ -6,7 +6,7 @@ module PlaceOS::Model
   describe User do
     it "saves a User" do
       user = Generator.user.save!
-      User.find!(user.id).id.should eq user.id
+      User.find!(user.id.as(String)).id.should eq user.id
     end
 
     it "sets email digest on save" do

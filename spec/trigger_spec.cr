@@ -4,7 +4,7 @@ module PlaceOS::Model
   describe Trigger do
     it "saves a trigger" do
       inst = Generator.trigger.save!
-      Trigger.find!(inst.id).id.should eq inst.id
+      Trigger.find!(inst.id.as(String)).id.should eq inst.id
     end
 
     it "validates webhook methods" do

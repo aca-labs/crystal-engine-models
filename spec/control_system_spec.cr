@@ -163,24 +163,20 @@ module PlaceOS::Model
       # Set zones on the ControlSystem
       cs.zones = [zone_id, zone2_id] if zone_id && zone2_id
       cs.save!
+      cs_id = cs.id.as(String)
 
-      cs = ControlSystem.find! cs.id
+      cs = ControlSystem.find!(cs_id)
       cs.triggers.to_a.size.should eq 1
       cs.triggers.to_a[0].zone_id.should eq zone.id
 
       cs.zones = [zone2_id] if zone2_id
       cs.save!
 
-      cs = ControlSystem.find! cs.id
+      cs = ControlSystem.find!(cs_id)
       cs.triggers.to_a.size.should eq 0
       zone.trigger_instances.to_a.size.should eq 0
 
-      {cs, zone, zone2, trigger}.each do |m|
-        begin
-          m.destroy
-        rescue
-        end
-      end
+      {cs, zone, zone2, trigger}.each &.destroy
     end
   end
 end

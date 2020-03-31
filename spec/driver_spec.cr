@@ -19,7 +19,7 @@ module PlaceOS::Model
       driver.persisted?.should be_true
       mod.persisted?.should be_true
 
-      Module.by_driver_id(driver.id).first.id.should eq mod.id
+      Module.by_driver_id(driver.id.as(String)).first.id.should eq mod.id
     end
 
     describe "callbacks" do
@@ -30,9 +30,9 @@ module PlaceOS::Model
         driver.persisted?.should be_true
         mod.persisted?.should be_true
 
-        Module.by_driver_id(driver.id).first.id.should eq mod.id
+        Module.by_driver_id(driver.id.as(String)).first.id.should eq mod.id
         driver.destroy
-        Module.find(mod.id).should be_nil
+        Module.find(mod.id.as(String)).should be_nil
       end
 
       it "#update_modules updates dependent modules' driver metadata" do
@@ -46,7 +46,7 @@ module PlaceOS::Model
         driver.save!
         driver.persisted?.should be_true
 
-        Module.find!(mod.id).role.should eq Driver::Role::SSH
+        Module.find!(mod.id.as(String)).role.should eq Driver::Role::SSH
       end
     end
   end

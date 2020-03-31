@@ -24,6 +24,7 @@ module PlaceOS::Model
         control_system = Generator.control_system
         control_system.modules = [random_id]
         control_system.save!
+        control_system_id = control_system.id.as(String)
 
         driver = Generator.driver(role: Driver::Role::Logic)
         mod = Generator.module(driver: driver, control_system: control_system).save!
@@ -32,7 +33,7 @@ module PlaceOS::Model
 
         mod.destroy
 
-        control_system_modules = ControlSystem.find!(control_system.id).modules.not_nil!
+        control_system_modules = ControlSystem.find!(control_system_id).modules.not_nil!
 
         # Removes the module reference on destroy
         control_system_modules.should_not contain(mod.id)

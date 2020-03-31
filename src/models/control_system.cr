@@ -249,7 +249,7 @@ module PlaceOS::Model
       end
     end
 
-    def self.remove_module(control_system_id, module_id)
+    def self.remove_module(control_system_id : String, module_id : String)
       response = ControlSystem.table_query do |q|
         q
           .get(control_system_id)

@@ -17,9 +17,9 @@ module PlaceOS::Model
         raise e
       end
 
-      zone.metadata.to_a.first.id.should eq(meta.id)
-      meta_find = Zone::Metadata.find!(meta.id)
-      meta_find.zone.not_nil!.id.should eq(zone.id)
+      zone.metadata.to_a.first.id.should eq meta.id
+      meta_find = Zone::Metadata.find!(meta.id.as(String))
+      meta_find.zone.not_nil!.id.should eq zone.id
     end
   end
 end

@@ -50,7 +50,7 @@ module PlaceOS::Model
       self.email_digest = Digest::MD5.hexdigest(self.email.as(String))
     end
 
-    def self.find_by_email(authority_id, email)
+    def self.find_by_email(authority_id : String, email : String)
       User.where(email: email, authority_id: authority_id).first?
     end
 
@@ -86,11 +86,11 @@ module PlaceOS::Model
     subset_json(:as_public_json, PUBLIC_DATA)
     subset_json(:as_admin_json, ADMIN_DATA)
 
-    def self.find_by_login_name(login_name)
+    def self.find_by_login_name(login_name : String)
       User.get_all([login_name], index: :login_name).first?
     end
 
-    def self.find_by_staff_id(staff_id)
+    def self.find_by_staff_id(staff_id : String)
       User.get_all([staff_id], index: :staff_id).first?
     end
 
@@ -120,7 +120,7 @@ module PlaceOS::Model
 
     secondary_index :authority_id
 
-    def by_authority_id(auth_id)
+    def by_authority_id(auth_id : String)
       User.get_all([auth_id], index: :authority_id)
     end
 

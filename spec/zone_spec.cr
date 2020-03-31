@@ -46,13 +46,13 @@ module PlaceOS::Model
       id2 = zone2.id.not_nil!
       id2.should start_with "zone-"
 
-      zone.children.to_a.map(&.id).should eq([id2])
-      zone2.parent.not_nil!.id.should eq(id)
+      zone.children.to_a.map(&.id).should eq [id2]
+      zone2.parent.not_nil!.id.should eq id
 
       # show that deleting the parent deletes the children
-      Zone.find!(id2).id.should eq(id2)
+      Zone.find!(id2.as(String)).id.should eq id2
       zone.destroy
-      Zone.find(id2).should eq(nil)
+      Zone.find(id2.as(String)).should be_nil
     end
 
     it "should create triggers when added and removed from a zone" do
@@ -76,25 +76,21 @@ module PlaceOS::Model
       zone.triggers_changed?.should be_true
       zone.save
 
-      cs.triggers.to_a.size.should eq 1
-      cs.triggers.to_a[0].zone_id.should eq zone.id
+      trigs = cs.triggers.to_a
+      trigs.size.should eq 1
+      trigs.first.zone_id.should eq zone.id
 
       # Reload the relationships
-      zone = Zone.find! zone.id
+      zone = Zone.find!(zone.id.as(String))
 
       zone.trigger_instances.to_a.size.should eq 1
       zone.triggers = [] of String
       zone.save
 
-      zone = Zone.find! zone.id
+      zone = Zone.find!(zone.id.as(String))
       zone.trigger_instances.to_a.size.should eq 0
 
-      {cs, zone, trigger}.each do |m|
-        begin
-          m.destroy
-        rescue
-        end
-      end
+      {cs, zone, trigger}.each &.destroy
     end
   end
 end

@@ -5,7 +5,7 @@ module PlaceOS::Model
     it "saves a TriggerInstance" do
       trigger = Generator.trigger.save!
       inst = Generator.trigger_instance(trigger).save!
-      id = TriggerInstance.find!(inst.id).id
+      id = TriggerInstance.find!(inst.id.as(String)).id
       id.should eq inst.id
     end
 
@@ -30,7 +30,7 @@ module PlaceOS::Model
         inst.stop
 
         inst.enabled.should be_false
-        TriggerInstance.find!(inst.id).enabled.should be_false
+        TriggerInstance.find!(inst.id.as(String)).enabled.should be_false
 
         inst.destroy
       end
@@ -44,7 +44,7 @@ module PlaceOS::Model
         inst.start
         inst.enabled.should be_true
 
-        TriggerInstance.find!(inst.id).enabled.should be_true
+        TriggerInstance.find!(inst.id.as(String)).enabled.should be_true
         inst.destroy
       end
     end
@@ -54,7 +54,7 @@ module PlaceOS::Model
         inst = Generator.trigger_instance.save!
         trigger = inst.trigger.as(Trigger)
 
-        id = TriggerInstance.of(trigger.id).first?.try(&.id)
+        id = TriggerInstance.of(trigger.id.as(String)).first?.try(&.id)
         id.should eq inst.id
       end
 
@@ -62,7 +62,7 @@ module PlaceOS::Model
         inst = Generator.trigger_instance.save!
         cs = inst.control_system.as(ControlSystem)
 
-        id = TriggerInstance.for(cs.id).first?.try(&.id)
+        id = TriggerInstance.for(cs.id.as(String)).first?.try(&.id)
         id.should eq inst.id
       end
     end
