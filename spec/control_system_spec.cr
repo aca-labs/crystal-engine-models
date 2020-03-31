@@ -130,7 +130,36 @@ module PlaceOS::Model
 
         {control_system, driver, mod}.each &.destroy
       end
-      pending "deletes module if no longer referenced"
+
+      it "deletes module if no longer referenced" do
+        control_system = Generator.control_system
+        control_system.save!
+
+        control_system_id = control_system.id.as(String)
+
+        driver = Generator.driver(role: Driver::Role::SSH)
+        mod = Generator.module(driver: driver).save!
+        module_id = mod.id.as(String)
+
+        control_system.modules = [module_id]
+        control_system.save!
+
+        cs = ControlSystem.find!(control_system_id)
+
+        version = cs.version.as(Int32)
+
+        cs.modules.not_nil!.should contain module_id
+
+        control_system.remove_module(module_id)
+
+        cs = ControlSystem.find!(control_system_id)
+        cs.modules.not_nil!.should_not contain module_id
+        cs.version.should eq (version + 1)
+
+        Module.exists?(module_id).should be_false
+
+        {control_system, driver, mod}.each &.destroy
+      end
     end
 
     it "should create triggers when added and removed from a zone" do
