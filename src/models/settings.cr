@@ -290,19 +290,29 @@ module PlaceOS::Model
     # Decrypts settings, encodes as a json object
     #
     def settings_json
-      settings_any.to_json
+      any.to_json
     end
 
     # Decrypts settings for a user, merges into single JSON object
     #
     def any(user : User) : Hash(YAML::Any, YAML::Any)?
-      decrypt_for(user).try(&->YAML.parse(String).as_h)
+      decrypt_for(user).try { |s| Settings.parse_settings_string(s) }
     end
 
     # Decrypts settings, merges into single JSON object
     #
     def any : Hash(YAML::Any, YAML::Any)
-      YAML.parse(decrypt).as_h
+      Settings.parse_settings_string(decrypt)
+    end
+
+    protected def self.parse_settings_string(settings_string : String)
+      if settings_string.empty?
+        {} of YAML::Any => YAML::Any
+      else
+        YAML.parse(settings_string).as_h
+      end
+    rescue
+      raise Error.new("Failed to parse YAML settings: #{settings_string}")
     end
 
     enum ParentType
