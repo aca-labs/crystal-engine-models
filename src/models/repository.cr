@@ -20,7 +20,7 @@ module PlaceOS::Model
     attribute folder_name : String
     attribute description : String
     attribute uri : String
-    attribute commit_hash : String = "head"
+    attribute commit_hash : String = "HEAD"
 
     enum_attribute repo_type : Type = Type::Driver, column_type: String, es_type: "text"
 
@@ -34,10 +34,10 @@ module PlaceOS::Model
     ensure_unique :folder_name
 
     def pull!
-      if self.commit_hash == "head"
+      if self.commit_hash == "HEAD"
         self.updated_at = Time.utc
       else
-        self.commit_hash = "head"
+        self.commit_hash = "HEAD"
       end
 
       self.save!

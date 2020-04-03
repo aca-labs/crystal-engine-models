@@ -44,7 +44,7 @@ module PlaceOS::Model
         folder_name: Faker::Hacker.noun,
         description: Faker::Hacker.noun,
         uri: Faker::Internet.url,
-        commit_hash: "head",
+        commit_hash: "HEAD",
       )
     end
 
