@@ -25,7 +25,7 @@ module PlaceOS::Model
     attribute makebreak : Bool = false
 
     # HTTP Service module
-    attribute uri : String
+    attribute uri : String, es_keyword: "keyword"
 
     # Module name
     attribute name : String, es_keyword: "keyword", mass_assignment: false
