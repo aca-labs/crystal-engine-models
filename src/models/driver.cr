@@ -82,6 +82,24 @@ module PlaceOS::Model
       this.validation_error(:repository, "should be a driver repository") unless repo.repo_type == Repository::Type::Driver
     }
 
+    RECOMPILE_PREFIX = "RECOMPILE-"
+
+    # Returns the commit hash if the driver has a recompile commit hash
+    def recompile_commit?
+      commit_hash = self.commit
+      if commit_hash && commit_hash.starts_with?(RECOMPILE_PREFIX)
+        commit_hash.lchop(RECOMPILE_PREFIX)
+      end
+    end
+
+    # Sets the commit hash of the driver for a recompile event
+    def recompile(commit_hash : String? = nil)
+      commit_hash ||= self.commit
+      if commit_hash
+        self.update_fields(commit: RECOMPILE_PREFIX + commit_hash)
+      end
+    end
+
     # Delete all the module references relying on this driver
     #
     protected def cleanup_modules
