@@ -167,8 +167,10 @@ module PlaceOS::Model
 
     validate ->(this : Module) {
       driver = this.driver
-      return if driver.nil?
-      case driver.role
+      role = driver.try(&.role)
+      return if driver.nil? || role.nil?
+
+      case role
       when Driver::Role::Service, Driver::Role::Websocket
         this.validate_service_module(driver.role)
       when Driver::Role::Logic

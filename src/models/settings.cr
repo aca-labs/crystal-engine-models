@@ -63,9 +63,10 @@ module PlaceOS::Model
     #
     def dependent_modules : Array(Model::Module)
       model_id = parent_id
-      return [] of Module if model_id.nil? || parent_type.nil?
+      model_type = parent_type
+      return [] of Module if model_id.nil? || model_type.nil?
 
-      case parent_type
+      case model_type
       when ParentType::Module
         [Module.find!(model_id)]
       when ParentType::Driver
