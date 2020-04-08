@@ -18,7 +18,7 @@ module PlaceOS::Model
 
     belongs_to ControlSystem, foreign_key: "control_system_id"
 
-    attribute ip : String
+    attribute ip : String, es_keyword: "ip"
     attribute port : Int32
     attribute tls : Bool = false
     attribute udp : Bool = false
