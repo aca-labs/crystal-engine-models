@@ -1,5 +1,7 @@
-require "uuid"
 require "json"
+require "time"
+require "uuid"
+
 require "./base/model"
 
 module PlaceOS::Model
@@ -15,7 +17,7 @@ module PlaceOS::Model
     attribute redirect_uri : String
     attribute skip_authorization : Bool = false
     attribute confidential : Bool = false
-    attribute revoked_at : UInt64
+    attribute revoked_at : Time, converter: Time::EpochConverter
 
     attribute uid : String
     ensure_unique :uid, create_index: true
