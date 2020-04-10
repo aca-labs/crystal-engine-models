@@ -1,11 +1,11 @@
 name: models
-version: 0.8.1
+version: 1.0.0
 
 dependencies:
   # Data validation library
   active-model:
     github: spider-gazelle/active-model
-    branch: master
+    version: ~> 1.8
 
   # Data validation library
   CrystalEmail:
@@ -18,12 +18,12 @@ dependencies:
   # Elasticsearch extension for RethinkORM
   neuroplastic:
     github: spider-gazelle/neuroplastic
-    branch: master
+    version: ~> 1.4
 
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
-    branch: master
+    version: ~> 2.7
 
 development_dependencies:
   faker:
