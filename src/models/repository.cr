@@ -31,7 +31,9 @@ module PlaceOS::Model
     validates :uri, presence: true
     validates :commit_hash, presence: true
 
-    ensure_unique :folder_name
+    ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
+      {repo_type.to_s, folder_name.strip.downcase}
+    end
 
     def pull!
       if self.commit_hash == "HEAD"
