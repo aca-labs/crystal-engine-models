@@ -33,6 +33,13 @@ module PlaceOS::Model
 
     attribute deleted : Bool = false
 
+    has_many(
+      child_class: UserAuthLookup,
+      dependent: :destroy,
+      foreign_key: "user_id",
+      collection_name: :auth_lookups
+    )
+
     validates :email, presence: true
     validates :authority_id, presence: true
 
