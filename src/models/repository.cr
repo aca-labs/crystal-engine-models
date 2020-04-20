@@ -31,9 +31,11 @@ module PlaceOS::Model
     validates :uri, presence: true
     validates :commit_hash, presence: true
 
-    ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
-      {repo_type, folder_name.strip.downcase}
-    end
+    # TODO:: scope this to repo type - currently errors `undefined method 'to_reql' for PlaceOS::Model::Repository::Type`
+    #ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
+    #  {repo_type, folder_name.strip.downcase}
+    #end
+    ensure_unique :folder_name
 
     def pull!
       if self.commit_hash == "HEAD"
