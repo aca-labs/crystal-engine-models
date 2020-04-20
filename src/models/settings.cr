@@ -16,8 +16,6 @@ module PlaceOS::Model
     include RethinkORM::Timestamps
 
     table :sets
-
-    attribute parent_type : ParentType
     attribute parent_id : String, es_keyword: "keyword"
     secondary_index :parent_id
 
@@ -43,6 +41,31 @@ module PlaceOS::Model
 
     validates :encryption_level, prescence: true
     validates :parent_id, prescence: true
+
+    # Possible parent documents
+    enum ParentType
+      ControlSystem
+      Driver
+      Module
+      Zone
+
+      def to_json(json)
+        json.string(to_s)
+      end
+
+      def self.from_id?(id) : ParentType?
+        case id
+        when .starts_with?(Model::ControlSystem.table_name) then ControlSystem
+        when .starts_with?(Model::Driver.table_name)        then Driver
+        when .starts_with?(Model::Module.table_name)        then Module
+        when .starts_with?(Model::Zone.table_name)          then Zone
+        else
+          nil
+        end
+      end
+    end
+
+    enum_attribute parent_type : ParentType
 
     # Parse `parent_id` and set the `parent_type` of the `Settings`
     #
@@ -314,28 +337,6 @@ module PlaceOS::Model
       end
     rescue
       raise Error.new("Failed to parse YAML settings: #{settings_string}")
-    end
-
-    enum ParentType
-      ControlSystem
-      Driver
-      Module
-      Zone
-
-      def to_json(json)
-        json.string(to_s)
-      end
-
-      def self.from_id?(id) : ParentType?
-        case id
-        when .starts_with?(Model::ControlSystem.table_name) then ControlSystem
-        when .starts_with?(Model::Driver.table_name)        then Driver
-        when .starts_with?(Model::Module.table_name)        then Module
-        when .starts_with?(Model::Zone.table_name)          then Zone
-        else
-          nil
-        end
-      end
     end
   end
 end
