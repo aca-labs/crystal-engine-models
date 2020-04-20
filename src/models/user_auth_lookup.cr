@@ -14,6 +14,7 @@ module PlaceOS::Model
     belongs_to Authority
 
     before_create :generate_id
+
     def generate_id
       self.id = "auth-#{self.authority_id}-#{self.provider}-#{self.uid}"
     end
