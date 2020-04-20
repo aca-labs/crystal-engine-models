@@ -4,12 +4,9 @@ require "./helper"
 
 module PlaceOS::Model
   describe User do
-    it "saves and deletes a User" do
+    it "saves a User" do
       user = Generator.user.save!
       User.find!(user.id.as(String)).id.should eq user.id
-
-      user.destroy
-      User.find(user.id.as(String)).should eq nil
     end
 
     it "sets email digest on save" do
