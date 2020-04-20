@@ -50,11 +50,29 @@ module PlaceOS::Model
     }
 
     before_save :create_email_digest
+    before_destroy :cleanup_auth_tokens
 
     # Sets email_digest to allow user look up without leaking emails
     #
     protected def create_email_digest
       self.email_digest = Digest::MD5.hexdigest(self.email.as(String))
+    end
+
+    # deletes auth tokens
+    def cleanup_auth_tokens
+      user_id = self.id
+
+      ::RethinkORM::Connection.raw do |r|
+        r.table("doorkeeper_grant").filter { |grant|
+          grant["resource_owner_id"].eq(user_id)
+        }.delete
+      end
+
+      ::RethinkORM::Connection.raw do |r|
+        r.table("doorkeeper_token").filter { |token|
+          token["resource_owner_id"].eq(user_id)
+        }.delete
+      end
     end
 
     def self.find_by_email(authority_id : String, email : String)
