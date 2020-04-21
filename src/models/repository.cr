@@ -37,7 +37,7 @@ module PlaceOS::Model
     validates :commit_hash, presence: true
 
     ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
-     {repo_type, folder_name.strip.downcase}
+      {repo_type, folder_name.strip.downcase}
     end
 
     def pull!
