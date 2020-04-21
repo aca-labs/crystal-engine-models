@@ -21,9 +21,12 @@ module PlaceOS::Model
     # Room search meta-data
     # Building + Level are both filtered using zones
     attribute email : String
-    attribute capacity : Int32 = 0
     attribute features : String
     attribute bookable : Bool = false
+    attribute display_name : String
+    attribute code : String
+    attribute type : String
+    attribute capacity : Int32 = 0
     attribute map_id : String
 
     # Provide a email lookup helpers
