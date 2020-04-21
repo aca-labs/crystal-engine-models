@@ -16,6 +16,25 @@ module PlaceOS::Model
     attribute description : String
     attribute tags : String
 
+    # =============================
+    # Additional top level metadata that is fairly common
+    # =============================
+    # Geo-location string (lat,long) or any other location
+    attribute location : String
+    # For display on staff app
+    attribute display_name : String
+    # Could be used as floor code
+    attribute code : String
+    # Could be used as floor type
+    attribute type : String
+    # Could be used as a desk count
+    attribute count : Int32 = 0
+    # Could be used as a people capacity
+    attribute capacity : Int32 = 0
+    # Map identifier, could be a URL or id
+    attribute map_id : String
+    # =============================
+
     belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
     has_many(
       child_class: Zone,
