@@ -1,3 +1,4 @@
+require "rethinkdb"
 require "rethinkdb-orm"
 require "time"
 
@@ -13,6 +14,10 @@ module PlaceOS::Model
     enum Type
       Driver
       Interface
+
+      def to_reql
+        JSON::Any.new(to_s)
+      end
     end
 
     # Repository metadata
@@ -31,11 +36,9 @@ module PlaceOS::Model
     validates :uri, presence: true
     validates :commit_hash, presence: true
 
-    # TODO:: scope this to repo type - currently errors `undefined method 'to_reql' for PlaceOS::Model::Repository::Type`
-    # ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
-    #  {repo_type, folder_name.strip.downcase}
-    # end
-    ensure_unique :folder_name
+    ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
+     {repo_type, folder_name.strip.downcase}
+    end
 
     def pull!
       if self.commit_hash == "HEAD"
