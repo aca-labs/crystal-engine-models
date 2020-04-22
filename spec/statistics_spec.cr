@@ -1,7 +1,6 @@
 require "./helper"
 
 module PlaceOS::Model
-  # Transmogrified from the Ruby Engine spec
   describe Statistics do
     it "saves some statistics" do
       stats = Statistics.new
