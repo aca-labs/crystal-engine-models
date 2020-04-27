@@ -1,5 +1,6 @@
 require "active-model"
 require "json"
+require "log"
 require "neuroplastic"
 require "rethinkdb-orm"
 

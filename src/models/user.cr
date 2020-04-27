@@ -62,16 +62,24 @@ module PlaceOS::Model
     def cleanup_auth_tokens
       user_id = self.id
 
-      ::RethinkORM::Connection.raw do |r|
-        r.table("doorkeeper_grant").filter { |grant|
-          grant["resource_owner_id"].eq(user_id)
-        }.delete
+      begin
+        ::RethinkORM::Connection.raw do |r|
+          r.table("doorkeeper_grant").filter { |grant|
+            grant["resource_owner_id"].eq(user_id)
+          }.delete
+        end
+      rescue
+        Log.warn { "failed to remove User<#{user_id}> auth grants" }
       end
 
-      ::RethinkORM::Connection.raw do |r|
-        r.table("doorkeeper_token").filter { |token|
-          token["resource_owner_id"].eq(user_id)
-        }.delete
+      begin
+        ::RethinkORM::Connection.raw do |r|
+          r.table("doorkeeper_token").filter { |token|
+            token["resource_owner_id"].eq(user_id)
+          }.delete
+        end
+      rescue
+        Log.warn { "failed to remove User<#{user_id}> auth tokens" }
       end
     end
 
