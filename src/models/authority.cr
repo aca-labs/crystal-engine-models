@@ -22,17 +22,22 @@ module PlaceOS::Model
 
     validates :name, presence: true
 
-    # Ensure we are only saving the host
-    #
-    def domain=(dom)
-      parsed = URI.parse(dom)
-      previous_def(parsed.host.try &.downcase)
+    macro finished
+      # Ensure we are only saving the host
+      #
+      def domain=(value : String | Nil)
+        host = value.try do |domain|
+          URI.parse(domain).host.try &.downcase
+        end
+        previous_def(host)
+      end
     end
 
     # locates an authority by its unique domain name
     #
     def self.find_by_domain(domain : String) : Authority?
-      Authority.find_all([domain], index: :domain).first?
+      host = URI.parse(domain).host || ""
+      Authority.find_all([host], index: :domain).first?
     end
   end
 end
