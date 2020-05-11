@@ -14,7 +14,7 @@ module PlaceOS::Model
     ensure_unique :domain, create_index: true
 
     # TODO: feature request: autogenerate login url
-    attribute login_url : String = "/auth/login?continue={{url}}"
+    attribute login_url : String = "/login?continue={{url}}"
     attribute logout_url : String = "/auth/logout"
 
     attribute internals : Hash(String, JSON::Any) = {} of String => JSON::Any
