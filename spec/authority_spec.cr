@@ -1,6 +1,10 @@
 require "./helper"
 
 module PlaceOS::Model
+  Spec.before_each do
+    Authority.clear
+  end
+
   describe Authority do
     it "saves an Authority" do
       inst = Generator.authority.save!
