@@ -36,7 +36,7 @@ module PlaceOS::Model
     # locates an authority by its unique domain name
     #
     def self.find_by_domain(domain : String) : Authority?
-      host = URI.parse(domain).host || ""
+      host = URI.parse(domain).host || domain
       Authority.find_all([host], index: :domain).first?
     end
   end
