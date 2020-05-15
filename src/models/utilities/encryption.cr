@@ -12,7 +12,7 @@ module PlaceOS::Encryption
     NeverDisplay
   end
 
-  private SECRET = ENV["ENGINE_SECRET"]? || "super secret, do not leak"
+  private SECRET = ENV["PLACE_SERVER_SECRET"]? || "super secret, do not leak"
   private CIPHER = "aes-256-gcm"
 
   # Encrypt clear text
