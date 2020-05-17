@@ -32,7 +32,18 @@ module PlaceOS::Model
     before_save :generate_uid
 
     def generate_uid
-      self.uid = Digest::MD5.hexdigest(self.redirect_uri.not_nil!)
+      check_uid = self.uid
+      redirect = self.redirect_uri
+      if (check_uid.nil? || check_uid.try &.blank?) && redirect
+        redirect = redirect.downcase
+        if redirect.starts_with?("http")
+          self.uid = Digest::MD5.hexdigest(redirect)
+        else
+          self.uid = Random::Secure.urlsafe_base64(25)
+        end
+      else
+        self.uid = Random::Secure.urlsafe_base64(25)
+      end
     end
 
     def generate_secret
