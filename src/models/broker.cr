@@ -13,7 +13,7 @@ module PlaceOS::Model
       UserPassword
     end
 
-    enum_attribute auth_type : AuthType = -> { AuthType::UserPassword }
+    enum_attribute auth_type : AuthType = ->{ AuthType::UserPassword }
 
     attribute name : String
     attribute description : String
@@ -36,9 +36,29 @@ module PlaceOS::Model
       # Render regex errors
       error_string = filters.each_with_object({} of String => String?) { |filter, e|
         e[filter] = Regex.error?(filter)
-      }.compact.map{|f,e| "#{f} with '#{e}'"}.join(" and")
+      }.compact.map { |f, e| "#{f} with '#{e}'" }.join(" and")
 
       this.validation_error(:filters, error_string) unless error_string.empty?
     }
+
+    def sanitize(scope : String, payload : String)
+      filters = self.filters
+      return payload if filters.nil? || filters.empty?
+
+      # TODO: Cache and reuse unless filters_changed?
+      regex = Regex.union(filters)
+
+      payload.gsub(regex) do |match, _|
+        sha256("#{scope}-#{match}")
+      end
+    rescue e : ArgumentError
+      raise MalformedFilter.new(self.filters)
+    end
+
+    protected def sha256(data : String)
+      hash = OpenSSL::Digest.new("SHA256")
+      hash.update(data)
+      hash.hexdigest
+    end
   end
 end
