@@ -1,11 +1,11 @@
 name: models
-version: 1.0.9
+version: 1.0.10
 
 dependencies:
   # Data validation library
   active-model:
     github: spider-gazelle/active-model
-    version: ~> 1.8
+    version: ~> 1
 
   # Data validation library
   CrystalEmail:
@@ -23,7 +23,7 @@ dependencies:
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
-    version: ~> 2.7
+    version: ~> 2
 
 development_dependencies:
   faker:
