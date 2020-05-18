@@ -30,5 +30,15 @@ module PlaceOS::Model
     # Regex filters for sensitive data.
     # Matches will be replaced with a SHA256(match + organisation_id).
     attribute filters : Array(String) = ->{ [] of String }
+
+    validate ->(this : Broker) {
+      return unless (filters = this.filters)
+      # Render regex errors
+      error_string = filters.each_with_object({} of String => String?) { |filter, e|
+        e[filter] = Regex.error?(filter)
+      }.compact.map{|f,e| "#{f} with '#{e}'"}.join(" and")
+
+      this.validation_error(:filters, error_string) unless error_string.empty?
+    }
   end
 end
