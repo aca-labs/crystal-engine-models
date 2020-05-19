@@ -102,9 +102,15 @@ module PlaceOS::Model
       end
     end
 
-    # =======================
+    # Helpers
+    ###########################################################################
+
+    def tag_list : Array(String)
+      (self.tags || "").split(' ')
+    end
+
     # Zone Trigger Management
-    # =======================
+    ###########################################################################
 
     @remove_triggers : Array(String) = [] of String
     @add_triggers : Array(String) = [] of String
