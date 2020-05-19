@@ -1,10 +1,12 @@
 require "rethinkdb-orm"
+require "openssl"
 
 require "./base/model"
 
 module PlaceOS::Model
   class Broker < ModelBase
     include RethinkORM::Timestamps
+
     table :broker
 
     enum AuthType
@@ -13,7 +15,7 @@ module PlaceOS::Model
       UserPassword
     end
 
-    enum_attribute auth_type : AuthType = ->{ AuthType::UserPassword }
+    enum_attribute auth_type : AuthType = AuthType::UserPassword
 
     attribute name : String
     attribute description : String
@@ -34,9 +36,10 @@ module PlaceOS::Model
     validate ->(this : Broker) {
       return unless (filters = this.filters)
       # Render regex errors
-      error_string = filters.each_with_object({} of String => String?) { |filter, e|
-        e[filter] = Regex.error?(filter)
-      }.compact.map { |f, e| "#{f} with '#{e}'" }.join(" and")
+      error_string = filters.compact_map { |filter|
+        error = Regex.error?(filter)
+        "'#{filter}' errored with '#{error}'" if error
+      }.join(" and")
 
       this.validation_error(:filters, error_string) unless error_string.empty?
     }
