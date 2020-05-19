@@ -51,17 +51,15 @@ module PlaceOS::Model
       # TODO: Cache and reuse unless filters_changed?
       regex = Regex.union(filters)
 
-      payload.gsub(regex) do |match, _|
-        sha256("#{scope}-#{match}")
+      payload.gsub(regex) do |match_string, _|
+        hmac_sha256(scope, match_string)
       end
     rescue e : ArgumentError
       raise MalformedFilter.new(self.filters)
     end
 
-    protected def sha256(data : String)
-      hash = OpenSSL::Digest.new("SHA256")
-      hash.update(data)
-      hash.hexdigest
+    protected def hmac_sha256(key : String, data : String)
+      OpenSSL::HMAC.hexdigest(OpenSSL::Algorithm::SHA256, key, data)
     end
   end
 end
