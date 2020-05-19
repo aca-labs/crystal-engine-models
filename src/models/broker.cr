@@ -1,5 +1,6 @@
 require "rethinkdb-orm"
 require "openssl"
+require "random"
 
 require "./base/model"
 
@@ -29,8 +30,11 @@ module PlaceOS::Model
 
     attribute certificate : String
 
+    attribute secret : String = ->{ Random::Secure.hex(64) }
+    validates :secret, presence: true
+
     # Regex filters for sensitive data.
-    # Matches will be replaced with a SHA256(match + organisation_id).
+    # Matches will be replaced with a hmac_256(secret, match).
     attribute filters : Array(String) = ->{ [] of String }
 
     validate ->(this : Broker) {
@@ -44,7 +48,7 @@ module PlaceOS::Model
       this.validation_error(:filters, error_string) unless error_string.empty?
     }
 
-    def sanitize(scope : String, payload : String)
+    def sanitize(payload : String)
       filters = self.filters
       return payload if filters.nil? || filters.empty?
 
@@ -52,14 +56,14 @@ module PlaceOS::Model
       regex = Regex.union(filters)
 
       payload.gsub(regex) do |match_string, _|
-        hmac_sha256(scope, match_string)
+        hmac_sha256(match_string)
       end
     rescue e : ArgumentError
       raise MalformedFilter.new(self.filters)
     end
 
-    protected def hmac_sha256(key : String, data : String)
-      OpenSSL::HMAC.hexdigest(OpenSSL::Algorithm::SHA256, key, data)
+    protected def hmac_sha256(data : String)
+      OpenSSL::HMAC.hexdigest(OpenSSL::Algorithm::SHA256, self.secret.as(String), data)
     end
   end
 end
