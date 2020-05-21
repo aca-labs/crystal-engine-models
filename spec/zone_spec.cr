@@ -19,6 +19,15 @@ module PlaceOS::Model
       zone.persisted?.should be_true
     end
 
+    it "has unique tags" do
+      zone = Generator.zone
+      zone.tags.not_nil! << "hello"
+      zone.tags.not_nil! << "hello"
+      zone.tags.not_nil! << "bye"
+      zone.save!
+      Zone.find!(zone.id.not_nil!).tags.should eq Set{"hello", "bye"}
+    end
+
     it "supports zone hierarchies" do
       zone = Generator.zone
 

@@ -14,7 +14,7 @@ module PlaceOS::Model
 
     attribute name : String, es_type: "keyword"
     attribute description : String
-    attribute tags : Array(String) = ->{ [] of String }
+    attribute tags : Set(String) = ->{ Set(String).new }
 
     # =============================
     # Additional top level metadata that is fairly common
