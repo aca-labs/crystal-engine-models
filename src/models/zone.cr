@@ -14,7 +14,7 @@ module PlaceOS::Model
 
     attribute name : String, es_type: "keyword"
     attribute description : String
-    attribute tags : String
+    attribute tags : Array(String) = ->{ [] of String }
 
     # =============================
     # Additional top level metadata that is fairly common
@@ -100,13 +100,6 @@ module PlaceOS::Model
           cs.save!
         end
       end
-    end
-
-    # Helpers
-    ###########################################################################
-
-    def tag_list : Array(String)
-      (self.tags || "").split(' ')
     end
 
     # Zone Trigger Management

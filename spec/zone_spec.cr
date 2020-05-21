@@ -92,11 +92,5 @@ module PlaceOS::Model
 
       {cs, zone, trigger}.each &.destroy
     end
-
-    it "has a #tag_list helper" do
-      expected = ["building", "area-51"]
-      zone = Zone.new(name: "el zono", tags: expected.join(' '))
-      zone.tag_list.should eq expected
-    end
   end
 end
