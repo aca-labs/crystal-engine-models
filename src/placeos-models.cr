@@ -1,7 +1,7 @@
 require "log"
 require "rethinkdb-orm"
 
-require "./models/base/*"
+require "./placeos-models/base/*"
 
 module PlaceOS::Model
   Log = ::Log.for(self)
@@ -12,4 +12,4 @@ module PlaceOS::Model
   end
 end
 
-require "./models/*"
+require "./placeos-models/*"
