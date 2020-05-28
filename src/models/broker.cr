@@ -21,9 +21,14 @@ module PlaceOS::Model
     attribute name : String
     attribute description : String
 
-    attribute ip : String
-    attribute port : Int32
+    validates :name, presence: true
+
+    attribute host : String
+    attribute port : Int32 = 8883
     attribute tls : Bool = false
+
+    validates :host, presence: true
+    validates :port, presence: true
 
     attribute username : String
     attribute password : String
