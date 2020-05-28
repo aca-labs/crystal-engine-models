@@ -24,7 +24,7 @@ module PlaceOS::Model
     validates :name, presence: true
 
     attribute host : String
-    attribute port : Int32 = 8883
+    attribute port : Int32 = 1883 # Default MQTT port for non-tls connections
     attribute tls : Bool = false
 
     validates :host, presence: true
