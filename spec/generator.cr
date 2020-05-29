@@ -1,8 +1,8 @@
 require "faker"
 require "random"
 
-require "../src/models/*"
-require "../src/models/**"
+require "../src/placeos-models/*"
+require "../src/placeos-models/**"
 
 RANDOM = Random.new
 
