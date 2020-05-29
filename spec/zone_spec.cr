@@ -19,6 +19,15 @@ module PlaceOS::Model
       zone.persisted?.should be_true
     end
 
+    it "has unique tags" do
+      zone = Generator.zone
+      zone.tags.not_nil! << "hello"
+      zone.tags.not_nil! << "hello"
+      zone.tags.not_nil! << "bye"
+      zone.save!
+      Zone.find!(zone.id.not_nil!).tags.should eq Set{"hello", "bye"}
+    end
+
     it "supports zone hierarchies" do
       zone = Generator.zone
 
@@ -91,12 +100,6 @@ module PlaceOS::Model
       zone.trigger_instances.to_a.size.should eq 0
 
       {cs, zone, trigger}.each &.destroy
-    end
-
-    it "has a #tag_list helper" do
-      expected = ["building", "area-51"]
-      zone = Zone.new(name: "el zono", tags: expected.join(' '))
-      zone.tag_list.should eq expected
     end
   end
 end
