@@ -58,7 +58,8 @@ module PlaceOS::Model
     has_many(
       child_class: Driver,
       collection_name: "drivers",
-      foreign_key: "repository_id"
+      foreign_key: "repository_id",
+      dependent: :destroy
     )
   end
 end
