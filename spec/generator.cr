@@ -230,6 +230,13 @@ module PlaceOS::Model
       )
     end
 
+    def self.broker
+      Broker.new(
+        name: Faker::Name.name,
+        host: Faker::Internet.domain_name,
+      )
+    end
+
     def self.bool
       [true, false].sample(1).first
     end

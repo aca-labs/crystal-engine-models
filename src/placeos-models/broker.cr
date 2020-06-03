@@ -21,26 +21,23 @@ module PlaceOS::Model
     attribute name : String
     attribute description : String
 
-    validates :name, presence: true
-
     attribute host : String
     attribute port : Int32 = 1883 # Default MQTT port for non-tls connections
     attribute tls : Bool = false
 
-    validates :host, presence: true
-    validates :port, presence: true
-
     attribute username : String
     attribute password : String
-
     attribute certificate : String
-
     attribute secret : String = ->{ Random::Secure.hex(64) }
-    validates :secret, presence: true
 
     # Regex filters for sensitive data.
     # Matches will be replaced with a hmac_256(secret, match).
     attribute filters : Array(String) = ->{ [] of String }
+
+    validates :name, presence: true
+    validates :host, presence: true
+    validates :port, presence: true
+    validates :secret, presence: true
 
     validate ->(this : Broker) {
       return unless (filters = this.filters)
