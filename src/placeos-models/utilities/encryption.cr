@@ -73,7 +73,7 @@ module PlaceOS::Encryption
     digest << SECRET
     digest << id
     digest << level.to_s
-    {salt, digest.digest}
+    {salt, digest.final}
   end
 
   # Check if string has been encrypted
