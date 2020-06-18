@@ -170,7 +170,7 @@ module PlaceOS::Model
         .compact_map(&.resolved_name)
         .select { |n| n != "__Triggers__" }
         .to_set
-      @features = @features.try &.+ module_names || module_names
+      @features = @features.try &.+(module_names) || module_names
     end
 
     # =======================
