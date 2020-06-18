@@ -13,15 +13,13 @@ module PlaceOS::Model
 
     table :sys
 
-    before_save :update_features
-
     attribute name : String, es_type: "keyword"
     attribute description : String
 
     # Room search meta-data
     # Building + Level are both filtered using zones
     attribute email : String
-    attribute features : String
+    attribute features : Set(String) = ->{ Set(String).new }
     attribute bookable : Bool = false
     attribute display_name : String
     attribute code : String
@@ -96,7 +94,7 @@ module PlaceOS::Model
     # Obtains the control system's modules as json
     # FIXME: Dreadfully needs optimisation, i.e. subset serialisation
     def module_data
-      modules = @modules || [] of String
+      modules = self.modules || [] of String
       Module.find_all(modules).to_a.map do |mod|
         # Pick off driver name, and module_name from associated driver
         driver_data = mod.driver.try do |driver|
@@ -162,31 +160,20 @@ module PlaceOS::Model
       end
     }
 
+    before_save :update_features
+
+    # Internal modules
+    private IGNORED_MODULES = ["__Triggers__"]
+
     # Adds modules to the features field,
     # Extends features with extra_features field in settings if present
     protected def update_features
-      if (id = @id)
-        system = ControlSystem.find(id)
-        if system
-          mods = system.modules || [] of String
-          mods.reject! "__Triggers__"
-          @features = mods.join " "
-        end
-      end
-
-      # TODO:
-      # Do a query for the unencrypted settings belonging to the system
-      # Append extra features
-      #
-      # if (settings = @settings)
-      #   # Extra features stored in unencrypted settings
-      #   settings.find { |(level, _)| level == Encryption::Level::None }.try do |(_, setting_string)|
-      #     # Append any extra features
-      #     if (extra_features = YAML.parse(setting_string)["extra_features"]?)
-      #       @features = "#{@features} #{extra_features}"
-      #     end
-      #   end
-      # end
+      module_names = Module
+        .find_all(@modules || [] of String)
+        .compact_map(&.resolved_name)
+        .select(&.in?(IGNORED_MODULES).!)
+        .to_set
+      @features = @features.try &.+(module_names) || module_names
     end
 
     # =======================

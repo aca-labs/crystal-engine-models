@@ -207,5 +207,16 @@ module PlaceOS::Model
 
       {cs, zone, zone2, trigger}.each &.destroy
     end
+
+    describe "features" do
+      it "includes modules resolved names on save" do
+        mod = Generator.module.save!
+        cs = Generator.control_system.save!
+        cs.modules = [mod.id].compact
+        cs.save!
+        cs.features.not_nil!.should contain(mod.resolved_name.as(String))
+        {cs, mod}.each &.destroy
+      end
+    end
   end
 end
