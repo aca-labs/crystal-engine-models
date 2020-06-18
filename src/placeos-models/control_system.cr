@@ -94,7 +94,7 @@ module PlaceOS::Model
     # Obtains the control system's modules as json
     # FIXME: Dreadfully needs optimisation, i.e. subset serialisation
     def module_data
-      modules = @modules || [] of String
+      modules = self.modules || [] of String
       Module.find_all(modules).to_a.map do |mod|
         # Pick off driver name, and module_name from associated driver
         driver_data = mod.driver.try do |driver|
@@ -162,13 +162,16 @@ module PlaceOS::Model
 
     before_save :update_features
 
+    # Internal modules
+    private IGNORED_MODULES = ["__Triggers__"]
+
     # Adds modules to the features field,
     # Extends features with extra_features field in settings if present
     protected def update_features
       module_names = Module
         .find_all(@modules || [] of String)
         .compact_map(&.resolved_name)
-        .select { |n| n != "__Triggers__" }
+        .select(&.in?(IGNORED_MODULES).!)
         .to_set
       @features = @features.try &.+(module_names) || module_names
     end
