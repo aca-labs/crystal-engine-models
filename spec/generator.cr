@@ -193,7 +193,7 @@ module PlaceOS::Model
         authority = existing || self.authority.save!
       end
 
-      AdfsStrat.new(
+      SamlAuthentication.new(
         name: Faker::Name.name,
         authority_id: authority.id,
         assertion_consumer_service_url: Faker::Internet.url,
@@ -208,7 +208,7 @@ module PlaceOS::Model
         authority = existing || self.authority.save!
       end
 
-      OauthStrat.new(
+      OAuthAuthentication.new(
         name: Faker::Name.name,
         authority_id: authority.id,
       )
@@ -221,7 +221,7 @@ module PlaceOS::Model
         authority = existing || self.authority.save!
       end
 
-      LdapStrat.new(
+      LdapAuthentication.new(
         name: Faker::Name.name,
         authority_id: authority.id,
         host: Faker::Internet.domain_name,
