@@ -1,5 +1,5 @@
 name: placeos-models
-version: 2.1.1
+version: 2.1.2
 
 dependencies:
   # Data validation library
@@ -23,7 +23,7 @@ dependencies:
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
-    version: ~> 2
+    version: ~> 2.9, >= 2.9.2
 
 development_dependencies:
   faker:
