@@ -32,6 +32,7 @@ module PlaceOS::Model
     attribute card_number : String
 
     attribute deleted : Bool = false
+    attribute groups : Array(String) = [] of String, mass_assignment: false
 
     has_many(
       child_class: UserAuthLookup,
