@@ -34,6 +34,8 @@ module PlaceOS::Model
     attribute deleted : Bool = false
     attribute groups : Array(String) = [] of String, mass_assignment: false
 
+    attribute password : String, persistence: false
+
     has_many(
       child_class: UserAuthLookup,
       dependent: :destroy,
@@ -173,15 +175,29 @@ module PlaceOS::Model
     # PASSWORD ENCRYPTION::
     # ---------------------
     alias Password = Crypto::Bcrypt::Password
-    @password : Password? = nil
+
+    before_save do
+      if pass = @password
+        # no password prevents people logging in using the account locally
+        if pass.empty?
+          self.password_digest = nil
+        else
+          digest = Password.create(pass)
+          self.password_digest = digest.to_s
+        end
+      end
+      @password = nil
+    end
+
+    @pass_compare : Password? = nil
 
     def password : Password
-      @password ||= Password.new(self.password_digest.not_nil!)
+      @pass_compare ||= Password.new(self.password_digest.not_nil!)
     end
 
     def password=(new_password : String) : String
-      @password = Password.create(new_password)
-      self.password_digest = @password.to_s
+      @pass_compare = digest = Password.create(new_password)
+      self.password_digest = digest.to_s
       new_password
     end
   end
