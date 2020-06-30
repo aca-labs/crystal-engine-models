@@ -44,7 +44,7 @@ module PlaceOS::Model
     end
 
     it "should create a new user with a password" do
-      auth = Authority.find_by_domain("localhost")
+      auth = Authority.find_by_domain("localhost").not_nil!
       json = {
         name:         Faker::Name.name,
         email:        Random.rand(9999).to_s + Faker::Internet.email,
