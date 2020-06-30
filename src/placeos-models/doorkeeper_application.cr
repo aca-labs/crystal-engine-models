@@ -21,7 +21,7 @@ module PlaceOS::Model
     attribute confidential : Bool = false
     attribute revoked_at : Time, converter: Time::EpochConverter
 
-    attribute uid : String
+    attribute uid : String, mass_assignment: false
     ensure_unique :uid, create_index: true
 
     validates :name, presence: true
@@ -39,6 +39,13 @@ module PlaceOS::Model
           self.uid = Digest::MD5.hexdigest(redirect)
         else
           self.uid = Random::Secure.urlsafe_base64(25)
+        end
+
+        current_id = @id
+        if current_id.nil?
+          # Ensure document is treated as unpersisted
+          self._new_flag = true
+          @id = self.uid
         end
       end
     end
