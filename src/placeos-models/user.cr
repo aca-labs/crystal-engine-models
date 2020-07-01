@@ -34,7 +34,7 @@ module PlaceOS::Model
     attribute deleted : Bool = false
     attribute groups : Array(String) = [] of String, mass_assignment: false
 
-    attribute password : String, persistence: false
+    attribute password : String
 
     has_many(
       child_class: UserAuthLookup,
