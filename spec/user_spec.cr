@@ -57,9 +57,9 @@ module PlaceOS::Model
 
       user = Model::User.from_json(json)
       user.password_digest.should eq(nil)
+      user.@password.should eq("p@ssw0rd")
       user.save!
       user.password_digest.should_not eq(nil)
-      user.sys_admin.should eq(false)
     end
   end
 end
