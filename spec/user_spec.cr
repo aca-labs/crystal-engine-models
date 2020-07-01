@@ -42,5 +42,25 @@ module PlaceOS::Model
 
       admin_user.keys.sort.should eq admin_attributes.sort
     end
+
+    it "should create a new user with a password" do
+      existing = Authority.find_by_domain("localhost")
+      authority = existing || Generator.authority.save!
+      json = {
+        name:         Faker::Name.name,
+        email:        Random.rand(9999).to_s + Faker::Internet.email,
+        authority_id: authority.id,
+        sys_admin:    true,
+        support:      true,
+        password:     "p@ssw0rd",
+      }.to_json
+
+      user = Model::User.from_json(json)
+      user.password_digest.should eq(nil)
+      user.@password.should eq("p@ssw0rd")
+      user.save!
+      user.password_digest.should_not eq(nil)
+      user.@password.should eq(nil)
+    end
   end
 end

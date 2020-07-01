@@ -20,7 +20,7 @@ before_script:
 
 script:
   # Specs
-  - crystal spec --no-debug
+  - crystal spec --no-debug -v --error-trace
   # Linter
   - bin/ameba
   # Formatter
