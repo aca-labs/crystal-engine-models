@@ -60,6 +60,7 @@ module PlaceOS::Model
       user.@password.should eq("p@ssw0rd")
       user.save!
       user.password_digest.should_not eq(nil)
+      user.@password.should eq(nil)
     end
   end
 end
