@@ -63,7 +63,7 @@ module PlaceOS::Model
 
     def is_support?
       case @user.permissions
-      when Permissions::Support, Permissions::AdminSupport
+      when Permissions::Support, Permissions::Admin, Permissions::AdminSupport
         true
       else
         false
