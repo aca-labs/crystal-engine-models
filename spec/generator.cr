@@ -117,18 +117,18 @@ module PlaceOS::Model
       Encryption::Level.parse(Encryption::Level.names.sample(1).first)
     end
 
-    def self.metadata(name : String = Faker.noun, parent : Zone | ControlSystem? = nil)
-      meta = Metadata.new(name: name)
+    def self.metadata(name : String = Faker.noun, parent : String | Zone | ControlSystem? = nil)
+      meta = Metadata.new(name: name, details: JSON::Any.new({} of String => JSON::Any))
 
       case parent
-      in Zone
-        meta.zone = zone
       in ControlSystem
         meta.control_system = control_system
-      end
-
-      # Generate a single parent for the metadata model
-      unless parent
+      in String
+        meta.parent_id = parent
+      in Zone
+        meta.zone = zone
+      in Nil
+        # Generate a single parent for the metadata model
         {
           ->{ meta.control_system = self.control_system.save! },
           ->{ meta.zone = self.zone.save! },
