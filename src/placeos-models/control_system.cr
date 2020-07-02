@@ -46,6 +46,14 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    # Metadata belonging to this control_system
+    has_many(
+      child_class: Metadata,
+      collection_name: "metadata",
+      foreign_key: "parent_id",
+      dependent: :destroy
+    )
+
     # Single System triggers
     has_many(
       child_class: Trigger,

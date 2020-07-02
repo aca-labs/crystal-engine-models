@@ -117,6 +117,27 @@ module PlaceOS::Model
       Encryption::Level.parse(Encryption::Level.names.sample(1).first)
     end
 
+    def self.metadata(name : String = Faker.noun, parent : Zone | ControlSystem? = nil)
+      meta = Metadata.new(name: name)
+
+      case parent
+      in Zone
+        meta.zone = zone
+      in ControlSystem
+        meta.control_system = control_system
+      end
+
+      # Generate a single parent for the metadata model
+      unless parent
+        {
+          ->{ meta.control_system = self.control_system.save! },
+          ->{ meta.zone = self.zone.save! },
+        }.sample.call
+      end
+
+      meta
+    end
+
     def self.settings(
       settings_string = "{}",
       encryption_level = self.encryption_level,
