@@ -117,7 +117,7 @@ module PlaceOS::Model
       Encryption::Level.parse(Encryption::Level.names.sample(1).first)
     end
 
-    def self.metadata(name : String = Faker::Hacker.noun, parent : String | Zone | ControlSystem? = nil)
+    def self.metadata(name : String = Faker::Hacker.noun + RANDOM.base64(10), parent : String | Zone | ControlSystem? = nil)
       meta = Metadata.new(name: name, details: JSON::Any.new({} of String => JSON::Any))
 
       case parent

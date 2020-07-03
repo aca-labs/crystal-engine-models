@@ -57,7 +57,7 @@ module PlaceOS::Model
                   end
 
       Metadata.raw_query do |q|
-        query = q.table(Model::ControlSystem.table_name).get_all(parent_id, index: :parent_id)
+        query = q.table(Model::Metadata.table_name).get_all(parent_id, index: :parent_id)
         if name && !name.empty?
           query.filter({name: name})
         else
