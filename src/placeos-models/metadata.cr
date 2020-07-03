@@ -1,5 +1,6 @@
 require "rethinkdb-orm"
 require "time"
+require "json"
 
 require "./base/model"
 require "./control_system"
@@ -30,34 +31,38 @@ module PlaceOS::Model
       {parent_id, name.strip.downcase}
     end
 
-    record Interface, name : String, description : String, details : JSON::Any, parent_id : String
+    record Interface, name : String, description : String, details : JSON::Any, parent_id : String {
+      include JSON::Serializable
+    }
 
     def self.build_metadata(parent, name : String? = nil) : Hash(String, Interface)
       for(parent, name).each_with_object({} of String => Interface) do |data, results|
+        # TODO: Remove casts once `active-model` accurately reflects property type
+        #       All these properties have defaults/presence validation.
         results[data.name.as(String)] = Interface.new(
           name: data.name.as(String),
           description: data.description.as(String),
           details: data.details.as(JSON::Any),
-          parent_id: data.as(String),
+          parent_id: data.parent_id.as(String),
         )
       end
     end
-  end
 
-  def self.for(parent : String | Zone | ControlSystem, name : String? = nil)
-    parent_id = case parent
-                in String
-                  parent
-                in Zone, ControlSystem
-                  parent.id.as(String)
-                end
+    def self.for(parent : String | Zone | ControlSystem, name : String? = nil)
+      parent_id = case parent
+                  in String
+                    parent
+                  in Zone, ControlSystem
+                    parent.id.as(String)
+                  end
 
-    Metadata.table_query do |q|
-      query = q.get_all(parent_id, index: :parent_id)
-      if name && !name.empty?
-        query.filter({name: name})
-      else
-        query
+      Metadata.raw_query do |q|
+        query = q.table(Model::ControlSystem.table_name).get_all(parent_id, index: :parent_id)
+        if name && !name.empty?
+          query.filter({name: name})
+        else
+          query
+        end
       end
     end
   end
