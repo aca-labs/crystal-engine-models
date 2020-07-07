@@ -189,28 +189,28 @@ module PlaceOS::Model
           settings.encrypt!
 
           case level
-          when Encryption::Level::None
+          in .none?
             settings.decrypt_for(user).should eq string
             settings.decrypt_for(support).should eq string
             settings.decrypt_for(admin).should eq string
             is_encrypted?(settings.decrypt_for(user)).should be_false
             is_encrypted?(settings.decrypt_for(support)).should be_false
             is_encrypted?(settings.decrypt_for(admin)).should be_false
-          when Encryption::Level::Support
+          in .support?
             settings.decrypt_for(user).should_not eq string
             settings.decrypt_for(support).should eq string
             settings.decrypt_for(admin).should eq string
             is_encrypted?(settings.decrypt_for(user)).should be_true
             is_encrypted?(settings.decrypt_for(support)).should be_false
             is_encrypted?(settings.decrypt_for(admin)).should be_false
-          when Encryption::Level::Admin
+          in .admin?
             settings.decrypt_for(user).should_not eq string
             settings.decrypt_for(support).should_not eq string
             settings.decrypt_for(admin).should eq string
             is_encrypted?(settings.decrypt_for(user)).should be_true
             is_encrypted?(settings.decrypt_for(support)).should be_true
             is_encrypted?(settings.decrypt_for(admin)).should be_false
-          when Encryption::Level::NeverDisplay
+          in .never_display?
             settings.decrypt_for(user).should_not eq string
             settings.decrypt_for(support).should_not eq string
             settings.decrypt_for(admin).should_not eq string
