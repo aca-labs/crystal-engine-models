@@ -80,25 +80,24 @@ module PlaceOS::Model
       driver = Generator.driver(module_name: mod_name) if driver.nil?
       driver.save! unless driver.persisted?
 
-      mod = case driver.role
-            when Driver::Role::Logic
+      mod = case driver.role.as(Driver::Role)
+            in .logic?
               Module.new(custom_name: mod_name, uri: Faker::Internet.url)
-            when Driver::Role::Device
+            in .device?
               Module.new(
                 custom_name: mod_name,
                 uri: Faker::Internet.url,
                 ip: Faker::Internet.ip_v4_address,
                 port: rand((1..6555)),
               )
-            when Driver::Role::SSH
+            in .ssh?
               Module.new(
                 custom_name: mod_name,
                 uri: Faker::Internet.url,
                 ip: Faker::Internet.ip_v4_address,
                 port: rand((1..65_535)),
               )
-            else
-              # Driver::Role::Service
+            in .service?, .websocket?
               Module.new(custom_name: mod_name, uri: Faker::Internet.url)
             end
 

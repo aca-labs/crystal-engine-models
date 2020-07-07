@@ -133,12 +133,12 @@ module PlaceOS::Model
     #
     def hostname
       case role
-      when Driver::Role::SSH, Driver::Role::Device
+      in .ssh?, .device?
         self.ip
-      when Driver::Role::Service, Driver::Role::Websocket
+      in .service?, .websocket?
         uri = self.uri || self.driver.try &.default_uri
         uri.try(&->URI.parse(String)).try(&.host)
-      else
+      in .logic?
         # No hostname for Logic module
         nil
       end
@@ -171,11 +171,11 @@ module PlaceOS::Model
       return if driver.nil? || role.nil?
 
       case role
-      when Driver::Role::Service, Driver::Role::Websocket
+      in .service?, .websocket?
         this.validate_service_module(driver.role)
-      when Driver::Role::Logic
+      in .logic?
         this.validate_logic_module
-      when Driver::Role::Device, Driver::Role::SSH
+      in .device?, .ssh?
         this.validate_device_module
       end
     }

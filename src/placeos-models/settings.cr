@@ -90,21 +90,21 @@ module PlaceOS::Model
       return [] of Module if model_id.nil? || model_type.nil?
 
       case model_type
-      when ParentType::Module
+      in .module?
         [Module.find!(model_id)]
-      when ParentType::Driver
+      in .driver?
         Module.by_driver_id(model_id).to_a
-      when ParentType::ControlSystem
+      in .control_system?
         Module
           .in_control_system(model_id)
           .select { |m| m.role == Driver::Role::Logic }
           .to_a
-      when ParentType::Zone
+      in .zone?
         Module
           .in_zone(model_id)
           .select { |m| m.role == Driver::Role::Logic }
           .to_a
-      end.as(Array(Module))
+      end
     end
 
     # Callbacks
@@ -251,22 +251,22 @@ module PlaceOS::Model
 
     def parent=(parent : Union(Zone, ControlSystem, Driver, Module))
       case parent
-      when ControlSystem then self.control_system = parent
-      when Driver        then self.driver = parent
-      when Module        then self.mod = parent
-      when Zone          then self.zone = parent
+      in ControlSystem then self.control_system = parent
+      in Driver        then self.driver = parent
+      in Module        then self.mod = parent
+      in Zone          then self.zone = parent
       end
     end
 
     # Helpers
     ###########################################################################
 
-    def self.has_privilege?(user, encryption_level)
+    def self.has_privilege?(user : User, encryption_level : Encryption::Level)
       case encryption_level
-      when Encryption::Level::None    then true
-      when Encryption::Level::Support then user.is_admin?
-      when Encryption::Level::Admin   then user.is_admin?
-      else                                 false
+      in .none?          then true
+      in .support?       then user.is_admin? || user.is_support?
+      in .admin?         then user.is_admin?
+      in .never_display? then false
       end
     end
 
@@ -295,7 +295,7 @@ module PlaceOS::Model
     #
     def has_key_for?(user, key)
       has_key = keys.try(&.includes?(key))
-      has_privilege = Settings.has_privilege?(user, encryption_level)
+      has_privilege = Settings.has_privilege?(user, encryption_level.as(Encryption::Level))
       has_key && has_privilege
     end
 

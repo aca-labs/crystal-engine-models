@@ -54,18 +54,18 @@ module PlaceOS::Model
 
     def is_admin?
       case @user.permissions
-      when Permissions::Admin, Permissions::AdminSupport
+      in .admin?, .admin_support?
         true
-      else
+      in .user?, .support?
         false
       end
     end
 
     def is_support?
       case @user.permissions
-      when Permissions::Support, Permissions::Admin, Permissions::AdminSupport
+      in .support?, .admin?, .admin_support?
         true
-      else
+      in .user?
         false
       end
     end
