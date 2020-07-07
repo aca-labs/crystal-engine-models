@@ -26,6 +26,7 @@ module PlaceOS::Model
     attribute description : String
     attribute uri : String
     attribute commit_hash : String = "HEAD"
+    attribute branch : String = "master"
 
     enum_attribute repo_type : Type = Type::Driver, column_type: String, es_type: "text"
 
