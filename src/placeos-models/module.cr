@@ -132,7 +132,9 @@ module PlaceOS::Model
     # Getter for the module's host
     #
     def hostname
-      case role
+      return if (_role = role).nil?
+
+      case _role
       in .ssh?, .device?
         self.ip
       in .service?, .websocket?
