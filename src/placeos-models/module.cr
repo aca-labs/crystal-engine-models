@@ -1,4 +1,5 @@
 require "rethinkdb-orm"
+require "future"
 require "uri"
 
 require "./base/model"
@@ -253,17 +254,15 @@ module PlaceOS::Model
     protected def remove_module
       mod_id = self.id.as(String)
 
-      # TODO: log if there were failures
-      ControlSystem.table_query do |q|
-        q
-          .filter { |sys| sys["modules"].contains(mod_id) }
-          .update { |sys|
-            {
-              "modules" => sys["modules"].set_difference([mod_id]),
-              "version" => sys["version"] + 1,
-            }
+      ControlSystem
+        .raw_query(&.table(ControlSystem.table_name).filter { |sys| sys["modules"].contains(mod_id) })
+        .map do |sys|
+          sys.remove_module(mod_id)
+          # The `ControlSystem` will regenerate `features`
+          future {
+            sys.save!
           }
-      end
+        end.each &.get
     end
 
     # Set the name/role from the associated Driver

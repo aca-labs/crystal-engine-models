@@ -11,6 +11,10 @@ dependencies:
   CrystalEmail:
     github: Nephos/CrystalEmail
 
+  # Simple async tasks
+  future:
+    github: crystal-community/future.cr
+
   # JSON Web Token support
   jwt:
     github: crystal-community/jwt
