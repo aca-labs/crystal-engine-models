@@ -1,6 +1,7 @@
 require "rethinkdb-orm"
 require "time"
 require "uri"
+require "future"
 
 require "./base/model"
 require "./settings"
@@ -241,8 +242,10 @@ module PlaceOS::Model
     #
     def remove_module(module_id : String)
       mods = self.modules
+      mod = Module.find(module_id)
       if mods && mods.includes?(module_id) && ControlSystem.remove_module(id.as(String), module_id)
         mods.delete(module_id)
+        self.features.as(Set(String)).delete(mod.try &.resolved_name).delete(mod.try &.name)
         self.version = ControlSystem.table_query(&.get(id.as(String))["version"]).as_i
       end
     end

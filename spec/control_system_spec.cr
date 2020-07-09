@@ -121,11 +121,14 @@ module PlaceOS::Model
         version = cs.version.as(Int32)
 
         cs.modules.not_nil!.should contain module_id
+        cs.features.not_nil!.should contain mod.resolved_name
 
         control_system.remove_module(module_id)
+        control_system.save!
 
         cs = ControlSystem.find!(control_system_id)
         cs.modules.not_nil!.should_not contain module_id
+        cs.features.not_nil!.should_not contain mod.resolved_name
         cs.version.should eq (version + 1)
 
         {control_system, driver, mod}.each &.destroy

@@ -1,5 +1,5 @@
 name: placeos-models
-version: 3.1.0
+version: 3.1.1
 
 dependencies:
   # Data validation library
@@ -10,6 +10,10 @@ dependencies:
   # Data validation library
   CrystalEmail:
     github: Nephos/CrystalEmail
+
+  # Simple async tasks
+  future:
+    github: crystal-community/future.cr
 
   # JSON Web Token support
   jwt:
