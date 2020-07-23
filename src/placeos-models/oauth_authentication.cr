@@ -20,6 +20,12 @@ module PlaceOS::Model
     # Maps an expected key to a provided key i.e. {used_in_engine => used_by_remote}
     attribute info_mappings : Hash(String, String) = {} of String => String
 
+    # Maps additional params to be added to the authorisation request
+    attribute authorize_params : Hash(String, String) = {} of String => String
+
+    # Security checks to be made on the returned data
+    attribute ensure_matching : Hash(String, Array(String)) = {} of String => Array(String)
+
     # The HTTP URL of the SSO provider
     attribute site : String
 
