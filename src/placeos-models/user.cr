@@ -34,6 +34,11 @@ module PlaceOS::Model
     attribute deleted : Bool = false
     attribute groups : Array(String) = [] of String, mass_assignment: false
 
+    attribute access_token : String, mass_assignment: false
+    attribute refresh_token : String, mass_assignment: false
+    attribute expires_at : Int64, mass_assignment: false
+    attribute expires : Bool, mass_assignment: false
+
     attribute password : String
 
     has_many(
@@ -109,16 +114,17 @@ module PlaceOS::Model
     # Publically visible fields
     PUBLIC_DATA = {
       :id, :email_digest, :nickname, :name, :first_name, :last_name,
-      :country, :building, {field: :created_at, serialise: :to_unix},
+      :country, :building, :image, {field: :created_at, serialise: :to_unix},
     }
 
     # Admin visible fields
     ADMIN_DATA = {
       # Public Visible
       :id, :email_digest, :nickname, :name, :first_name, :last_name,
-      :country, :building, {field: :created_at, serialise: :to_unix},
+      :country, :building, :image, {field: :created_at, serialise: :to_unix},
       # Admin Visible
-      :sys_admin, :support, :email, :phone,
+      :sys_admin, :support, :email, :phone, :ui_theme, :metadata, :login_name,
+      :staff_id, :card_number, :groups
     }
 
     subset_json(:as_public_json, PUBLIC_DATA)
