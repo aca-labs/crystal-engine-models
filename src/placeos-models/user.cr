@@ -124,7 +124,7 @@ module PlaceOS::Model
       :country, :building, :image, {field: :created_at, serialise: :to_unix},
       # Admin Visible
       :sys_admin, :support, :email, :phone, :ui_theme, :metadata, :login_name,
-      :staff_id, :card_number, :groups
+      :staff_id, :card_number, :groups,
     }
 
     subset_json(:as_public_json, PUBLIC_DATA)
