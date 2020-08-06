@@ -6,6 +6,7 @@ require "future"
 require "./base/model"
 require "./settings"
 require "./utilities/settings_helper"
+require "./utilities/time_location_converter"
 
 module PlaceOS::Model
   class ControlSystem < ModelBase
@@ -27,6 +28,8 @@ module PlaceOS::Model
     attribute type : String?
     attribute capacity : Int32 = 0
     attribute map_id : String?
+
+    attribute timezone : Time::Location?, converter: Time::Location::Converter
 
     # Provide a field for simplifying support
     attribute support_url : String = ""
