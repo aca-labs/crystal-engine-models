@@ -17,9 +17,8 @@ module PlaceOS::Model
       id = stats.id
       id.should start_with "stats-" if id
 
-      ttl = stats.ttl.not_nil!
-      ttl.should be < 31.days.from_now.to_unix
-      ttl.should be > 29.days.from_now.to_unix
+      stats.ttl.should be < 31.days.from_now.to_unix
+      stats.ttl.should be > 29.days.from_now.to_unix
 
       stats.persisted?.should be_true
       stats.destroy

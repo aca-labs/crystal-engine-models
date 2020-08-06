@@ -4,6 +4,7 @@ module PlaceOS::Model
   describe TriggerInstance do
     it "saves a TriggerInstance" do
       trigger = Generator.trigger.save!
+
       inst = Generator.trigger_instance(trigger).save!
       id = TriggerInstance.find!(inst.id.as(String)).id
       id.should eq inst.id

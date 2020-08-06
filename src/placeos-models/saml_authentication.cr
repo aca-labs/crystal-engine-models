@@ -23,7 +23,7 @@ module PlaceOS::Model
 
     # Attribute that uniquely identifies the user
     # (If unset, the name identifier returned by the IdP is used.)
-    attribute uid_attribute : String
+    attribute uid_attribute : String?
 
     # The URL at which the SAML assertion should be received (SSO Service => Engine URL)
     attribute assertion_consumer_service_url : String
@@ -32,13 +32,13 @@ module PlaceOS::Model
     attribute idp_sso_target_url : String
 
     # The identity provider's certificate in PEM format (this or fingerprint is required)
-    attribute idp_cert : String
+    attribute idp_cert : String?
 
     # The SHA1 fingerprint of the certificate
-    attribute idp_cert_fingerprint : String
+    attribute idp_cert_fingerprint : String?
 
     # Name for the attribute service (Defaults to Required attributes)
-    attribute attribute_service_name : String
+    attribute attribute_service_name : String?
 
     # Used to map Attribute Names in a SAMLResponse to entries in the OmniAuth info hash
     attribute attribute_statements : Hash(String, Array(String)) = {
@@ -58,10 +58,10 @@ module PlaceOS::Model
     ]
 
     # The URL to which the single logout request and response should be sent
-    attribute idp_slo_target_url : String
+    attribute idp_slo_target_url : String?
 
     # The value to use as default RelayState for single log outs
-    attribute slo_default_relay_state : String
+    attribute slo_default_relay_state : String?
 
     validates :authority_id, presence: true
     validates :name, presence: true
@@ -69,7 +69,6 @@ module PlaceOS::Model
     validates :idp_sso_target_url, presence: true
     validates :name_identifier_format, presence: true
     validates :assertion_consumer_service_url, presence: true
-    validates :request_attributes, presence: true
 
     def type
       "adfs"

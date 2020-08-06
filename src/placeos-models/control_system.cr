@@ -15,21 +15,23 @@ module PlaceOS::Model
     table :sys
 
     attribute name : String, es_type: "keyword"
-    attribute description : String
+    attribute description : String = ""
 
     # Room search meta-data
     # Building + Level are both filtered using zones
-    attribute email : String
     attribute features : Set(String) = ->{ Set(String).new }
+    attribute email : String?
     attribute bookable : Bool = false
-    attribute display_name : String
-    attribute code : String
-    attribute type : String
+    attribute display_name : String?
+    attribute code : String?
+    attribute type : String?
     attribute capacity : Int32 = 0
-    attribute map_id : String
+    attribute map_id : String?
 
-    # Provide a email lookup helpers
-    secondary_index :email
+    # Provide a field for simplifying support
+    attribute support_url : String = ""
+
+    attribute version : Int32 = 0
 
     # The number of UI devices that are always available in the room
     # i.e. the number of iPads mounted on the wall
@@ -63,6 +65,27 @@ module PlaceOS::Model
       foreign_key: "control_system_id"
     )
 
+    # Provide a email lookup helpers
+    secondary_index :email
+
+    # Zones and settings are only required for confident coding
+    validates :name, presence: true
+
+    # TODO: Ensure unique regardless of casing
+    ensure_unique :name do |name|
+      name.as(String).strip
+    end
+
+    # Validate support URI
+    validate ->(this : ControlSystem) {
+      support_url = this.support_url
+      unless support_url.empty?
+        url = URI.parse(support_url)
+        url_parsed = !!(url && url.scheme && url.host)
+        this.validation_error(:support_url, "is an invalid URI") unless url_parsed
+      end
+    }
+
     def self.by_zone_id(id)
       ControlSystem.raw_query do |q|
         q.table(ControlSystem.table_name).filter do |doc|
@@ -85,19 +108,6 @@ module PlaceOS::Model
 
     def self.using_module(id)
       self.by_module_id(id)
-    end
-
-    # Provide a field for simplifying support
-    attribute support_url : String
-
-    attribute version : Int32 = 0
-
-    # Zones and settings are only required for confident coding
-    validates :name, presence: true
-
-    # TODO: Ensure unique regardless of casing
-    ensure_unique :name do |name|
-      "#{name.as(String).strip}"
     end
 
     # Obtains the control system's modules as json
@@ -156,18 +166,6 @@ module PlaceOS::Model
 
       settings.compact
     end
-
-    # Validate support URI
-    validate ->(this : ControlSystem) {
-      support_url = this.support_url
-      if support_url.nil? || support_url.empty?
-        this.support_url = nil
-      else
-        url = URI.parse(support_url)
-        url_parsed = !!(url && url.scheme && url.host)
-        this.validation_error(:support_url, "is an invalid URI") unless url_parsed
-      end
-    }
 
     before_save :update_features
 

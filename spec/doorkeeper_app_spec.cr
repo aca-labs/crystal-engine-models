@@ -5,7 +5,8 @@ module PlaceOS::Model
     it "saves an app with a HTTP style" do
       app = DoorkeeperApplication.new
       app.name = "test"
-      app.redirect_uri = "http://test.redirect.com.au/"
+      app.redirect_uri = "http://test.redirect.com.au/#{RANDOM.hex(3)}"
+      app.owner_id = RANDOM.hex(10)
 
       begin
         app.save!
@@ -15,13 +16,14 @@ module PlaceOS::Model
       end
 
       app.persisted?.should be_true
-      app.uid.should eq(Digest::MD5.hexdigest(app.redirect_uri.not_nil!))
+      app.uid.should eq(Digest::MD5.hexdigest(app.redirect_uri))
     end
 
     it "saves an app with a random UID" do
       app = DoorkeeperApplication.new
       app.name = "test"
       app.redirect_uri = "appuri://test.redirect.com.au/"
+      app.owner_id = RANDOM.hex(10)
 
       begin
         app.save!
@@ -31,7 +33,7 @@ module PlaceOS::Model
       end
 
       app.persisted?.should be_true
-      app.uid.should_not eq(Digest::MD5.hexdigest(app.redirect_uri.not_nil!))
+      app.uid.should_not eq(Digest::MD5.hexdigest(app.redirect_uri))
     end
 
     it "saves an app with a specified UID" do
@@ -39,6 +41,7 @@ module PlaceOS::Model
       app.name = "test"
       app.redirect_uri = "http://test.redirect.com.au/"
       app.uid = "my-special-uid"
+      app.owner_id = RANDOM.hex(10)
 
       begin
         app.save!

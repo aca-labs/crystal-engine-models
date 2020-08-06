@@ -14,7 +14,7 @@ module PlaceOS::Model
     table :authority
 
     attribute name : String, es_type: "keyword"
-    attribute description : String
+    attribute description : String = ""
     attribute domain : String
     ensure_unique :domain, create_index: true
 
@@ -44,7 +44,7 @@ module PlaceOS::Model
     macro finished
       # Ensure we are only saving the host
       #
-      def domain=(value : String | Nil)
+      def domain=(value : String)
         host = value.try do |domain|
           URI.parse(domain).host.try &.downcase
         end

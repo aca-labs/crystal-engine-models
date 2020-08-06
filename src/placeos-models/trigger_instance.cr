@@ -96,12 +96,16 @@ module PlaceOS::Model
 
     # Enables the trigger
     def start
-      self.update_fields(enabled: true)
+      toggle_trigger(true)
     end
 
     # Disables the trigger
     def stop
-      self.update_fields(enabled: false)
+      toggle_trigger(false)
+    end
+
+    protected def toggle_trigger(on : Bool)
+      self.update_fields(enabled: on)
     end
 
     # -----------

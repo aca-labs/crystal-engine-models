@@ -23,10 +23,10 @@ module PlaceOS::Model
     end
 
     attribute name : String, es_type: "keyword"
-    attribute description : String
+    attribute description : String = ""
 
-    attribute default_uri : String
-    attribute default_port : Int32
+    attribute default_uri : String?
+    attribute default_port : Int32?
 
     enum_attribute role : Role, es_type: "integer"
 
@@ -35,7 +35,7 @@ module PlaceOS::Model
     attribute file_name : String # Path to driver, relative to repository directory
     attribute commit : String    # Commit/version of driver to compile
 
-    belongs_to Repository, foreign_key: "repository_id"
+    belongs_to Repository, foreign_key: "repository_id", presence: true
 
     # Encrypted yaml settings, with metadata
     has_many(
@@ -69,11 +69,9 @@ module PlaceOS::Model
 
     # Validations
     validates :name, presence: true
-    validates :role, presence: true
-    validates :commit, presence: true
     validates :module_name, presence: true
     validates :file_name, presence: true
-    validates :repository_id, presence: true
+    validates :commit, presence: true
 
     # Validate the repository type
     #
@@ -95,9 +93,7 @@ module PlaceOS::Model
     # Sets the commit hash of the driver for a recompile event
     def recompile(commit_hash : String? = nil)
       commit_hash ||= self.commit
-      if commit_hash
-        self.update_fields(commit: RECOMPILE_PREFIX + commit_hash)
-      end
+      self.update_fields(commit: RECOMPILE_PREFIX + commit_hash) if commit_hash
     end
 
     # Delete all the module references relying on this driver

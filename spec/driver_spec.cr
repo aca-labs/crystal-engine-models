@@ -14,7 +14,7 @@ module PlaceOS::Model
 
     it "finds modules by driver" do
       mod = Generator.module.save!
-      driver = mod.driver.not_nil!
+      driver = mod.driver!
 
       driver.persisted?.should be_true
       mod.persisted?.should be_true
@@ -38,7 +38,7 @@ module PlaceOS::Model
     describe "callbacks" do
       it "#cleanup_modules removes driver modules" do
         mod = Generator.module.save!
-        driver = mod.driver.not_nil!
+        driver = mod.driver!
 
         driver.persisted?.should be_true
         mod.persisted?.should be_true

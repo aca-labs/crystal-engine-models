@@ -20,11 +20,11 @@ module PlaceOS::Model
 
     it "has unique tags" do
       zone = Generator.zone
-      zone.tags.not_nil! << "hello"
-      zone.tags.not_nil! << "hello"
-      zone.tags.not_nil! << "bye"
+      zone.tags << "hello"
+      zone.tags << "hello"
+      zone.tags << "bye"
       zone.save!
-      Zone.find!(zone.id.not_nil!).tags.should eq Set{"hello", "bye"}
+      Zone.find!(zone.id.as(String)).tags.should eq Set{"hello", "bye"}
     end
 
     it "supports zone hierarchies" do
@@ -38,7 +38,7 @@ module PlaceOS::Model
       end
 
       zone.should_not be_nil
-      id = zone.id.not_nil!
+      id = zone.id.as(String)
       id.should start_with "zone-"
       zone.persisted?.should be_true
 
@@ -51,11 +51,11 @@ module PlaceOS::Model
         raise e
       end
 
-      id2 = zone2.id.not_nil!
+      id2 = zone2.id.as(String)
       id2.should start_with "zone-"
 
       zone.children.to_a.map(&.id).should eq [id2]
-      zone2.parent.not_nil!.id.should eq id
+      zone2.parent!.id.should eq id
 
       # show that deleting the parent deletes the children
       Zone.find!(id2.as(String)).id.should eq id2

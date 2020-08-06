@@ -31,23 +31,23 @@ module PlaceOS::Model
 
     # The SSO providers URL for authorization, defaults to: `oauth/authorize`
     # Google is `/o/oauth2/auth`
-    attribute authorize_url : String
+    attribute authorize_url : String = "/oauth/authorize"
 
     # If not set it defaults to "post"
-    attribute token_method : String
+    attribute token_method : String = "post"
 
     # If not set it defaults to "request_body", others include "basic_auth"
-    attribute auth_scheme : String
+    attribute auth_scheme : String = "request_body"
 
     # defaults to: `oauth/token` however google is: `/o/oauth2/token`
-    attribute token_url : String
+    attribute token_url : String = "/oauth/token"
 
     # Space seperated scope strings
     # i.e. `https://www.googleapis.com/auth/devstorage.readonly https://www.googleapis.com/auth/prediction`
     attribute scope : String
 
     # URL to call with a valid token to obtain the users profile data (name, email etc)
-    attribute raw_info_url : String
+    attribute raw_info_url : String?
 
     validates :name, presence: true
     validates :authority_id, presence: true

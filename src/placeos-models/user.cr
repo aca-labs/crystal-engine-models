@@ -13,33 +13,33 @@ module PlaceOS::Model
     belongs_to Authority
 
     attribute name : String, es_type: "keyword"
-    attribute nickname : String
-    attribute email : String
-    attribute phone : String
-    attribute country : String
-    attribute image : String
-    attribute ui_theme : String
-    attribute metadata : String
+    attribute nickname : String = ""
+    attribute email : String = ""
+    attribute phone : String = ""
+    attribute country : String = ""
+    attribute image : String = ""
+    attribute ui_theme : String = "light"
+    attribute metadata : String = ""
 
-    attribute login_name : String
-    attribute staff_id : String
-    attribute first_name : String
-    attribute last_name : String
-    attribute building : String
+    attribute login_name : String?
+    attribute staff_id : String?
+    attribute first_name : String?
+    attribute last_name : String?
+    attribute building : String?
 
-    attribute password_digest : String, mass_assignment: false
-    attribute email_digest : String, mass_assignment: false
-    attribute card_number : String
+    attribute password_digest : String?, mass_assignment: false
+    attribute email_digest : String?, mass_assignment: false
+    attribute card_number : String?
 
     attribute deleted : Bool = false
     attribute groups : Array(String) = [] of String, mass_assignment: false
 
-    attribute access_token : String, mass_assignment: false
-    attribute refresh_token : String, mass_assignment: false
-    attribute expires_at : Int64, mass_assignment: false
-    attribute expires : Bool, mass_assignment: false
+    attribute access_token : String?, mass_assignment: false
+    attribute refresh_token : String?, mass_assignment: false
+    attribute expires_at : Int64?, mass_assignment: false
+    attribute expires : Bool = false, mass_assignment: false
 
-    attribute password : String
+    attribute password : String?
 
     has_many(
       child_class: UserAuthLookup,
@@ -186,7 +186,7 @@ module PlaceOS::Model
       if pass = @password
         # no password prevents people logging in using the account locally
         if pass.empty?
-          self.password_digest = nil
+          @password_digest = nil
         else
           digest = Password.create(pass)
           self.password_digest = digest.to_s
@@ -198,7 +198,7 @@ module PlaceOS::Model
     @pass_compare : Password? = nil
 
     def password : Password
-      @pass_compare ||= Password.new(self.password_digest.not_nil!)
+      @pass_compare ||= Password.new(self.password_digest)
     end
 
     def password=(new_password : String) : String

@@ -19,15 +19,15 @@ module PlaceOS::Model
     enum_attribute auth_type : AuthType = AuthType::UserPassword
 
     attribute name : String
-    attribute description : String
+    attribute description : String = ""
 
     attribute host : String
     attribute port : Int32 = 1883 # Default MQTT port for non-tls connections
     attribute tls : Bool = false
 
-    attribute username : String
-    attribute password : String
-    attribute certificate : String
+    attribute username : String?
+    attribute password : String?
+    attribute certificate : String?
     attribute secret : String = ->{ Random::Secure.hex(64) }
 
     # Regex filters for sensitive data.
@@ -36,7 +36,6 @@ module PlaceOS::Model
 
     validates :name, presence: true
     validates :host, presence: true
-    validates :port, presence: true
     validates :secret, presence: true
 
     validate ->(this : Broker) {

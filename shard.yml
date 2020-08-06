@@ -1,11 +1,11 @@
 name: placeos-models
-version: 3.3.0
+version: 4.0.0
 
 dependencies:
   # Data validation library
   active-model:
     github: spider-gazelle/active-model
-    version: ~> 1
+    version: ~> 2
 
   # Data validation library
   CrystalEmail:
@@ -27,7 +27,7 @@ dependencies:
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
-    version: ~> 2.10
+    version: ~> 3
 
 development_dependencies:
   faker:

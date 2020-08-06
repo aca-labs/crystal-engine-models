@@ -6,7 +6,12 @@ module PlaceOS::Model
       Driver::Role.values.each do |role|
         it "saves a #{role} module" do
           driver = Generator.driver(role: role)
-          mod = Generator.module(driver: driver).save!
+          mod = Generator.module(driver: driver)
+          begin
+            mod.save!
+          rescue
+            pp! mod.errors
+          end
           mod.persisted?.should be_true
         end
       end
@@ -16,7 +21,7 @@ module PlaceOS::Model
         mod = Generator.module(driver: driver).save!
         mod.persisted?.should be_true
 
-        mod.control_system.not_nil!.modules.not_nil!.should contain(mod.id)
+        mod.control_system!.modules.should contain(mod.id)
       end
 
       it "removes module from parent system on destroy" do
@@ -29,11 +34,11 @@ module PlaceOS::Model
         driver = Generator.driver(role: Driver::Role::Logic)
         mod = Generator.module(driver: driver, control_system: control_system).save!
         mod.persisted?.should be_true
-        mod.control_system.not_nil!.modules.not_nil!.should contain(mod.id)
+        mod.control_system!.modules.should contain(mod.id)
 
         mod.destroy
 
-        control_system_modules = ControlSystem.find!(control_system_id).modules.not_nil!
+        control_system_modules = ControlSystem.find!(control_system_id).modules
 
         # Removes the module reference on destroy
         control_system_modules.should_not contain(mod.id)
@@ -45,11 +50,16 @@ module PlaceOS::Model
     describe "locating modules" do
       it "in_zone" do
         control_system = Generator.control_system.save!
-        zone = Generator.zone.save!
+        begin
+          zone = Generator.zone.save!
+        rescue e : RethinkORM::Error::DocumentInvalid
+          pp! e.model.not_nil!.errors
+          raise e
+        end
         mod = Generator.module(control_system: control_system).save!
         control_system.zones = [zone.id.as(String)]
         control_system.modules = [mod.id.as(String)]
-        control_system.update!
+        control_system.save!
 
         Module
           .in_zone(zone.id.as(String))
@@ -95,7 +105,12 @@ module PlaceOS::Model
       it "obeys logic module settings hierarchy" do
         driver = Generator.driver(role: Driver::Role::Logic).save!
         driver_settings_string = %(value: 0\nscreen: 0\nfrangos: 0\nchop: 0)
-        Generator.settings(driver: driver, settings_string: driver_settings_string).save!
+        begin
+          Generator.settings(driver: driver, settings_string: driver_settings_string).save!
+        rescue e : RethinkORM::Error::DocumentInvalid
+          pp! e.model.not_nil!.errors
+          raise e
+        end
 
         control_system = Generator.control_system.save!
         control_system_settings_string = %(frangos: 1)
@@ -106,7 +121,7 @@ module PlaceOS::Model
         Generator.settings(zone: zone, settings_string: zone_settings_string).save!
 
         control_system.zones = [zone.id.as(String)]
-        control_system.update!
+        control_system.save!
 
         mod = Generator.module(driver: driver, control_system: control_system).save!
         module_settings_string = %(value: 2\n)
@@ -142,7 +157,7 @@ module PlaceOS::Model
         zone_settings = Generator.settings(zone: zone, settings_string: zone_settings_string).save!
 
         control_system.zones = [zone.id.as(String)]
-        control_system.update!
+        control_system.save!
 
         mod = Generator.module(driver: driver, control_system: control_system).save!
 
@@ -181,7 +196,7 @@ module PlaceOS::Model
         zone_settings = Generator.settings(zone: zone, settings_string: zone_settings_string).save!
 
         control_system.zones = [zone.id.as(String)]
-        control_system.update!
+        control_system.save!
 
         mod = Generator.module(driver: driver, control_system: control_system).save!
 
