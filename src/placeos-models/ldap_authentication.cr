@@ -23,12 +23,12 @@ module PlaceOS::Model
     attribute base : String
 
     # :bind_dn and :password is the default credentials to perform user lookup
-    attribute bind_dn : String
-    attribute password : String
+    attribute bind_dn : String?
+    attribute password : String?
 
     # LDAP filter like: (&(uid=%{username})(memberOf=cn=myapp-users,ou=groups,dc=example,dc=com))
     # Can be used instead of UID
-    attribute filter : String
+    attribute filter : String?
 
     validates :authority_id, presence: true
     validates :name, presence: true

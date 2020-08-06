@@ -19,7 +19,7 @@ module PlaceOS::Model
     attribute redirect_uri : String
     attribute skip_authorization : Bool = true
     attribute confidential : Bool = false
-    attribute revoked_at : Time, converter: Time::EpochConverter
+    attribute revoked_at : Time?, converter: Time::EpochConverter
 
     attribute uid : String, mass_assignment: false
     ensure_unique :uid, create_index: true
@@ -32,9 +32,9 @@ module PlaceOS::Model
     before_save :generate_uid
 
     def generate_uid
-      check_uid = self.uid
-      redirect = self.redirect_uri.try &.downcase
-      if check_uid.nil? || check_uid.try &.blank?
+      check_uid = @uid
+      redirect = self.redirect_uri.downcase
+      if check_uid.nil? || check_uid.blank?
         if redirect && redirect.starts_with?("http")
           self.uid = Digest::MD5.hexdigest(redirect)
         else

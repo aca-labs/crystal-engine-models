@@ -16,14 +16,16 @@ module PlaceOS::Model
     include RethinkORM::Timestamps
 
     table :sets
+
     attribute parent_id : String, es_keyword: "keyword"
+
     secondary_index :parent_id
 
-    enum_attribute encryption_level : Encryption::Level
+    enum_attribute encryption_level : Encryption::Level = Encryption::Level::None
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String, es_keyword: "text"
 
-    attribute settings_id : String = nil
+    attribute settings_id : String? = nil
     secondary_index :settings_id
 
     # Settings self-referential entity relationship acts as a 2-level tree
@@ -40,7 +42,7 @@ module PlaceOS::Model
     belongs_to Zone, foreign_key: "parent_id"
 
     validates :encryption_level, prescence: true
-    validates :parent_id, prescence: true
+    validates :parent_id, presence: true
 
     # Possible parent documents
     enum ParentType
@@ -53,32 +55,19 @@ module PlaceOS::Model
         json.string(to_s)
       end
 
-      def self.from_id?(id) : ParentType?
+      def self.from_id?(id : String?) : ParentType?
+        return if id.nil?
+
         case id
         when .starts_with?(Model::ControlSystem.table_name) then ControlSystem
         when .starts_with?(Model::Driver.table_name)        then Driver
         when .starts_with?(Model::Module.table_name)        then Module
         when .starts_with?(Model::Zone.table_name)          then Zone
-        else
-          nil
         end
       end
     end
 
     enum_attribute parent_type : ParentType
-
-    # Parse `parent_id` and set the `parent_type` of the `Settings`
-    #
-    validate ->(this : Settings) {
-      return unless (parent_id = this.parent_id)
-      return if this.parent_type
-
-      if (parent_type = ParentType.from_id?(parent_id))
-        this.parent_type = parent_type
-      else
-        this.validation_error(:parent_type, "couldn't parse type from parent_id")
-      end
-    }
 
     validates :parent_type, presence: true
 
@@ -110,6 +99,7 @@ module PlaceOS::Model
     # Callbacks
     ###########################################################################
 
+    before_save :parse_parent_type
     before_save :build_keys
     before_save :encrypt_settings
     after_save :create_version
@@ -146,11 +136,24 @@ module PlaceOS::Model
           .table(Settings.table_name)
           .get_all([parent_id.as(String)], index: :parent_id)
           .filter({settings_id: id.as(String)})
-          .order_by(r.desc(:created_at))
-          .slice(slice_start, slice_end)
+          .order_by(r.desc(:created_at)).slice(slice_start, slice_end)
       end
 
       versions.to_a
+    end
+
+    # Parse `parent_id` and set the `parent_type` of the `Settings`
+    #
+    def parse_parent_type
+      return unless @parent_type.nil?
+
+      if (type = ParentType.from_id?(parent_id))
+        self.parent_type = type
+      else
+        raise Error.new("Failed to parse Settings' parent type from #{parent_id}")
+      end
+    rescue e : NilAssertionError
+      raise NoParentError.new
     end
 
     # Queries

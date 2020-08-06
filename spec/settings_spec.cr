@@ -35,7 +35,7 @@ module PlaceOS::Model
 
       settings.should_not be_nil
       settings.persisted?.should be_true
-      settings.keys.not_nil!.should be_empty
+      settings.keys.should be_empty
     end
 
     it "encrypts on save" do
@@ -64,7 +64,7 @@ module PlaceOS::Model
         # 1 second sleep as the resolution of timestamps are terrible
         sleep 1
         settings.settings_string = string
-        settings.update!
+        settings.save!
       end
 
       settings.history.map(&.any["a"]).should eq [3, 2, 1, 0]
@@ -135,7 +135,7 @@ module PlaceOS::Model
         mod = Generator.module(driver: driver).save!
 
         control_system.modules = [mod.id.as(String)]
-        control_system.update!
+        control_system.save!
 
         settings
           .dependent_modules
@@ -155,7 +155,7 @@ module PlaceOS::Model
 
         control_system.zones = [zone.id.as(String)]
         control_system.modules = [mod.id.as(String)]
-        control_system.update!
+        control_system.save!
 
         settings
           .dependent_modules

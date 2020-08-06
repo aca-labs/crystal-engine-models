@@ -8,7 +8,7 @@ module PlaceOS::Model
 
       control_system.metadata.first.id.should eq meta.id
       meta_find = Metadata.find!(meta.id.as(String))
-      meta_find.control_system.not_nil!.id.should eq control_system.id
+      meta_find.control_system!.id.should eq control_system.id
 
       control_system.destroy
     end
@@ -19,7 +19,7 @@ module PlaceOS::Model
 
       zone.metadata.first.id.should eq meta.id
       meta_find = Metadata.find!(meta.id.as(String))
-      meta_find.zone.not_nil!.id.should eq zone.id
+      meta_find.zone!.id.should eq zone.id
 
       zone.destroy
     end

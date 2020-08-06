@@ -1,8 +1,8 @@
 require "json"
 require "semantic_version"
 
+# :nodoc:
 # NOTE: Previously used in `PlaceOS::Model::Driver`
-#
 struct SemanticVersion
   # Allows serialization to rethinkDB query language
   def to_reql
@@ -10,6 +10,7 @@ struct SemanticVersion
   end
 end
 
+# :nodoc:
 # Serialization for SemanticVersion fields of models
 module SemanticVersion::Converter
   def self.from_json(value : JSON::PullParser) : SemanticVersion

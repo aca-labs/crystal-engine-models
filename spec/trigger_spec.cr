@@ -33,7 +33,7 @@ module PlaceOS::Model
         model.actions.try &.functions = [valid, invalid]
 
         model.valid?.should be_false
-        model.errors.first.to_s.should end_with "method is required"
+        model.errors.first.to_s.should end_with "method should not be nil"
       end
 
       it "validates email action" do
@@ -70,7 +70,7 @@ module PlaceOS::Model
 
         model.valid?.should be_false
         model.errors.size.should eq 1
-        model.errors.first.to_s.should end_with "type is required"
+        model.errors.first.to_s.should end_with "type should not be nil"
       end
 
       it "validates comparison condition" do

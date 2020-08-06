@@ -15,24 +15,24 @@ module PlaceOS::Model
     table :mod
 
     # The classes/files that this module requires to execute
-    belongs_to Driver, foreign_key: "driver_id"
+    belongs_to Driver, foreign_key: "driver_id", presence: true
 
     belongs_to ControlSystem, foreign_key: "control_system_id"
 
-    attribute ip : String, es_keyword: "ip"
-    attribute port : Int32
+    attribute ip : String = "", es_keyword: "ip"
+    attribute port : Int32 = 0
     attribute tls : Bool = false
     attribute udp : Bool = false
     attribute makebreak : Bool = false
 
     # HTTP Service module
-    attribute uri : String, es_keyword: "keyword"
+    attribute uri : String = "", es_keyword: "keyword"
 
     # Module name
     attribute name : String, es_keyword: "keyword", mass_assignment: false
 
     # Custom module names (in addition to what is defined in the driver)
-    attribute custom_name : String
+    attribute custom_name : String?
 
     # Encrypted yaml settings, with metadata
     has_many(
@@ -47,7 +47,7 @@ module PlaceOS::Model
     # Connected state in model so we can filter and search on it
     attribute connected : Bool = true
     attribute running : Bool = false
-    attribute notes : String
+    attribute notes : String = ""
 
     # Don't include this module in statistics or disconnected searches
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)
@@ -166,8 +166,6 @@ module PlaceOS::Model
       self.custom_name.try { |n| !n.empty? } ? self.custom_name : self.name
     end
 
-    validates :driver, presence: true
-
     validate ->(this : Module) {
       driver = this.driver
       role = driver.try(&.role)
@@ -190,7 +188,9 @@ module PlaceOS::Model
       driver = self.driver
       return if driver.nil?
 
-      self.uri ||= driver.default_uri
+      if (default_uri = driver.default_uri.presence)
+        self.uri ||= default_uri
+      end
 
       uri = self.uri # URI presence
       unless uri
@@ -206,9 +206,11 @@ module PlaceOS::Model
     end
 
     protected def validate_logic_module
+      @tls = nil
+      @udp = nil
+
       self.connected = true # Logic modules are connectionless
-      self.tls = nil
-      self.udp = nil
+
       self.role = Driver::Role::Logic
       has_control = !self.control_system_id.nil?
 
@@ -268,7 +270,9 @@ module PlaceOS::Model
     # Set the name/role from the associated Driver
     #
     protected def set_name_and_role
-      driver_ref = driver.not_nil!
+      driver_ref = driver
+      raise NoParentError.new("Module<#{id}> missing parent Driver") unless driver_ref
+
       self.role = driver_ref.role
       self.name = driver_ref.module_name
     end

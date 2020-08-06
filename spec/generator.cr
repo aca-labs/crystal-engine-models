@@ -22,7 +22,7 @@ module PlaceOS::Model
 
       driver.file_name = "drivers/#{repository.name}/#{driver.name}.cr"
       driver.role = role
-      driver.repository = repo
+      driver.repository = repo.not_nil!
       driver
     end
 
@@ -105,10 +105,14 @@ module PlaceOS::Model
       mod.driver = driver
 
       if driver.role == Driver::Role::Logic
-        # Set cs
-        mod.control_system = !control_system ? Generator.control_system.save! : control_system
+        begin
+          # Set cs
+          mod.control_system = !control_system ? Generator.control_system.save! : control_system
+        rescue e : RethinkORM::Error::DocumentInvalid
+          pp! e.model.not_nil!.errors
+          raise e
+        end
       end
-
       mod
     end
 
@@ -231,6 +235,10 @@ module PlaceOS::Model
       OAuthAuthentication.new(
         name: Faker::Name.name,
         authority_id: authority.id,
+        client_id: RANDOM.hex(32),
+        client_secret: RANDOM.hex(64),
+        site: Faker::Internet.url,
+        scope: "public:read",
       )
     end
 

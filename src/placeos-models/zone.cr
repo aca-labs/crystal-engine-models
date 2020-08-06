@@ -13,26 +13,26 @@ module PlaceOS::Model
     table :zone
 
     attribute name : String, es_type: "keyword"
-    attribute description : String
+    attribute description : String = ""
     attribute tags : Set(String) = ->{ Set(String).new }
 
     # =============================
     # Additional top level metadata that is fairly common
     # =============================
     # Geo-location string (lat,long) or any other location
-    attribute location : String
+    attribute location : String?
     # For display on staff app
-    attribute display_name : String
+    attribute display_name : String?
     # Could be used as floor code
-    attribute code : String
+    attribute code : String?
     # Could be used as floor type
-    attribute type : String
+    attribute type : String?
     # Could be used as a desk count
     attribute count : Int32 = 0
     # Could be used as a people capacity
     attribute capacity : Int32 = 0
     # Map identifier, could be a URL or id
-    attribute map_id : String
+    attribute map_id : String?
     # =============================
 
     belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
@@ -68,6 +68,10 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    validates :name, presence: true
+
+    ensure_unique :name
+
     # Looks up the triggers attached to the zone
     def trigger_data : Array(Trigger)
       triggers = @triggers
@@ -77,9 +81,6 @@ module PlaceOS::Model
         Trigger.find_all(triggers).to_a
       end
     end
-
-    validates :name, presence: true
-    ensure_unique :name
 
     def systems
       ControlSystem.by_zone_id(self.id)

@@ -23,7 +23,7 @@ module PlaceOS::Model
 
       driver = Generator.driver(role: Driver::Role::Logic)
       mod = Generator.module(driver: driver, control_system: control_system).save!
-      mod.control_system.not_nil!.modules.not_nil!.should contain(mod.id)
+      mod.control_system!.modules.should contain(mod.id)
 
       control_system = ControlSystem.find!(control_system.id.as(String))
       control_system.destroy
@@ -95,7 +95,7 @@ module PlaceOS::Model
         control_system.add_module(module_id)
 
         cs = ControlSystem.find!(control_system_id)
-        cs.modules.not_nil!.should contain module_id
+        cs.modules.should contain module_id
         cs.version.should eq (version + 1)
 
         {control_system, driver, mod}.each &.destroy
@@ -120,15 +120,15 @@ module PlaceOS::Model
 
         version = cs.version.as(Int32)
 
-        cs.modules.not_nil!.should contain module_id
-        cs.features.not_nil!.should contain mod.resolved_name
+        cs.modules.should contain module_id
+        cs.features.should contain mod.resolved_name
 
         control_system.remove_module(module_id)
         control_system.save!
 
         cs = ControlSystem.find!(control_system_id)
-        cs.modules.not_nil!.should_not contain module_id
-        cs.features.not_nil!.should_not contain mod.resolved_name
+        cs.modules.should_not contain module_id
+        cs.features.should_not contain mod.resolved_name
         cs.version.should eq (version + 1)
 
         {control_system, driver, mod}.each &.destroy
@@ -151,12 +151,12 @@ module PlaceOS::Model
 
         version = cs.version.as(Int32)
 
-        cs.modules.not_nil!.should contain module_id
+        cs.modules.should contain module_id
 
         control_system.remove_module(module_id)
 
         cs = ControlSystem.find!(control_system_id)
-        cs.modules.not_nil!.should_not contain module_id
+        cs.modules.should_not contain module_id
         cs.version.should eq (version + 1)
 
         Module.exists?(module_id).should be_false
@@ -217,7 +217,7 @@ module PlaceOS::Model
         cs = Generator.control_system.save!
         cs.modules = [mod.id].compact
         cs.save!
-        cs.features.not_nil!.should contain(mod.resolved_name.as(String))
+        cs.features.should contain(mod.resolved_name.as(String))
         {cs, mod}.each &.destroy
       end
     end

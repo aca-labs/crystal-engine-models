@@ -52,9 +52,9 @@ module PlaceOS::Model
     end
 
     # Authentication
-    attribute username : String
-    attribute password : String
-    attribute key : String
+    attribute username : String?
+    attribute password : String?
+    attribute key : String?
 
     has_many(
       child_class: Driver,
