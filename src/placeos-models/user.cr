@@ -21,15 +21,15 @@ module PlaceOS::Model
     attribute ui_theme : String = "light"
     attribute metadata : String = ""
 
-    attribute login_name : String?
-    attribute staff_id : String?
+    attribute login_name : String?, mass_assignment: false
+    attribute staff_id : String?, mass_assignment: false
     attribute first_name : String?
     attribute last_name : String?
     attribute building : String?
 
     attribute password_digest : String?, mass_assignment: false
     attribute email_digest : String?, mass_assignment: false
-    attribute card_number : String?
+    attribute card_number : String?, mass_assignment: false
 
     attribute deleted : Bool = false
     attribute groups : Array(String) = [] of String, mass_assignment: false
