@@ -9,7 +9,7 @@ module PlaceOS::Model
 
     table :ldap_strat
 
-    attribute name : String, es_type: "keyword"
+    attribute name : String, es_subfield: "keyword"
     belongs_to Authority, foreign_key: "authority_id"
 
     attribute port : Int32 = 636

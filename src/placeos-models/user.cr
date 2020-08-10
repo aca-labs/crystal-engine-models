@@ -12,7 +12,7 @@ module PlaceOS::Model
 
     belongs_to Authority
 
-    attribute name : String, es_type: "keyword"
+    attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
     attribute email : String = ""
     attribute phone : String = ""

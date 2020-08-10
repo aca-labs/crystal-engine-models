@@ -21,7 +21,7 @@ module PlaceOS::Model
     end
 
     # Repository metadata
-    attribute name : String, es_type: "keyword"
+    attribute name : String, es_subfield: "keyword"
     attribute folder_name : String
     attribute description : String
     attribute uri : String

@@ -13,7 +13,7 @@ module PlaceOS::Model
 
     table :authority
 
-    attribute name : String, es_type: "keyword"
+    attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute domain : String
     ensure_unique :domain, create_index: true

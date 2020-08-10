@@ -22,7 +22,7 @@ module PlaceOS::Model
       Logic     = 99
     end
 
-    attribute name : String, es_type: "keyword"
+    attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
 
     attribute default_uri : String?
