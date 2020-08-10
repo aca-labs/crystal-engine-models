@@ -18,7 +18,7 @@ module PlaceOS::Model
 
     enum_attribute auth_type : AuthType = AuthType::UserPassword
 
-    attribute name : String
+    attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
 
     attribute host : String

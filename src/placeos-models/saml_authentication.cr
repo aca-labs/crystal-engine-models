@@ -9,7 +9,7 @@ module PlaceOS::Model
 
     table :adfs_strat
 
-    attribute name : String, es_type: "keyword"
+    attribute name : String, es_subfield: "keyword"
     belongs_to Authority, foreign_key: "authority_id"
 
     # The name of your application

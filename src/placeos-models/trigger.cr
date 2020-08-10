@@ -10,7 +10,7 @@ module PlaceOS::Model
     include RethinkORM::Timestamps
     table :trigger
 
-    attribute name : String, es_type: "keyword"
+    attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
 
     # Full path allows resolution in macros
