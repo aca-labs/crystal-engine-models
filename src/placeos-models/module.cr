@@ -162,8 +162,10 @@ module PlaceOS::Model
 
     # Use custom name if it is defined and non-empty, otherwise use module name
     #
-    def resolved_name
-      self.custom_name.try { |n| !n.empty? } ? self.custom_name : self.name
+    def resolved_name : String
+      custom = self.custom_name
+
+      custom.nil? || custom.empty? ? self.name : custom
     end
 
     validate ->(this : Module) {

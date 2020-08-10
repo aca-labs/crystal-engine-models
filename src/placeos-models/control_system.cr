@@ -180,7 +180,7 @@ module PlaceOS::Model
     protected def update_features
       module_names = Module
         .find_all(@modules || [] of String)
-        .compact_map(&.resolved_name)
+        .map(&.resolved_name)
         .select(&.in?(IGNORED_MODULES).!)
         .to_set
       @features = @features.try &.+(module_names) || module_names
