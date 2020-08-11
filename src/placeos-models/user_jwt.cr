@@ -36,8 +36,10 @@ module PlaceOS::Model
       getter email : String
       @[JSON::Field(key: "p")]
       getter permissions : Permissions
+      @[JSON::Field(key: "r")]
+      getter roles : Array(String)
 
-      def initialize(@name, @email, @permissions = Permissions::User)
+      def initialize(@name, @email, @permissions = Permissions::User, @roles = [] of String)
       end
     end
 
