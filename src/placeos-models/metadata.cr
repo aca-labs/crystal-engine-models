@@ -2,6 +2,8 @@ require "rethinkdb-orm"
 require "time"
 require "json"
 
+require "./utilities/json_string_converter"
+
 require "./base/model"
 require "./control_system"
 require "./zone"
@@ -14,7 +16,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
-    attribute details : JSON::Any
+    attribute details : JSON::Any, converter: JSON::Any::StringConverter
 
     attribute parent_id : String, es_keyword: "keyword"
 

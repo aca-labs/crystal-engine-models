@@ -24,6 +24,22 @@ module PlaceOS::Model
       zone.destroy
     end
 
+    it "serializes details field to string" do
+      object = %({"hello":"world"})
+      meta = Metadata.new(
+        name: "hello",
+        description: "",
+        details: JSON.parse(object),
+        parent_id: "1234",
+      )
+
+      # Serializes details to a string
+      JSON.parse(meta.to_json)["details"].should eq %({"hello":"world"})
+
+      # Satisfies round trip property
+      Metadata.from_json(meta.to_json).details.should eq JSON.parse(object)
+    end
+
     describe "for" do
       it "fetches metadata for a parent" do
         parent = Generator.zone.save!
