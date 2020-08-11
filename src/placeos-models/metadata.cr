@@ -37,16 +37,18 @@ module PlaceOS::Model
       include JSON::Serializable
     }
 
+    def self.interface(model : Metadata)
+      Interface.new(
+        name: model.name,
+        description: model.description,
+        details: model.details,
+        parent_id: model.parent_id,
+      )
+    end
+
     def self.build_metadata(parent, name : String? = nil) : Hash(String, Interface)
       for(parent, name).each_with_object({} of String => Interface) do |data, results|
-        # TODO: Remove casts once `active-model` accurately reflects property type
-        #       All these properties have defaults/presence validation.
-        results[data.name.as(String)] = Interface.new(
-          name: data.name.as(String),
-          description: data.description.as(String),
-          details: data.details.as(JSON::Any),
-          parent_id: data.parent_id,
-        )
+        results[data.name] = self.interface(data)
       end
     end
 
