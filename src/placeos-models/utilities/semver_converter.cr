@@ -1,4 +1,5 @@
 require "json"
+require "yaml"
 require "semantic_version"
 
 # :nodoc:
@@ -22,9 +23,7 @@ module SemanticVersion::Converter
   end
 
   def self.from_yaml(ctx : YAML::ParseContext, node : YAML::Nodes::Node) : SemanticVersion
-    unless node.is_a?(YAML::Nodes::Scalar)
-      node.raise "Expected scalar, not #{node.class}"
-    end
+    node.raise "Expected scalar, not #{node.class}" unless node.is_a?(YAML::Nodes::Scalar)
     SemanticVersion.parse(node.value.to_s)
   end
 
