@@ -18,6 +18,9 @@ module PlaceOS::Model
     # Maps to user id
     getter sub : String
 
+    # OAuth2 Scopes
+    getter scope : Array(String)
+
     @[JSON::Field(key: "u")]
     getter user : Metadata
 
