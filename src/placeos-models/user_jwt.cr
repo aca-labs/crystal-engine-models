@@ -46,7 +46,7 @@ module PlaceOS::Model
       end
     end
 
-    def initialize(@iss, @iat, @exp, @aud, @sub, @user)
+    def initialize(@iss, @iat, @exp, @aud, @sub, @user, @scope = ["public"])
     end
 
     def domain
