@@ -38,6 +38,8 @@ module PlaceOS::Model
     validates :host, presence: true
     validates :secret, presence: true
 
+    ensure_unique :name
+
     validate ->(this : Broker) {
       return unless (filters = this.filters)
       # Render regex errors
