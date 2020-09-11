@@ -29,7 +29,7 @@ module PlaceOS::Model
     attribute uri : String = "", es_keyword: "keyword"
 
     # Module name
-    attribute name : String, es_keyword: "keyword", mass_assignment: false
+    attribute name : String, es_subfield: "keyword", mass_assignment: false
 
     # Custom module names (in addition to what is defined in the driver)
     attribute custom_name : String?
