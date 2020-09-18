@@ -68,6 +68,12 @@ module PlaceOS::Model
       ControlSystem.by_module_id(self.id)
     end
 
+    # Fetch `Module`s who have a direct parent `ControlSystem`
+    #
+    def self.logic_for(control_system_id : String)
+      Module.get_all([control_system_id], index: :control_system_id)
+    end
+
     def self.in_control_system(control_system_id : String)
       Module.raw_query do |q|
         q
