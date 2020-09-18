@@ -48,6 +48,19 @@ module PlaceOS::Model
     end
 
     describe "locating modules" do
+      it "logic_for" do
+        control_system = Generator.control_system.save!
+        driver = Generator.driver(role: Driver::Role::Logic).save!
+
+        expected_ids = Array.new(2) {
+          Generator.module(driver: driver, control_system: control_system).save!.id.as(String)
+        }.sort
+
+        fetched_ids = Module.logic_for(control_system.id.as(String)).compact_map(&.id).to_a.sort
+
+        fetched_ids.should eq expected_ids
+      end
+
       it "in_zone" do
         control_system = Generator.control_system.save!
         begin
