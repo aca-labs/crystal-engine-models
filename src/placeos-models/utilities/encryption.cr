@@ -4,6 +4,8 @@ require "uuid"
 
 # Provides symmetric key encryption/decryption
 module PlaceOS::Encryption
+  Log = ::Log.for(self)
+
   # Privilege levels
   enum Level
     None
@@ -12,7 +14,7 @@ module PlaceOS::Encryption
     NeverDisplay
   end
 
-  private SECRET = ENV["PLACE_SERVER_SECRET"]? || "super secret, do not leak"
+  private SECRET = ENV["PLACE_SERVER_SECRET"]?.tap { |k| Log.warn { "using insecure default secret" } if k.nil? } || "super secret, do not leak"
   private CIPHER = "aes-256-gcm"
 
   # Encrypt clear text

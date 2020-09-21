@@ -8,7 +8,7 @@ module PlaceOS::Model
 
     Log = ::Log.for(PlaceOS::Model).for("jwt")
 
-    private ENC_PRIVATE_KEY = ENV["JWT_SECRET"]?.tap { |k| Log.warn { "using unsecure default JWT secret" } if k.nil? }
+    private ENC_PRIVATE_KEY = ENV["JWT_SECRET"]?.tap { |k| Log.warn { "using insecure default JWT secret" } if k.nil? }
     private ENC_PUBLIC_KEY  = ENV["JWT_PUBLIC"]?
 
     private PUBLIC_KEY = ENC_PUBLIC_KEY.try { |k| String.new(Base64.decode(k)) } || <<-KEY
