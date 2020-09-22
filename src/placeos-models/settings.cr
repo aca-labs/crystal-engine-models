@@ -41,7 +41,7 @@ module PlaceOS::Model
     belongs_to Module, foreign_key: "parent_id", association_name: "mod"
     belongs_to Zone, foreign_key: "parent_id"
 
-    validates :encryption_level, prescence: true
+    validates :encryption_level, presence: true
     validates :parent_id, presence: true
 
     # Possible parent documents

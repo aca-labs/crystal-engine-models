@@ -42,7 +42,7 @@ module PlaceOS::Model
     # defaults to: `oauth/token` however google is: `/o/oauth2/token`
     attribute token_url : String = "/oauth/token"
 
-    # Space seperated scope strings
+    # Space separated scope strings
     # i.e. `https://www.googleapis.com/auth/devstorage.readonly https://www.googleapis.com/auth/prediction`
     attribute scope : String
 

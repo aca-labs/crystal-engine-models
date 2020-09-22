@@ -5,7 +5,7 @@ require "time"
 require "./base/model"
 
 module PlaceOS::Model
-  # Class that pins engine's drivers to a specifc repository state
+  # Class that pins engine's drivers to a specific repository state
   # Allows external driver management from a VCS
   class Repository < ModelBase
     include RethinkORM::Timestamps
