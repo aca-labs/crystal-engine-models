@@ -114,6 +114,25 @@ module PlaceOS::Model
       end
     end
 
+    describe "edge module" do
+      it "on_edge?" do
+        mod = Module.new
+        mod.on_edge?.should be_false
+        mod.edge_id = "edge-123"
+        mod.on_edge?.should be_true
+      end
+
+      it "cannot be a logic module" do
+        driver = Generator.driver(role: Driver::Role::Logic).save!
+        edge = Generator.edge.save!
+        mod = Generator.module(driver: driver)
+        mod.edge = edge
+
+        mod.valid?.should be_false
+        mod.errors.first.message.should eq "logic module cannot be allocated to an edge"
+      end
+    end
+
     describe "settings_hierarchy" do
       it "obeys logic module settings hierarchy" do
         driver = Generator.driver(role: Driver::Role::Logic).save!

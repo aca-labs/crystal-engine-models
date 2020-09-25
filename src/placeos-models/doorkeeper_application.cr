@@ -1,6 +1,5 @@
 require "json"
 require "time"
-require "uuid"
 
 require "random/secure"
 require "./base/model"

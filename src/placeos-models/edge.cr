@@ -1,0 +1,27 @@
+require "random"
+
+require "./base/model"
+
+module PlaceOS::Model
+  class Edge < ModelBase
+    include RethinkORM::Timestamps
+
+    table :edge
+
+    attribute name : String, es_subfield: "keyword"
+    attribute secret : String = ->{ Random::Secure.hex(64) }
+
+    ensure_unique :name do |name|
+      name.strip
+    end
+
+    ensure_unique :secret
+
+    # Modules allocated to this Edge
+    has_many(
+      child_class: Module,
+      collection_name: "modules",
+      foreign_key: "edge_id",
+    )
+  end
+end
