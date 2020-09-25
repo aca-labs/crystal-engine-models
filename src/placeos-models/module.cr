@@ -19,6 +19,8 @@ module PlaceOS::Model
 
     belongs_to ControlSystem, foreign_key: "control_system_id"
 
+    belongs_to Edge, foreign_key: "edge_id"
+
     attribute ip : String = "", es_keyword: "ip"
     attribute port : Int32 = 0
     attribute tls : Bool = false
@@ -136,6 +138,12 @@ module PlaceOS::Model
       end.to_json
     end
 
+    # Whether or not module is an edge module
+    #
+    def on_edge?
+      !self.edge_id.nil?
+    end
+
     # Getter for the module's host
     #
     def hostname
@@ -223,6 +231,7 @@ module PlaceOS::Model
       has_control = !self.control_system_id.nil?
 
       self.validation_error(:control_system, "must be associated") unless has_control
+      self.validation_error(:edge, "logic module cannot be allocated to an edge") if self.on_edge?
     end
 
     protected def validate_device_module

@@ -116,6 +116,10 @@ module PlaceOS::Model
       mod
     end
 
+    def self.edge
+      Edge.new(name: "#{Faker::Address.city}_#{RANDOM.base64(5)}")
+    end
+
     def self.encryption_level
       Encryption::Level.parse(Encryption::Level.names.sample(1).first)
     end
