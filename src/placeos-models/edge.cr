@@ -9,7 +9,10 @@ module PlaceOS::Model
     table :edge
 
     attribute name : String, es_subfield: "keyword"
+
     attribute secret : String = ->{ Random::Secure.hex(64) }
+
+    attribute salt : String = ->{ Random::Secure.hex(5) }
 
     ensure_unique :name do |name|
       name.strip
@@ -23,5 +26,25 @@ module PlaceOS::Model
       collection_name: "modules",
       foreign_key: "edge_id",
     )
+
+    before_save :encrypt!
+
+    def encrypt
+      Encryption.encrypt(string: secret, level: Encryption::Level::Admin, id: salt)
+    end
+
+    def encrypt!
+      self.secret = encrypt
+      self
+    end
+
+    def decrypt_for(user)
+      Encryption.decrypt_for(user: user, string: secret, level: Encryption::Level::Admin, id: salt)
+    end
+
+    def decrypt_for!(user)
+      self.secret = decrypt_for(user)
+      self
+    end
   end
 end
