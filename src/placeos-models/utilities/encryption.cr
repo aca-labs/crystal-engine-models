@@ -12,6 +12,16 @@ module PlaceOS::Encryption
     Support
     Admin
     NeverDisplay
+
+    def visible_for?(user : Model::User)
+      if user.is_admin?
+        self <= Admin
+      elsif user.is_support?
+        self <= Support
+      else
+        self <= None
+      end
+    end
   end
 
   private SECRET = ENV["PLACE_SERVER_SECRET"]?.tap { |k| Log.warn { "using insecure default secret" } if k.nil? } || "super secret, do not leak"
@@ -68,10 +78,7 @@ module PlaceOS::Encryption
   end
 
   def self.decrypt_for(user : Model::User, string : String, id : String, level : Level)
-    decrypt_support = level.support? && (user.is_support? || user.is_admin?)
-    decrypt_admin = level.admin? && user.is_admin?
-
-    if decrypt_support || decrypt_admin
+    if level.visible_for?(user)
       decrypt(string, id, level)
     else
       string
