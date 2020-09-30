@@ -48,6 +48,14 @@ module PlaceOS::Model
       collection_name: :auth_lookups
     )
 
+    # Metadata belonging to this user
+    has_many(
+      child_class: Metadata,
+      collection_name: "metadata",
+      foreign_key: "parent_id",
+      dependent: :destroy
+    )
+
     validates :email, presence: true
     validates :authority_id, presence: true
 
