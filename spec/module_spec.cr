@@ -115,6 +115,15 @@ module PlaceOS::Model
     end
 
     describe "edge module" do
+      it "has_edge_hint?" do
+        driver = Generator.driver(role: Driver::Role::Service)
+        mod = Generator.module(driver: driver)
+        mod.edge_id = "edge-123"
+        mod.save!
+
+        Module.has_edge_hint?(mod.id.as(String)).should be_true
+      end
+
       it "on_edge?" do
         mod = Module.new
         mod.on_edge?.should be_false

@@ -65,6 +65,9 @@ module PlaceOS::Model
     # Ensure fields inherited from Driver are set correctly
     before_save :set_name_and_role
 
+    # NOTE: Temporary while `edge` feature developed
+    before_create :set_edge_hint
+
     # Finds the systems for which this module is in use
     def systems
       ControlSystem.by_module_id(self.id)
@@ -142,6 +145,21 @@ module PlaceOS::Model
     #
     def on_edge?
       !self.edge_id.nil?
+    end
+
+    private EDGE_HINT = "-edge"
+
+    protected def set_edge_hint
+      if on_edge?
+        self._new_flag = true
+        @id = RethinkORM::IdGenerator.next(self) + EDGE_HINT
+      end
+    end
+
+    # Hint in the model id whether the module is an edge module
+    #
+    def self.has_edge_hint?(module_id : String)
+      module_id.ends_with? EDGE_HINT
     end
 
     # Getter for the module's host
