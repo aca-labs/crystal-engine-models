@@ -67,6 +67,17 @@ module PlaceOS::Encryption
     String.new(clear_data.to_slice)
   end
 
+  def self.decrypt_for(user : Model::User, string : String, id : String, level : Level)
+    decrypt_support = level.support? && (user.is_support? || user.is_admin?)
+    decrypt_admin = level.admin? && user.is_admin?
+
+    if decrypt_support || decrypt_admin
+      decrypt(string, id, level)
+    else
+      string
+    end
+  end
+
   # Create a key from user privilege, id and existing/random salt
   #
   protected def self.generate_key(level : Level, id : String, salt : String = UUID.random.to_s)
