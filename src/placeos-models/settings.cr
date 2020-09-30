@@ -17,7 +17,7 @@ module PlaceOS::Model
 
     table :sets
 
-    attribute parent_id : String, es_keyword: "keyword"
+    attribute parent_id : String?, es_keyword: "keyword"
 
     secondary_index :parent_id
 
@@ -109,7 +109,7 @@ module PlaceOS::Model
     def create_version
       return if is_version?
 
-      old_settings = encrypt(settings_string.as(String))
+      old_settings = encrypt(settings_string)
       attrs = attributes_tuple.merge({id: nil, created_at: nil, updated_at: nil, settings_string: old_settings})
       version = Settings.new(**attrs)
       version.settings_id = self.id
@@ -119,7 +119,6 @@ module PlaceOS::Model
     # Generate keys for settings object
     #
     def build_keys : Array(String)
-      settings_string = @settings_string.as(String)
       unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
       self.keys = YAML.parse(unencrypted).as_h?.try(&.keys.map(&.to_s)) || [] of String
     end
@@ -145,8 +144,6 @@ module PlaceOS::Model
     # Parse `parent_id` and set the `parent_type` of the `Settings`
     #
     def parse_parent_type
-      return unless @parent_type.nil?
-
       if (type = ParentType.from_id?(parent_id))
         self.parent_type = type
       else
@@ -192,16 +189,14 @@ module PlaceOS::Model
     ###########################################################################
 
     protected def encrypt(string : String)
-      raise NoParentError.new unless (encryption_id = @parent_id)
+      raise NoParentError.new if (encryption_id = parent_id).nil?
 
-      encryption = @encryption_level.as(Encryption::Level)
-      Encryption.encrypt(string, level: encryption, id: encryption_id)
+      Encryption.encrypt(string, level: encryption_level, id: encryption_id)
     end
 
     # Encrypts all settings.
     #
     def encrypt_settings
-      settings_string = @settings_string.as(String)
       self.settings_string = encrypt(settings_string)
     end
 
@@ -215,11 +210,9 @@ module PlaceOS::Model
     # Decrypts the model's setting string
     #
     def decrypt
-      raise NoParentError.new unless (encryption_id = @parent_id)
-      settings_string = @settings_string.as(String)
-      level = @encryption_level.as(Encryption::Level)
+      raise NoParentError.new if (encryption_id = parent_id).nil?
 
-      Encryption.decrypt(string: settings_string, level: level, id: encryption_id)
+      Encryption.decrypt(string: settings_string, level: encryption_level, id: encryption_id)
     end
 
     # Decrypts the model's settings string dependent on user privileges
@@ -232,13 +225,9 @@ module PlaceOS::Model
     # Decrypts (if user has correct privilege) and returns the settings string
     #
     def decrypt_for(user) : String
-      if encryption_level == Encryption::Level::Support && (user.is_support? || user.is_admin?)
-        decrypt
-      elsif encryption_level == Encryption::Level::Admin && user.is_admin?
-        decrypt
-      else
-        settings_string.as(String)
-      end
+      raise NoParentError.new unless (encryption_id = parent_id)
+
+      Encryption.decrypt_for(user: user, string: settings_string, level: encryption_level, id: encryption_id)
     end
 
     # Retrieve the parent relation
@@ -305,13 +294,13 @@ module PlaceOS::Model
     # If a Settings has a parent, it's a version
     #
     def is_version? : Bool
-      !!(@settings_id)
+      !settings_id.nil?
     end
 
     # Determine if setting_string is encrypted
     #
     def is_encrypted? : Bool
-      !!(@settings_string.try &->Encryption.is_encrypted?(String))
+      Encryption.is_encrypted?(settings_string)
     end
 
     # Decrypts settings, encodes as a json object
