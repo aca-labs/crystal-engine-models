@@ -10,6 +10,8 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
 
+    attribute description : String = ""
+
     attribute secret : String = ->{ Random::Secure.hex(64) }
 
     attribute salt : String = ->{ Random::Secure.hex(5) }
