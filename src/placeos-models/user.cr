@@ -19,7 +19,7 @@ module PlaceOS::Model
     attribute country : String = ""
     attribute image : String = ""
     attribute ui_theme : String = "light"
-    attribute metadata : String = ""
+    attribute misc : String = ""
 
     attribute login_name : String?, mass_assignment: false
     attribute staff_id : String?, mass_assignment: false
@@ -46,6 +46,14 @@ module PlaceOS::Model
       dependent: :destroy,
       foreign_key: "user_id",
       collection_name: :auth_lookups
+    )
+
+    # Metadata belonging to this user
+    has_many(
+      child_class: Metadata,
+      collection_name: "metadata",
+      foreign_key: "parent_id",
+      dependent: :destroy
     )
 
     validates :email, presence: true
@@ -115,7 +123,7 @@ module PlaceOS::Model
       :id, :email_digest, :nickname, :name, :first_name, :last_name,
       :country, :building, :image, {field: :created_at, serialise: :to_unix},
       # Admin Visible
-      :sys_admin, :support, :email, :phone, :ui_theme, :metadata, :login_name,
+      :sys_admin, :support, :email, :phone, :ui_theme, :misc, :login_name,
       :staff_id, :card_number, :groups,
     }
 

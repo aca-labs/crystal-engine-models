@@ -24,6 +24,7 @@ module PlaceOS::Model
 
     belongs_to Zone, foreign_key: "parent_id", association_name: "zone"
     belongs_to ControlSystem, foreign_key: "parent_id", association_name: "control_system"
+    belongs_to User, foreign_key: "parent_id", association_name: "user"
 
     validates :details, presence: true
     validates :name, presence: true
@@ -52,11 +53,11 @@ module PlaceOS::Model
       end
     end
 
-    def self.for(parent : String | Zone | ControlSystem, name : String? = nil)
+    def self.for(parent : String | Zone | ControlSystem | User, name : String? = nil)
       parent_id = case parent
                   in String
                     parent
-                  in Zone, ControlSystem
+                  in Zone, ControlSystem, User
                     parent.id.as(String)
                   end
 
