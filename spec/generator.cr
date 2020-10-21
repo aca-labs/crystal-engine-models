@@ -273,7 +273,7 @@ module PlaceOS::Model
       [true, false].sample(1).first
     end
 
-    def self.jwt(user : User? = nil)
+    def self.jwt(user : User? = nil, scope : Array(String) = ["public"])
       user = self.user.save! if user.nil?
 
       permissions = case ({user.support.as(Bool), user.sys_admin.as(Bool)})
@@ -295,6 +295,7 @@ module PlaceOS::Model
         exp: 2.weeks.from_now,
         aud: Faker::Internet.email,
         sub: user.id.as(String),
+        scope: scope,
         user: meta,
       )
     end
