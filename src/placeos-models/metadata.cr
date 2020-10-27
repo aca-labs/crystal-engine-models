@@ -17,6 +17,7 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute details : JSON::Any, converter: JSON::Any::StringConverter
+    attribute editors : Set(String) = ->{ Set(String).new }
 
     attribute parent_id : String, es_keyword: "keyword"
 
