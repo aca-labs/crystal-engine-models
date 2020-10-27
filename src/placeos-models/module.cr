@@ -4,6 +4,7 @@ require "uri"
 
 require "./base/model"
 require "./driver"
+require "./edge"
 require "./settings"
 require "./utilities/settings_helper"
 
