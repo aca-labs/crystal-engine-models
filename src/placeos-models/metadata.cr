@@ -35,7 +35,7 @@ module PlaceOS::Model
       {parent_id, name.strip.downcase}
     end
 
-    record Interface, name : String, description : String, details : JSON::Any, parent_id : String? {
+    record Interface, name : String, description : String, details : JSON::Any, editors : Set(String)?, parent_id : String? {
       include JSON::Serializable
     }
 
@@ -45,6 +45,7 @@ module PlaceOS::Model
         description: model.description,
         details: model.details,
         parent_id: model.parent_id,
+        editors: model.editors,
       )
     end
 
