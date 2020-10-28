@@ -31,6 +31,7 @@ module PlaceOS::Model
         description: "",
         details: JSON.parse(object),
         parent_id: "1234",
+        editors: Set(String).new,
       )
 
       # Serializes details to a string
