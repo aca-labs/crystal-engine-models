@@ -7,6 +7,19 @@ module PlaceOS::Model
       Repository.find(repo.id.as(String)).should_not be_nil
     end
 
+    it "enforces valid path characters in folder_name" do
+      repo = Generator.repository
+
+      repo.folder_name = "no spaces please"
+      repo.valid?.should be_false
+      repo.errors.first.to_s.should eq("folder_name is invalid")
+
+      repo.errors.clear
+
+      repo.folder_name = "no_spaces_here"
+      repo.valid?.should be_true
+    end
+
     it "removes dependent Drivers on destroy" do
       repo = Generator.repository(type: Repository::Type::Driver).save!
 

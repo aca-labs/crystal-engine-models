@@ -41,7 +41,7 @@ module PlaceOS::Model
       Repository.new(
         name: Faker::Hacker.noun,
         repo_type: type,
-        folder_name: Faker::Hacker.noun + UUID.random.to_s,
+        folder_name: UUID.random.to_s,
         description: Faker::Hacker.noun,
         uri: Faker::Internet.url,
         commit_hash: "HEAD",
