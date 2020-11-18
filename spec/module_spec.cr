@@ -45,6 +45,16 @@ module PlaceOS::Model
         # Preserves the existing modules
         control_system_modules.should contain(random_id)
       end
+
+      Driver::Role.values.reject(Driver::Role::Logic).each do |role|
+        it "invalidates a #{role} modules with a parent system" do
+          driver = Generator.driver(role: role)
+          mod = Generator.module(driver: driver)
+          mod.control_system_id = "cs-d0esN073xi57"
+          mod.valid?.should be_false
+          mod.errors.first.to_s.should eq "control_system should not be associated for #{role} modules"
+        end
+      end
     end
 
     describe "locating modules" do

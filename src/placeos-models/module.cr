@@ -214,7 +214,14 @@ module PlaceOS::Model
       in .device?, .ssh?
         this.validate_device_module
       end
+
+      this.validate_no_parent_system unless this.role.logic?
     }
+
+    protected def validate_no_parent_system
+      has_control = !self.control_system_id.nil?
+      self.validation_error(:control_system, "should not be associated for #{self.role} modules") if has_control
+    end
 
     protected def validate_service_module(driver_role)
       self.role = driver_role
@@ -249,7 +256,7 @@ module PlaceOS::Model
       self.role = Driver::Role::Logic
       has_control = !self.control_system_id.nil?
 
-      self.validation_error(:control_system, "must be associated") unless has_control
+      self.validation_error(:control_system, "must be associated for logic modules") unless has_control
       self.validation_error(:edge, "logic module cannot be allocated to an edge") if self.on_edge?
     end
 
