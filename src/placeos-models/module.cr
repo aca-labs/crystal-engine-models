@@ -254,8 +254,8 @@ module PlaceOS::Model
     end
 
     protected def validate_logic_module
-      @tls = nil
-      @udp = nil
+      self.tls = false
+      self.udp = false
 
       self.connected = true # Logic modules are connectionless
 
