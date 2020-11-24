@@ -55,6 +55,54 @@ module PlaceOS::Model
           mod.errors.first.to_s.should eq "control_system should not be associated for #{role} modules"
         end
       end
+
+      describe "validation mutation post-conditions" do
+        it Driver::Role::SSH do
+          driver = Generator.driver(role: Driver::Role::SSH)
+          mod = Generator.module(driver: driver)
+
+          mod.valid?.should be_true
+          mod.role.should eq(Driver::Role::SSH)
+        end
+
+        it Driver::Role::Device do
+          driver = Generator.driver(role: Driver::Role::Device)
+          mod = Generator.module(driver: driver)
+
+          mod.valid?.should be_true
+          mod.role.should eq(Driver::Role::Device)
+        end
+
+        it Driver::Role::Service do
+          driver = Generator.driver(role: Driver::Role::Service)
+          mod = Generator.module(driver: driver)
+
+          mod.valid?.should be_true
+          mod.udp.should be_false
+          mod.role.should eq(Driver::Role::Service)
+        end
+
+        it Driver::Role::Websocket do
+          driver = Generator.driver(role: Driver::Role::Websocket)
+          mod = Generator.module(driver: driver)
+
+          mod.valid?.should be_true
+          mod.udp.should be_false
+          mod.role.should eq(Driver::Role::Websocket)
+        end
+
+        it Driver::Role::Logic do
+          driver = Generator.driver(role: Driver::Role::Logic)
+          mod = Generator.module(driver: driver)
+
+          mod.valid?.should be_true
+          mod.udp.should be_false
+          mod.tls.should be_false
+          mod.connected.should be_true
+          mod.control_system_id.should_not be_nil
+          mod.role.should eq(Driver::Role::Logic)
+        end
+      end
     end
 
     describe "locating modules" do
