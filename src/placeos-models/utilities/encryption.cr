@@ -28,10 +28,10 @@ module PlaceOS::Encryption
   private CIPHER = "aes-256-gcm"
 
   # Encrypt clear text
+  #
   # Does not encrypt
   # - previously encrypted
   # - values with `Level::NoEncryption` encryption
-  #
   def self.encrypt(string : String, id : String, level : Level) : String
     return string if level == Level::None || is_encrypted?(string)
 

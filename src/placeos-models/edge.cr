@@ -16,6 +16,10 @@ module PlaceOS::Model
 
     attribute salt : String = ->{ Random::Secure.hex(5) }
 
+    ENCRYPTION_LEVEL = Encryption::Level::Admin
+
+    before_save :encrypt!
+
     ensure_unique :name do |name|
       name.strip
     end
@@ -29,10 +33,12 @@ module PlaceOS::Model
       foreign_key: "edge_id",
     )
 
-    before_save :encrypt!
+    def valid?(test : String) : Bool
+      Encryption.decrypt(string: secret, id: salt, level: ENCRYPTION_LEVEL) == test
+    end
 
     def encrypt
-      Encryption.encrypt(string: secret, level: Encryption::Level::Admin, id: salt)
+      Encryption.encrypt(string: secret, level: ENCRYPTION_LEVEL, id: salt)
     end
 
     def encrypt!
@@ -41,7 +47,7 @@ module PlaceOS::Model
     end
 
     def decrypt_for(user)
-      Encryption.decrypt_for(user: user, string: secret, level: Encryption::Level::Admin, id: salt)
+      Encryption.decrypt_for(user: user, string: secret, level: ENCRYPTION_LEVEL, id: salt)
     end
 
     def decrypt_for!(user)
