@@ -22,8 +22,8 @@ module PlaceOS::Model
       secret = edge.secret
       edge.encrypt!
 
-      edge.valid?("not likely").should be_false
-      edge.valid?(secret).should be_true
+      edge.check_secret?("not likely").should be_false
+      edge.check_secret?(secret).should be_true
     end
   end
 end
