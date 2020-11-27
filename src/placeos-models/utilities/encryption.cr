@@ -27,6 +27,21 @@ module PlaceOS::Encryption
   private SECRET = ENV["PLACE_SERVER_SECRET"]?.tap { |k| Log.warn { "using insecure default secret" } if k.nil? } || "super secret, do not leak"
   private CIPHER = "aes-256-gcm"
 
+  # Encrypt a test string with the encryption context in the cipher context
+  # and test for equality
+  #
+  def self.check?(encrypted : String, test : String, id : String, level : Level) : Bool
+    return true if level == Level::None && encrypted == test
+    return false unless is_encrypted?(encrypted)
+
+    salt, iv, cipher_text = extract_context(encrypted)
+
+    _, key = generate_key(id: id, level: level, salt: salt)
+
+    encrypted_test = encrypt_data(data: test, key: key, salt: salt, iv: ::Base64.decode(iv))
+    encrypted_test[:cipher_text] == cipher_text
+  end
+
   # Encrypt clear text
   #
   # Does not encrypt
@@ -38,19 +53,10 @@ module PlaceOS::Encryption
     # Create unique key, salt
     salt, key = generate_key(id: id, level: level)
 
-    # Initialise cipher
-    cipher = OpenSSL::Cipher.new(CIPHER)
-    cipher.encrypt
-    cipher.key = key
-    cipher.iv = iv = cipher.random_iv
-
-    # Encrypt clear text
-    encrypted_data = IO::Memory.new
-    encrypted_data.write(cipher.update(string))
-    encrypted_data.write(cipher.final)
+    encrypted_data = encrypt_data(data: string, key: key, salt: salt)
 
     # Generate storable value
-    "\e#{salt}|#{::Base64.strict_encode(iv)}|#{::Base64.strict_encode(encrypted_data.to_slice)}"
+    "\e#{salt}|#{encrypted_data[:iv]}|#{encrypted_data[:cipher_text]}"
   end
 
   # Decrypt cipher text.
@@ -61,8 +67,7 @@ module PlaceOS::Encryption
   def self.decrypt(string : String, id : String, level : Level) : String
     return string if level == Level::None || !is_encrypted?(string)
 
-    # Pick off salt, initialisation vector and cipher text embedded in encrypted string
-    salt, iv, cipher_text = string[1..-1].split('|')
+    salt, iv, cipher_text = extract_context(string)
 
     _, key = generate_key(id: id, level: level, salt: salt)
 
@@ -85,6 +90,12 @@ module PlaceOS::Encryption
     end
   end
 
+  # Check if string has been encrypted
+  #
+  def self.is_encrypted?(string : String)
+    string[0]? == '\e'
+  end
+
   # Create a key from user privilege, id and existing/random salt
   #
   protected def self.generate_key(level : Level, id : String, salt : String = UUID.random.to_s)
@@ -96,9 +107,32 @@ module PlaceOS::Encryption
     {salt, digest.final}
   end
 
-  # Check if string has been encrypted
+  # Encrypt data and Base64 the resulting slice
   #
-  def self.is_encrypted?(string : String)
-    string[0]? == '\e'
+  protected def self.encrypt_data(data : String, key : Bytes, salt : String, iv : Bytes? = nil) : NamedTuple(cipher_text: String, iv: String)
+    # Initialise cipher
+    cipher = OpenSSL::Cipher.new(CIPHER)
+
+    cipher.encrypt
+    cipher.key = key
+
+    cipher.iv = (iv ||= cipher.random_iv)
+
+    # Encrypt clear text
+    encrypted_data = IO::Memory.new
+    encrypted_data.write(cipher.update(data))
+    encrypted_data.write(cipher.final)
+
+    {
+      cipher_text: ::Base64.strict_encode(encrypted_data.to_slice),
+      iv:          ::Base64.strict_encode(iv),
+    }
+  end
+
+  # Pick off salt, initialisation vector and cipher text embedded in encrypted string
+  protected def self.extract_context(encrypted : String)
+    salt, iv, cipher_text = encrypted[1..-1].split('|')
+
+    ({salt, iv, cipher_text})
   end
 end
