@@ -14,8 +14,6 @@ module PlaceOS::Model
 
     attribute secret : String = ->{ Random::Secure.hex(64) }
 
-    attribute salt : String = ->{ Random::Secure.hex(5) }
-
     ENCRYPTION_LEVEL = Encryption::Level::Admin
 
     before_save :encrypt!
@@ -33,26 +31,28 @@ module PlaceOS::Model
       foreign_key: "edge_id",
     )
 
-    def valid?(test : String) : Bool
-      Encryption.decrypt(string: secret, id: salt, level: ENCRYPTION_LEVEL) == test
-    end
-
-    def encrypt
-      Encryption.encrypt(string: secret, level: ENCRYPTION_LEVEL, id: salt)
-    end
-
+    # Encrypt all encrypted attributes
     def encrypt!
-      self.secret = encrypt
+      self.secret = encrypt_secret
       self
     end
 
-    def decrypt_for(user)
-      Encryption.decrypt_for(user: user, string: secret, level: ENCRYPTION_LEVEL, id: salt)
-    end
-
+    # Decrypt all encrypted attributes
     def decrypt_for!(user)
-      self.secret = decrypt_for(user)
-      self
+      self.secret = decrypt_secret_for(user)
+      sself
+    end
+
+    def check_secret?(test : String) : Bool
+      Encryption.check?(encrypted: secret, test: test, level: ENCRYPTION_LEVEL, id: "")
+    end
+
+    def encrypt_secret
+      Encryption.encrypt(string: secret, level: ENCRYPTION_LEVEL, id: "")
+    end
+
+    def decrypt_secret_for(user)
+      Encryption.decrypt_for(user: user, string: secret, level: ENCRYPTION_LEVEL, id: "")
     end
   end
 end
