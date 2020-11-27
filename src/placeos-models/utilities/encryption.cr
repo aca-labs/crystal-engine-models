@@ -1,5 +1,6 @@
-require "openssl"
 require "base64"
+require "crypto/subtle"
+require "openssl"
 require "uuid"
 
 # Provides symmetric key encryption/decryption
@@ -39,7 +40,7 @@ module PlaceOS::Encryption
     _, key = generate_key(id: id, level: level, salt: salt)
 
     encrypted_test = encrypt_data(data: test, key: key, salt: salt, iv: ::Base64.decode(iv))
-    encrypted_test[:cipher_text] == cipher_text
+    Crypto::Subtle.constant_time_compare(encrypted_test[:cipher_text], cipher_text)
   end
 
   # Encrypt clear text
