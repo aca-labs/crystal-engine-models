@@ -19,7 +19,7 @@ module PlaceOS::Model
     attribute details : JSON::Any, converter: JSON::Any::StringConverter
     attribute editors : Set(String) = ->{ Set(String).new }
 
-    attribute parent_id : String, es_keyword: "keyword"
+    attribute parent_id : String, es_type: "keyword"
 
     secondary_index :parent_id
 

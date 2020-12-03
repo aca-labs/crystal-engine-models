@@ -22,14 +22,14 @@ module PlaceOS::Model
 
     belongs_to Edge, foreign_key: "edge_id"
 
-    attribute ip : String = "", es_keyword: "ip"
+    attribute ip : String = "", es_type: "ip"
     attribute port : Int32 = 0
     attribute tls : Bool = false
     attribute udp : Bool = false
     attribute makebreak : Bool = false
 
     # HTTP Service module
-    attribute uri : String = "", es_keyword: "keyword"
+    attribute uri : String = "", es_type: "keyword"
 
     # Module name
     attribute name : String, es_subfield: "keyword", mass_assignment: false

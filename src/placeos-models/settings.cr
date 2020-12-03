@@ -17,13 +17,13 @@ module PlaceOS::Model
 
     table :sets
 
-    attribute parent_id : String?, es_keyword: "keyword"
+    attribute parent_id : String?, es_type: "keyword"
 
     secondary_index :parent_id
 
     enum_attribute encryption_level : Encryption::Level = Encryption::Level::None
     attribute settings_string : String = "{}"
-    attribute keys : Array(String) = [] of String, es_keyword: "text"
+    attribute keys : Array(String) = [] of String, es_type: "text"
 
     attribute settings_id : String? = nil
     secondary_index :settings_id
