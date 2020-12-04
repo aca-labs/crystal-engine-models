@@ -31,6 +31,10 @@ module PlaceOS::Model
       foreign_key: "edge_id",
     )
 
+    def token(user : Model::User)
+      "#{self.id}_#{decrypt_secret_for(user)}"
+    end
+
     # Encrypt all encrypted attributes
     def encrypt!
       self.secret = encrypt_secret
