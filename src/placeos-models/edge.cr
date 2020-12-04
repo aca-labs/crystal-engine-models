@@ -12,7 +12,7 @@ module PlaceOS::Model
 
     attribute description : String = ""
 
-    attribute secret : String = ->{ Random::Secure.hex(64) }
+    attribute secret : String = ->{ Random::Secure.hex(64) }, mass_assignment: false
 
     ENCRYPTION_LEVEL = Encryption::Level::Admin
 
