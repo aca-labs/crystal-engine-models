@@ -35,6 +35,31 @@ module PlaceOS::Model
       "#{self.id}_#{decrypt_secret_for(user)}"
     end
 
+    # Check the validity of the token.
+    # Returns the `edge_id` of the node if the token is valid.
+    def self.validate_token(token : String) : String?
+      parts = token.split('_')
+      unless parts.size == 2
+        Log.info { {message: "deformed token", token: token} }
+        return
+      end
+
+      edge_id, secret = parts
+
+      edge = Model::Edge.find(edge_id)
+      if edge.nil?
+        Log.info { {message: "edge not found", edge_id: edge_id} }
+        return
+      end
+
+      if edge.check_secret?(secret)
+        edge_id
+      else
+        Log.info { {message: "edge secret is invalid", edge_id: edge_id} }
+        nil
+      end
+    end
+
     # Encrypt all encrypted attributes
     def encrypt!
       self.secret = encrypt_secret
