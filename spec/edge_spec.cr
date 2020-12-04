@@ -25,5 +25,13 @@ module PlaceOS::Model
       edge.check_secret?("not likely").should be_false
       edge.check_secret?(secret).should be_true
     end
+
+    it "generates a token" do
+      edge = Generator.edge
+      secret = edge.secret
+      edge.save!
+      expected = "#{edge.id}_#{secret}"
+      edge.token(Generator.authenticated_user).should eq expected
+    end
   end
 end
