@@ -26,6 +26,20 @@ module PlaceOS::Model
       edge.check_secret?(secret).should be_true
     end
 
+    describe "validate_token" do
+      it "validates a token, returning the edge_id" do
+        edge = Generator.edge.save!
+        token = edge.token(Generator.authenticated_user)
+        Edge.validate_token(token).should eq edge.id
+      end
+
+      it "if token is malformed, it returns nil" do
+        edge = Generator.edge.save!
+        token = "#{edge.id}_rubbish"
+        Edge.validate_token(token).should be_nil
+      end
+    end
+
     it "generates a token" do
       edge = Generator.edge
       secret = edge.secret
