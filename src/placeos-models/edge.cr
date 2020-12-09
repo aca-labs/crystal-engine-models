@@ -31,14 +31,17 @@ module PlaceOS::Model
       foreign_key: "edge_id",
     )
 
-    def token(user : Model::User)
-      "#{self.id}_#{decrypt_secret_for(user)}"
+    # Yield a token if the user has privileges
+    #
+    def token(user : Model::User) : String?
+      return unless user.is_admin?
+      Base64.urlsafe_encode("#{self.id}_#{decrypt_secret_for(user)}")
     end
 
     # Check the validity of the token.
     # Returns the `edge_id` of the node if the token is valid.
     def self.validate_token(token : String) : String?
-      parts = token.split('_')
+      parts = Base64.decode_string(token).split('_')
       unless parts.size == 2
         Log.info { {message: "deformed token", token: token} }
         return

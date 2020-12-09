@@ -29,7 +29,7 @@ module PlaceOS::Model
     describe "validate_token" do
       it "validates a token, returning the edge_id" do
         edge = Generator.edge.save!
-        token = edge.token(Generator.authenticated_user)
+        token = edge.token(Generator.authenticated_user).not_nil!
         Edge.validate_token(token).should eq edge.id
       end
 
@@ -44,7 +44,7 @@ module PlaceOS::Model
       edge = Generator.edge
       secret = edge.secret
       edge.save!
-      expected = "#{edge.id}_#{secret}"
+      expected = Base64.urlsafe_encode "#{edge.id}_#{secret}"
       edge.token(Generator.authenticated_user).should eq expected
     end
   end
