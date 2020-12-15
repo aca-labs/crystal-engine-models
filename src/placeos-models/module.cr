@@ -22,7 +22,7 @@ module PlaceOS::Model
 
     belongs_to Edge, foreign_key: "edge_id"
 
-    attribute ip : String = "", es_type: "ip"
+    attribute ip : String = "", es_type: "text"
     attribute port : Int32 = 0
     attribute tls : Bool = false
     attribute udp : Bool = false
