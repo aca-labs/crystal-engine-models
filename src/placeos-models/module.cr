@@ -224,9 +224,22 @@ module PlaceOS::Model
       this.validate_no_parent_system unless this.role.logic?
     }
 
+    protected def has_control?
+      !self.control_system_id.presence.nil?
+    end
+
     protected def validate_no_parent_system
-      has_control = !self.control_system_id.nil?
-      self.validation_error(:control_system, "should not be associated for #{self.role} modules") if has_control
+      self.validation_error(:control_system, "should not be associated for #{self.role} modules") if has_control?
+    end
+
+    protected def validate_logic_module
+      self.tls = false
+      self.udp = false
+
+      self.connected = true # Logic modules are connectionless
+      self.role = Driver::Role::Logic
+      self.validation_error(:control_system, "must be associated for logic modules") unless has_control?
+      self.validation_error(:edge, "logic module cannot be allocated to an edge") if self.on_edge?
     end
 
     protected def validate_service_module(driver_role)
@@ -251,19 +264,6 @@ module PlaceOS::Model
       self.tls = !!(url && url.scheme == "https") # Secure indication
 
       self.validation_error(:uri, "is an invalid URI") unless url_parsed
-    end
-
-    protected def validate_logic_module
-      self.tls = false
-      self.udp = false
-
-      self.connected = true # Logic modules are connectionless
-
-      self.role = Driver::Role::Logic
-      has_control = !self.control_system_id.nil?
-
-      self.validation_error(:control_system, "must be associated for logic modules") unless has_control
-      self.validation_error(:edge, "logic module cannot be allocated to an edge") if self.on_edge?
     end
 
     protected def validate_device_module
