@@ -32,7 +32,7 @@ module PlaceOS::Model
     attribute email_digest : String?, mass_assignment: false
     attribute card_number : String?, mass_assignment: false
 
-    attribute deleted : Bool = false
+    attribute deleted : Bool = false, mass_assignment: false
     attribute groups : Array(String) = [] of String, mass_assignment: false
 
     attribute access_token : String?, mass_assignment: false
@@ -41,6 +41,9 @@ module PlaceOS::Model
     attribute expires : Bool = false, mass_assignment: false
 
     attribute password : String?
+
+    attribute sys_admin : Bool = false, mass_assignment: false
+    attribute support : Bool = false, mass_assignment: false
 
     has_many(
       child_class: UserAuthLookup,
@@ -157,6 +160,33 @@ module PlaceOS::Model
 
     def is_support?
       !!(@support)
+    end
+
+    struct AdminAttributes
+      include JSON::Serializable
+
+      getter sys_admin : Bool?
+      getter support : Bool?
+      getter login_name : String?
+      getter staff_id : String?
+      getter card_number : String?
+      getter groups : Array(String)?
+
+      def apply(user : Model::User)
+        set_if_present(sys_admin, user)
+        set_if_present(support, user)
+        set_if_present(login_name, user)
+        set_if_present(staff_id, user)
+        set_if_present(card_number, user)
+        set_if_present(groups, user)
+        user
+      end
+
+      private macro set_if_present(field, model)
+        unless (%field = {{ field }}).nil?
+          {{ model.id }}.{{ field.id }} = %field
+        end
+      end
     end
 
     # Publically visible fields
