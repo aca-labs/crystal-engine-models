@@ -1,7 +1,8 @@
 require "CrystalEmail"
+require "crypto/bcrypt/password"
 require "digest/md5"
 require "rethinkdb-orm"
-require "crypto/bcrypt/password"
+
 require "./authority"
 require "./base/model"
 
@@ -56,26 +57,31 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
-    validates :email, presence: true
-    validates :authority_id, presence: true
+    # Validation
+    ###############################################################################################
 
-    # Validate email format
+    validates :authority_id, presence: true
+    validates :email, presence: true
+
     validate ->(this : User) {
-      return unless (email = this.email)
-      this.validation_error(:email, "is an invalid email") unless email.is_email?
+      this.validation_error(:email, "is an invalid email") unless this.email.is_email?
     }
 
-    before_save :create_email_digest
-    before_destroy :cleanup_auth_tokens
-
-    # Sets email_digest to allow user look up without leaking emails
+    # Ensure email is unique under the authority scope
     #
-    protected def create_email_digest
-      self.email_digest = Digest::MD5.hexdigest(self.email.as(String))
+    ensure_unique :email, scope: [:authority_id, :email] do |authority_id, email|
+      {authority_id, email.strip.downcase}
     end
 
+    # Callbacks
+    ###############################################################################################
+
+    before_destroy :cleanup_auth_tokens
+    before_save :build_name
+    before_save :create_email_digest
+
     # deletes auth tokens
-    def cleanup_auth_tokens
+    protected def cleanup_auth_tokens
       user_id = self.id
 
       begin
@@ -99,16 +105,58 @@ module PlaceOS::Model
       end
     end
 
+    protected def build_name
+      self.name = "#{self.first_name} #{self.last_name}" if self.first_name.presence
+    end
+
+    # Sets email_digest to allow user look up without leaking emails
+    #
+    protected def create_email_digest
+      self.email_digest = Digest::MD5.hexdigest(self.email)
+    end
+
+    # Indices
+    ###############################################################################################
+
+    secondary_index :authority_id
+
+    def by_authority_id(auth_id : String)
+      User.get_all([auth_id], index: :authority_id)
+    end
+
     secondary_index :email
 
     def self.find_by_email(authority_id : String, email : String)
       User.where(email: email, authority_id: authority_id).first?
     end
 
-    # Ensure email is unique, prepends authority id for searching
-    #
-    ensure_unique :email, scope: [:authority_id, :email] do |authority_id, email|
-      {authority_id, email.strip.downcase}
+    secondary_index :login_name
+
+    def self.find_by_login_name(login_name : String)
+      User.get_all([login_name], index: :login_name).first?
+    end
+
+    secondary_index :staff_id
+
+    def self.find_by_staff_id(staff_id : String)
+      User.get_all([staff_id], index: :staff_id).first?
+    end
+
+    secondary_index :sys_admin
+
+    def self.find_sys_admins
+      User.get_all([true], index: :sys_admin)
+    end
+
+    # Access Control
+    ###############################################################################################
+
+    def is_admin?
+      !!(@sys_admin)
+    end
+
+    def is_support?
+      !!(@support)
     end
 
     # Publically visible fields
@@ -130,61 +178,14 @@ module PlaceOS::Model
     subset_json(:as_public_json, PUBLIC_DATA)
     subset_json(:as_admin_json, ADMIN_DATA)
 
-    secondary_index :login_name
+    # Password Encryption
+    ###############################################################################################
 
-    def self.find_by_login_name(login_name : String)
-      User.get_all([login_name], index: :login_name).first?
-    end
-
-    secondary_index :staff_id
-
-    def self.find_by_staff_id(staff_id : String)
-      User.get_all([staff_id], index: :staff_id).first?
-    end
-
-    attribute sys_admin : Bool = false
-
-    attribute support : Bool = false
-
-    def is_admin?
-      !!(@sys_admin)
-    end
-
-    def is_support?
-      !!(@support)
-    end
-
-    before_save :build_name
-
-    def build_name
-      if self.first_name
-        self.name = "#{self.first_name} #{self.last_name}"
-      end
-    end
-
-    # ----------------
-    # Indices
-    # ----------------
-
-    secondary_index :authority_id
-
-    def by_authority_id(auth_id : String)
-      User.get_all([auth_id], index: :authority_id)
-    end
-
-    secondary_index :sys_admin
-
-    def self.find_sys_admins
-      User.get_all([true], index: :sys_admin)
-    end
-
-    # PASSWORD ENCRYPTION::
-    # ---------------------
     alias Password = Crypto::Bcrypt::Password
 
     before_save do
+      # No password prevents people logging in using the account locally
       if pass = @password
-        # no password prevents people logging in using the account locally
         if pass.empty?
           @password_digest = nil
         else
