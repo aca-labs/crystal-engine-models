@@ -162,6 +162,28 @@ module PlaceOS::Model
       !!(@support)
     end
 
+    # NOTE: required due to use of `JSON.mapping` macro by `active-model`
+    macro finished
+      # Ensure the `PlaceOS::Model::User`'s `PlaceOS::Model::Authority` doesn't change
+      #
+      def assign_attributes_from_json(json)
+        saved_authority = self.authority_id
+        previous_def(json)
+        self.authority_id = saved_authority
+        self
+      end
+    end
+
+    # Sets sensitve admin attributes restricted from mass assigment.
+    # Handles.. {% for field in AdminAttributes.instance_vars %}
+    # - {{ field.name }}
+    # {% end %}
+    def assign_admin_attributes_from_json(json)
+      admin_attributes = AdminAttributes.from_json(json)
+      admin_attributes.apply(self)
+    end
+
+    # :nodoc:
     struct AdminAttributes
       include JSON::Serializable
 

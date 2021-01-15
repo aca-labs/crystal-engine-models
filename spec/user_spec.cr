@@ -49,6 +49,38 @@ module PlaceOS::Model
         user.is_admin?.should be_false
         user.is_support?.should be_false
       end
+
+      it "prevents User's authority from changing" do
+        user = Generator.user.save!
+        authority_id = user.authority_id
+        user.assign_attributes_from_json({authority_id: "auth-sn34ky"}.to_json)
+        user.authority_id.should eq authority_id
+      end
+    end
+
+    describe "#assign_admin_attributes_from_json" do
+      {% for field in PlaceOS::Model::User::AdminAttributes.instance_vars %}
+        it "assigns {{ field.name }} attribute if present" do
+          support, updated_support = false, true
+          sys_admin, updated_sys_admin = false, true
+          login_name, updated_login_name = "fake", "even faker"
+          staff_id, updated_staff_id = "1234", "1237"
+          card_number, updated_card_number = "4719383889906362", "4719383889906362"
+          groups, updated_groups = ["public"], ["private"]
+          user = Model::User.new(
+            support: support,
+            admin: admin,
+            login_name: login_name,
+            staff_id: staff_id,
+            card_number: card_number,
+            groups: groups,
+          )
+
+          user.assign_admin_attributes_from_json({ email: "shouldn't change", {{field.name}}: {{field.name.id}}_updated }.to_json)
+          user.email_changed?.should be_false
+          user.{{field.id}}.should eq {{field.id}}_updated
+        end
+      {% end %}
     end
 
     it "#as_public_json" do
