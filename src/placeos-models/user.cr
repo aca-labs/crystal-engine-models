@@ -221,18 +221,18 @@ module PlaceOS::Model
 
     # Publically visible fields
     PUBLIC_DATA = {
-      :id, :email_digest, :nickname, :name, :first_name, :last_name,
+      :id, :email_digest, :nickname, :name, :first_name, :last_name, :groups,
       :country, :building, :image, {field: :created_at, serialise: :to_unix},
     }
 
     # Admin visible fields
     ADMIN_DATA = {
       # Public Visible
-      :id, :email_digest, :nickname, :name, :first_name, :last_name,
+      :id, :email_digest, :nickname, :name, :first_name, :last_name, :groups,
       :country, :building, :image, {field: :created_at, serialise: :to_unix},
       # Admin Visible
       :sys_admin, :support, :email, :phone, :ui_theme, :misc, :login_name,
-      :staff_id, :card_number, :groups,
+      :staff_id, :card_number,
     }
 
     subset_json(:as_public_json, PUBLIC_DATA)
