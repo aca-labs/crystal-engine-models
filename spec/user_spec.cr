@@ -117,11 +117,31 @@ module PlaceOS::Model
       }.to_json
 
       user = Model::User.from_json(json)
-      user.password_digest.should eq(nil)
+      user.password_digest.should be_nil
       user.password.should eq("p@ssw0rd")
       user.save!
-      user.password_digest.should_not eq(nil)
-      user.password.should eq(nil)
+      user.password_digest.should_not be_nil
+      user.password.should be_nil
+    end
+
+    describe "queries" do
+      it "#find_by_emails" do
+        existing = Authority.find_by_domain("localhost")
+        authority = existing || Generator.authority.save!
+        expected_users = Array.new(5) {
+          Generator.user(authority).save!
+        }
+
+        # User with pun email and different authority
+        not_expected = Generator.user(Generator.authority("https://unexpected.com").save!)
+        not_expected.email = expected_users.first.email
+        not_expected.save!
+
+        found = User.find_by_emails(authority.id.as(String), expected_users.map(&.email))
+        found_ids = found.compact_map(&.id).to_a.sort
+        found_ids.should eq expected_users.compact_map(&.id).sort
+        found_ids.should_not contain(not_expected.id)
+      end
     end
   end
 end

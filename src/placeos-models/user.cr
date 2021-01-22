@@ -133,6 +133,14 @@ module PlaceOS::Model
       User.where(email: email, authority_id: authority_id).first?
     end
 
+    def self.find_by_emails(authority_id : String, emails : Array(String))
+      User.raw_query do |r|
+        r.table(User.table_name)
+          .get_all(emails, index: :email)
+          .filter({authority_id: authority_id})
+      end
+    end
+
     secondary_index :login_name
 
     def self.find_by_login_name(login_name : String)
