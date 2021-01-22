@@ -11,7 +11,7 @@ module PlaceOS::Model
     include RethinkORM::Timestamps
     table :user
 
-    belongs_to Authority
+    belongs_to Authority, presence: true
 
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
@@ -63,7 +63,6 @@ module PlaceOS::Model
     # Validation
     ###############################################################################################
 
-    validates :authority_id, presence: true
     validates :email, presence: true
 
     validate ->(this : User) {

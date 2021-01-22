@@ -36,13 +36,12 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
-    belongs_to ControlSystem, foreign_key: "parent_id"
-    belongs_to Driver, foreign_key: "parent_id"
-    belongs_to Module, foreign_key: "parent_id", association_name: "mod"
-    belongs_to Zone, foreign_key: "parent_id"
+    belongs_to ControlSystem, foreign_key: "parent_id", presence: true
+    belongs_to Driver, foreign_key: "parent_id", presence: true
+    belongs_to Module, foreign_key: "parent_id", association_name: "mod", presence: true
+    belongs_to Zone, foreign_key: "parent_id", presence: true
 
     validates :encryption_level, presence: true
-    validates :parent_id, presence: true
 
     # Possible parent documents
     enum ParentType
@@ -133,7 +132,7 @@ module PlaceOS::Model
       versions = Settings.raw_query do |r|
         r
           .table(Settings.table_name)
-          .get_all([parent_id.as(String)], index: :parent_id)
+          .get_all([parent_id], index: :parent_id)
           .filter({settings_id: id.as(String)})
           .order_by(r.desc(:created_at)).slice(slice_start, slice_end)
       end

@@ -11,7 +11,7 @@ module PlaceOS::Model
     table :oauth_strat
 
     attribute name : String, es_subfield: "keyword"
-    belongs_to Authority, foreign_key: "authority_id"
+    belongs_to Authority, foreign_key: "authority_id", presence: true
 
     # The client ID and secret configured for this application
     attribute client_id : String
@@ -50,7 +50,6 @@ module PlaceOS::Model
     attribute raw_info_url : String?
 
     validates :name, presence: true
-    validates :authority_id, presence: true
 
     def type
       "oauths"

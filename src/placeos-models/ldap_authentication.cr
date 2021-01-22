@@ -10,7 +10,7 @@ module PlaceOS::Model
     table :ldap_strat
 
     attribute name : String, es_subfield: "keyword"
-    belongs_to Authority, foreign_key: "authority_id"
+    belongs_to Authority, foreign_key: "authority_id", presence: true
 
     attribute port : Int32 = 636
 
@@ -30,7 +30,6 @@ module PlaceOS::Model
     # Can be used instead of UID
     attribute filter : String?
 
-    validates :authority_id, presence: true
     validates :name, presence: true
     validates :host, presence: true
     validates :base, presence: true

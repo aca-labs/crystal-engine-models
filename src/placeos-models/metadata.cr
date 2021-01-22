@@ -23,13 +23,12 @@ module PlaceOS::Model
 
     secondary_index :parent_id
 
-    belongs_to Zone, foreign_key: "parent_id", association_name: "zone"
-    belongs_to ControlSystem, foreign_key: "parent_id", association_name: "control_system"
-    belongs_to User, foreign_key: "parent_id", association_name: "user"
+    belongs_to Zone, foreign_key: "parent_id", association_name: "zone", presence: true
+    belongs_to ControlSystem, foreign_key: "parent_id", association_name: "control_system", presence: true
+    belongs_to User, foreign_key: "parent_id", association_name: "user", presence: true
 
     validates :details, presence: true
     validates :name, presence: true
-    validates :parent_id, presence: true
 
     ensure_unique :name, scope: [:parent_id, :name] do |parent_id, name|
       {parent_id, name.strip.downcase}

@@ -10,7 +10,7 @@ module PlaceOS::Model
     table :adfs_strat
 
     attribute name : String, es_subfield: "keyword"
-    belongs_to Authority, foreign_key: "authority_id"
+    belongs_to Authority, foreign_key: "authority_id", presence: true
 
     # The name of your application
     attribute issuer : String = "place.technology"
@@ -63,7 +63,6 @@ module PlaceOS::Model
     # The value to use as default RelayState for single log outs
     attribute slo_default_relay_state : String?
 
-    validates :authority_id, presence: true
     validates :name, presence: true
     validates :issuer, presence: true
     validates :idp_sso_target_url, presence: true
