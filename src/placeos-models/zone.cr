@@ -35,15 +35,16 @@ module PlaceOS::Model
     attribute map_id : String?
     # =============================
 
+    attribute triggers : Array(String) = [] of String
+
     belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
+
     has_many(
       child_class: Zone,
       collection_name: "children",
       foreign_key: "parent_id",
       dependent: :destroy
     )
-
-    attribute triggers : Array(String) = [] of String
 
     has_many(
       child_class: TriggerInstance,
@@ -68,25 +69,19 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
-    validates :name, presence: true
+    # Validation
+    ###############################################################################################
 
+    validates :name, presence: true
     ensure_unique :name
 
-    # Looks up the triggers attached to the zone
-    def trigger_data : Array(Trigger)
-      triggers = @triggers
-      if !triggers || triggers.empty?
-        [] of Trigger
-      else
-        Trigger.find_all(triggers).to_a
-      end
-    end
-
-    def systems
-      ControlSystem.by_zone_id(self.id)
-    end
+    # Callbacks
+    ###############################################################################################
 
     before_destroy :remove_zone
+
+    before_save :check_triggers
+    after_save :update_triggers
 
     # Removes self from ControlSystems
     protected def remove_zone
@@ -103,51 +98,60 @@ module PlaceOS::Model
       end
     end
 
-    # Zone Trigger Management
-    ###########################################################################
-
-    @remove_triggers : Array(String) = [] of String
-    @add_triggers : Array(String) = [] of String
-
-    @update_systems = false
-
-    before_save :check_triggers
+    private property remove_triggers : Array(String) { [] of String }
+    private property add_triggers : Array(String) { [] of String }
+    private property? update_systems = false
 
     protected def check_triggers
-      if self.triggers_changed?
+      if triggers_changed?
         previous = self.triggers_was || [] of String
-        current = self.triggers || [] of String
+        current = self.triggers
 
-        @remove_triggers = previous - current
-        @add_triggers = current - previous
+        self.remove_triggers = previous - current
+        self.add_triggers = current - previous
 
-        @update_systems = !@remove_triggers.empty? || !@add_triggers.empty?
+        self.update_systems = !remove_triggers.empty? || !add_triggers.empty?
       else
-        @update_systems = false
+        self.update_systems = false
       end
     end
 
-    after_save :update_triggers
-
     protected def update_triggers
-      return unless @update_systems
+      return unless update_systems?
 
       # Remove TriggerInstances
-      unless @remove_triggers.empty?
+      unless remove_triggers.empty?
         self.trigger_instances.each do |trig|
-          trig.destroy if @remove_triggers.includes?(trig.trigger_id)
+          trig.destroy if remove_triggers.includes?(trig.trigger_id)
         end
       end
 
       # Add TriggerInstances
-      unless @add_triggers.empty?
+      unless add_triggers.empty?
         self.systems.try &.each do |sys|
-          @add_triggers.each do |trig_id|
+          add_triggers.each do |trig_id|
             inst = TriggerInstance.new(trigger_id: trig_id, zone_id: self.id)
             inst.control_system = sys
             inst.save
           end
         end
+      end
+    end
+
+    # Queries
+    ###########################################################################
+
+    # Find systems
+    def systems
+      ControlSystem.by_zone_id(self.id)
+    end
+
+    # Looks up the triggers attached to the zone
+    def trigger_data : Array(Trigger)
+      if self.triggers.empty?
+        [] of Trigger
+      else
+        Trigger.find_all(self.triggers).to_a
       end
     end
   end

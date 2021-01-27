@@ -96,6 +96,7 @@ module PlaceOS::Model
       end
     end
 
+    @[Deprecated("Use `by_zone_id`")]
     def self.in_zone(id)
       self.by_zone_id(id)
     end
@@ -108,6 +109,7 @@ module PlaceOS::Model
       end
     end
 
+    @[Deprecated("Use `by_module_id`")]
     def self.using_module(id)
       self.by_module_id(id)
     end
