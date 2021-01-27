@@ -1,6 +1,7 @@
 require "spec"
 require "random"
 require "rethinkdb-orm"
+require "timecop"
 
 # Generators for Engine models
 require "./generator"
