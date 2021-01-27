@@ -115,7 +115,7 @@ module PlaceOS::Model
     # Obtains the control system's modules as json
     # FIXME: Dreadfully needs optimisation, i.e. subset serialisation
     def module_data
-      Module.find_all(modules).to_a.map do |mod|
+      Module.find_all(self.modules).to_a.map do |mod|
         # Pick off driver name, and module_name from associated driver
         driver_data = mod.driver.try do |driver|
           {
@@ -136,8 +136,7 @@ module PlaceOS::Model
 
     # Obtains the control system's zones as json
     def zone_data
-      zones = @zones || [] of String
-      Zone.find_all(zones).to_a.map(&.to_json)
+      Zone.get_all(self.zones).to_a.map(&.to_json)
     end
 
     # Triggers
@@ -153,11 +152,10 @@ module PlaceOS::Model
       settings = master_settings
 
       # Zone Settings
-      zone_ids = zones.as(Array(String))
-      zones = Model::Zone.find_all(zone_ids).to_a
+      zone_models = Model::Zone.find_all(self.zones).to_a
       # Merge by highest associated zone
-      zone_ids.reverse_each do |zone_id|
-        next if (zone = zones.find &.id.==(zone_id)).nil?
+      self.zones.reverse_each do |zone_id|
+        next if (zone = zone_models.find &.id.==(zone_id)).nil?
         settings.concat(zone.master_settings)
       end
 
@@ -173,11 +171,11 @@ module PlaceOS::Model
     # Extends features with extra_features field in settings if present
     protected def update_features
       module_names = Module
-        .find_all(modules)
+        .find_all(self.modules)
         .map(&.resolved_name)
         .select(&.in?(IGNORED_MODULES).!)
         .to_set
-      @features = @features.try &.+(module_names) || module_names
+      self.features = self.features + module_names
     end
 
     # =======================
@@ -189,11 +187,11 @@ module PlaceOS::Model
     # Remove Modules not associated with any other systems
     # NOTE: Includes compulsory associated Logic Modules
     def cleanup_modules
-      return if modules.empty?
+      return if self.modules.empty?
 
       # Locate modules that have no other associated ControlSystems
       lonesome_modules = Module.raw_query do |r|
-        r.table(Module.table_name).get_all(modules).filter do |mod|
+        r.table(Module.table_name).get_all(self.modules).filter do |mod|
           # Find the control systems that have the module
           r.table(ControlSystem.table_name).filter do |sys|
             sys["modules"].contains(mod["id"])
@@ -210,9 +208,8 @@ module PlaceOS::Model
     # Removes the module from the system and deletes it if not used elsewhere
     #
     def add_module(module_id : String)
-      mods = self.modules
-      if mods && !mods.includes?(module_id) && ControlSystem.add_module(id.as(String), module_id)
-        self.modules = mods | [module_id]
+      if !self.modules.includes?(module_id) && ControlSystem.add_module(id.as(String), module_id)
+        self.modules << module_id
         self.version = ControlSystem.table_query(&.get(id.as(String))["version"]).as_i
       end
     end
@@ -236,8 +233,8 @@ module PlaceOS::Model
     #
     def remove_module(module_id : String)
       mod = Module.find(module_id)
-      if modules.includes?(module_id) && ControlSystem.remove_module(id.as(String), module_id)
-        modules.delete(module_id)
+      if self.modules.includes?(module_id) && ControlSystem.remove_module(id.as(String), module_id)
+        self.modules.delete(module_id)
         unless mod.nil?
           # Remove the module from the control system's features
           self.features.delete(mod.resolved_name)
@@ -281,10 +278,10 @@ module PlaceOS::Model
     # Zone Trigger Management
     # =======================
 
-    @remove_zones : Array(String) = [] of String
-    @add_zones : Array(String) = [] of String
+    private getter remove_zones : Array(String) { [] of String }
+    private getter add_zones : Array(String) { [] of String }
 
-    @update_triggers = false
+    private property? update_triggers = false
 
     before_save :check_zones
 
@@ -292,14 +289,14 @@ module PlaceOS::Model
     protected def check_zones
       if self.zones_changed?
         previous = self.zones_was || [] of String
-        current = self.zones || [] of String
+        current = self.zones
 
         @remove_zones = previous - current
         @add_zones = current - previous
 
-        @update_triggers = !@remove_zones.empty? || !@add_zones.empty?
+        self.update_triggers = !remove_zones.empty? || !add_zones.empty?
       else
-        @update_triggers = false
+        self.update_triggers = false
       end
     end
 
@@ -310,20 +307,19 @@ module PlaceOS::Model
     # * Destroy Triggers from removed zones
     # * Adds TriggerInstances to added zones
     protected def update_triggers
-      return unless @update_triggers
+      return unless update_triggers?
 
-      remove_zones = @remove_zones || [] of String
       unless remove_zones.empty?
-        trigs = self.triggers.to_a
+        trigger_models = self.triggers.to_a
 
         # Remove ControlSystem's triggers associated with the removed zone
         Zone.find_all(remove_zones).each do |zone|
           # Destroy the associated triggers
-          triggers = zone.triggers || [] of String
-          triggers.each do |trig_id|
-            trigs.each do |trig|
-              if trig.trigger_id == trig_id && trig.zone_id == zone.id
-                trig.destroy
+          zone.triggers.each do |trig_id|
+            trigger_models.each do |trigger_model|
+              # Ensure trigger is for the removed zone
+              if trigger_model.trigger_id == trig_id && trigger_model.zone_id == zone.id
+                trigger_model.destroy
               end
             end
           end
@@ -331,10 +327,8 @@ module PlaceOS::Model
       end
 
       # Add trigger instances to zones
-      add_zones = @add_zones || [] of String
       Zone.find_all(add_zones).each do |zone|
-        triggers = zone.triggers || [] of String
-        triggers.each do |trig_id|
+        zone.triggers.each do |trig_id|
           inst = TriggerInstance.new(trigger_id: trig_id, zone_id: zone.id)
           inst.control_system = self
           inst.save
