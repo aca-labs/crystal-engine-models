@@ -30,7 +30,9 @@ dependencies:
     version: ~> 3
 
 development_dependencies:
-  faker:
-    github: askn/faker
   ameba:
     github: crystal-ameba/ameba
+  faker:
+    github: askn/faker
+  timecop:
+    github: crystal-community/timecop.cr

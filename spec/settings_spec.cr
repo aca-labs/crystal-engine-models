@@ -60,11 +60,11 @@ module PlaceOS::Model
         settings_string: settings_history.first
       ).save!
 
-      settings_history[1..].each do |string|
-        # 1 second sleep as the resolution of timestamps are terrible
-        sleep 1
-        settings.settings_string = string
-        settings.save!
+      settings_history[1..].each_with_index(offset: 1) do |string, i|
+        Timecop.freeze(i.seconds.from_now) do
+          settings.settings_string = string
+          settings.save!
+        end
       end
 
       settings.history.map(&.any["a"]).should eq [3, 2, 1, 0]
