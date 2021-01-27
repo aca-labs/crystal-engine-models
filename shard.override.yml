@@ -1,0 +1,5 @@
+dependencies:
+  neuroplastic:
+    github: place-labs/neuroplastic
+  retriable:
+    github: Sija/retriable.cr
