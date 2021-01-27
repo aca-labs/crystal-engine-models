@@ -246,7 +246,11 @@ module PlaceOS::Model
       mod = Module.find(module_id)
       if mods && mods.includes?(module_id) && ControlSystem.remove_module(id.as(String), module_id)
         mods.delete(module_id)
-        self.features.as(Set(String)).delete(mod.try &.resolved_name).delete(mod.try &.name)
+        unless mod.nil?
+          # Remove the module from the control system's features
+          self.features.delete(mod.resolved_name)
+          self.features.delete(mod.name)
+        end
         self.version = ControlSystem.table_query(&.get(id.as(String))["version"]).as_i
       end
     end
