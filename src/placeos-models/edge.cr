@@ -38,9 +38,7 @@ module PlaceOS::Model
       Base64.urlsafe_encode("#{self.id}_#{decrypt_secret_for(user)}")
     end
 
-    # Check the validity of the token.
-    # Returns the `edge_id` of the node if the token is valid.
-    def self.validate_token(token : String) : String?
+    def self.validate_token?(token : String) : String?
       parts = Base64.decode_string(token).split('_')
       unless parts.size == 2
         Log.info { {message: "deformed token", token: token} }
@@ -61,6 +59,13 @@ module PlaceOS::Model
         Log.info { {message: "edge secret is invalid", edge_id: edge_id} }
         nil
       end
+    end
+
+    # Check the validity of the token.
+    # Returns the `edge_id` of the node if the token is valid.
+    @[Deprecated("Use `validate_token?` instead")]
+    def self.validate_token(token : String) : String?
+      self.validate_token?(token)
     end
 
     # Encrypt all encrypted attributes
