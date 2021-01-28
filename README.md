@@ -1,6 +1,6 @@
 # PlaceOS Models
 
-[![Build Status](https://travis-ci.org/placeos/models.svg?branch=master)](https://travis-ci.org/placeos/models)
+![CI](https://github.com/PlaceOS/models/workflows/CI/badge.svg)
 
 The database models for PlaceOS in [crystal](https://crystal-lang.org/).
 
