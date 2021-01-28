@@ -1,0 +1,16 @@
+
+name: CI
+on: [push]
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: oprypin/install-crystal@v1
+        with:
+          crystal: latest
+      - uses: actions/checkout@v2
+      - run: docker run -p "29015:29015" -p "28015:28015" -d rethinkdb:2.4
+      - run: crystal spec
+      - run: crystal tool format --check
