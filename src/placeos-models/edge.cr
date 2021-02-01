@@ -12,17 +12,12 @@ module PlaceOS::Model
 
     attribute description : String = ""
 
-    attribute secret : String = ->{ Random::Secure.base64(64).delete('_') }, mass_assignment: false
+    attribute secret : String = ->{ Random::Secure.urlsafe_base64(64).delete('_') }, mass_assignment: false
 
     ENCRYPTION_LEVEL = Encryption::Level::Admin
 
-    before_save :encrypt!
-
-    ensure_unique :name do |name|
-      name.strip
-    end
-
-    ensure_unique :secret
+    # Association
+    ###############################################################################################
 
     # Modules allocated to this Edge
     has_many(
@@ -30,6 +25,20 @@ module PlaceOS::Model
       collection_name: "modules",
       foreign_key: "edge_id",
     )
+
+    # Validation
+    ###############################################################################################
+
+    ensure_unique :name do |name|
+      name.strip
+    end
+
+    ensure_unique :secret
+
+    # Callbacks
+    ###############################################################################################
+
+    before_save :encrypt!
 
     # Yield a token if the user has privileges
     #
