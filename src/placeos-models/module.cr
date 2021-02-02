@@ -173,9 +173,7 @@ module PlaceOS::Model
     # Getter for the module's host
     #
     def hostname
-      return if (_role = role).nil?
-
-      case _role
+      case role
       in .ssh?, .device?
         self.ip
       in .service?, .websocket?
@@ -183,6 +181,8 @@ module PlaceOS::Model
         uri.try(&->URI.parse(String)).try(&.host)
       in .logic?
         # No hostname for Logic module
+        nil
+      in Nil
         nil
       end
     end
@@ -203,9 +203,8 @@ module PlaceOS::Model
     # Use custom name if it is defined and non-empty, otherwise use module name
     #
     def resolved_name : String
-      custom = self.custom_name
-
-      custom.nil? || custom.empty? ? self.name : custom
+      custom = self.custom_name.presence
+      custom.nil? ? self.name : custom
     end
 
     validate ->(this : Module) {
@@ -253,7 +252,8 @@ module PlaceOS::Model
         self.uri ||= default_uri
       end
 
-      if self.uri.blank?
+      # URI presence
+      unless self.uri.presence
         self.validation_error(:uri, "not present")
         return
       end
@@ -270,14 +270,12 @@ module PlaceOS::Model
       self.role = driver.role
       self.port ||= (driver.default_port || 0)
 
-      # No TLS for UDP
-      self.tls = false if udp
-
       # No blank IP
-      validation_error(:ip, "cannot be blank") if ip.blank?
-
+      self.validation_error(:ip, "cannot be blank") unless self.ip.presence
       # Port in valid range
-      validation_error(:port, "is invalid") unless (1..65_535).includes?(port)
+      self.validation_error(:port, "is invalid") unless (1..65_535).includes?(self.port)
+
+      self.tls = false if self.udp
 
       unless Validation.valid_uri?("http://#{ip}:#{port}/")
         validation_error(:ip, "address, hostname or port are invalid")

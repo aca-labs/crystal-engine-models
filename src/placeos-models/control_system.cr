@@ -261,7 +261,7 @@ module PlaceOS::Model
       return false unless {"replaced", "updated"}.any? { |k| response[k].try(&.as_i) || 0 > 0 }
 
       # Keep if any other ControlSystem is using the module
-      still_in_use = ControlSystem.using_module(module_id).any? do |sys|
+      still_in_use = ControlSystem.by_module_id(module_id).any? do |sys|
         sys.id != control_system_id
       end
 
