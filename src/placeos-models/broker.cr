@@ -66,7 +66,7 @@ module PlaceOS::Model
     end
 
     protected def hmac_sha256(data : String)
-      OpenSSL::HMAC.hexdigest(OpenSSL::Algorithm::SHA256, self.secret.as(String), data)
+      OpenSSL::HMAC.hexdigest(OpenSSL::Algorithm::SHA256, self.secret, data)
     end
   end
 end

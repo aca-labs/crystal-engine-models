@@ -80,7 +80,7 @@ module PlaceOS::Model
       driver = Generator.driver(module_name: mod_name) if driver.nil?
       driver.save! unless driver.persisted?
 
-      mod = case driver.role.as(Driver::Role)
+      mod = case driver.role
             in .logic?
               Module.new(custom_name: mod_name, uri: Faker::Internet.url)
             in .device?
@@ -276,7 +276,7 @@ module PlaceOS::Model
     def self.jwt(user : User? = nil, scope : Array(String) = ["public"])
       user = self.user.save! if user.nil?
 
-      permissions = case ({user.support.as(Bool), user.sys_admin.as(Bool)})
+      permissions = case ({user.support, user.sys_admin})
                     when {true, true}  then UserJWT::Permissions::AdminSupport
                     when {true, false} then UserJWT::Permissions::Support
                     when {false, true} then UserJWT::Permissions::Admin
@@ -284,8 +284,8 @@ module PlaceOS::Model
                     end
 
       meta = UserJWT::Metadata.new(
-        name: user.name.as(String),
-        email: user.email.as(String),
+        name: user.name,
+        email: user.email,
         permissions: permissions
       )
 

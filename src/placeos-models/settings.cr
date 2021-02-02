@@ -179,7 +179,7 @@ module PlaceOS::Model
 
       cursor
         .to_a
-        .sort_by!(&.encryption_level.as(Encryption::Level))
+        .sort_by!(&.encryption_level)
         .reverse!
     end
 
@@ -276,7 +276,7 @@ module PlaceOS::Model
       if settings.any?(&.has_key_for?(user, key))
         settings
           # Sort on privilege
-          .sort_by(&.encryption_level.as(Encryption::Level))
+          .sort_by(&.encryption_level)
           # Attain (if exists) setting for given key
           .compact_map(&.any[key]?)
           # Get the highest privilege setting
@@ -294,7 +294,7 @@ module PlaceOS::Model
     #
     def has_key_for?(user, key)
       has_key = keys.try(&.includes?(key))
-      has_privilege = Settings.has_privilege?(user, encryption_level.as(Encryption::Level))
+      has_privilege = Settings.has_privilege?(user, encryption_level)
       has_key && has_privilege
     end
 

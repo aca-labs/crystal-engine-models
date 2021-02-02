@@ -91,7 +91,7 @@ module PlaceOS::Model
         mod = Generator.module(driver: driver).save!
         module_id = mod.id.as(String)
 
-        version = control_system.version.as(Int32)
+        version = control_system.version
         control_system.add_module(module_id)
 
         cs = ControlSystem.find!(control_system_id)
@@ -118,7 +118,7 @@ module PlaceOS::Model
 
         cs = ControlSystem.find!(control_system_id)
 
-        version = cs.version.as(Int32)
+        version = cs.version
 
         cs.modules.should contain module_id
         cs.features.should contain mod.resolved_name
@@ -149,7 +149,7 @@ module PlaceOS::Model
 
         cs = ControlSystem.find!(control_system_id)
 
-        version = cs.version.as(Int32)
+        version = cs.version
 
         cs.modules.should contain module_id
 
@@ -217,7 +217,7 @@ module PlaceOS::Model
         cs = Generator.control_system.save!
         cs.modules = [mod.id].compact
         cs.save!
-        cs.features.should contain(mod.resolved_name.as(String))
+        cs.features.should contain(mod.resolved_name)
         {cs, mod}.each &.destroy
       end
     end
