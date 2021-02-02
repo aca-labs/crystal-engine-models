@@ -125,7 +125,7 @@ module PlaceOS::Model
       # Accumulate settings, starting with the Module's
       settings = master_settings
 
-      if role == Driver::Role::Logic
+      if role.logic?
         cs = self.control_system
         raise "Missing control system: module_id=#{@id} control_system_id=#{@control_system_id}" if cs.nil?
         # Control System < Zone Settings
@@ -133,7 +133,7 @@ module PlaceOS::Model
       end
 
       # Driver Settings
-      settings.concat(driver.as(Model::Driver).master_settings)
+      settings.concat(self.driver.as(Model::Driver).master_settings)
 
       settings.compact
     end
