@@ -45,7 +45,7 @@ module PlaceOS::Model
     it "encrypts on save" do
       unencrypted = %({"secret_key": "secret1234"})
       settings = Generator.settings(settings_string: unencrypted, encryption_level: Encryption::Level::Admin).save!
-      encrypted = settings.settings_string.as(String)
+      encrypted = settings.settings_string
 
       encrypted.should_not eq unencrypted
       encrypted.should start_with '\e'

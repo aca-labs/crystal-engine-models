@@ -287,9 +287,9 @@ module PlaceOS::Model
     protected def add_logic_module
       return unless (cs = self.control_system)
 
-      modules = cs.modules.as(Array(String))
+      modules = cs.modules
       cs.modules = modules << self.id.as(String)
-      cs.version = cs.version.as(Int32) + 1
+      cs.version = cs.version + 1
       cs.save!
     end
 

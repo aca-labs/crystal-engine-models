@@ -79,7 +79,7 @@ module PlaceOS::Model
 
     # TODO: Ensure unique regardless of casing
     ensure_unique :name do |name|
-      name.as(String).strip
+      name.strip
     end
 
     # Validate support URI
