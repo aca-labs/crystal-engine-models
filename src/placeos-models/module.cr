@@ -15,13 +15,6 @@ module PlaceOS::Model
 
     table :mod
 
-    # The classes/files that this module requires to execute
-    belongs_to Driver, foreign_key: "driver_id", presence: true
-
-    belongs_to ControlSystem, foreign_key: "control_system_id"
-
-    belongs_to Edge, foreign_key: "edge_id"
-
     attribute ip : String = "", es_type: "text"
     attribute port : Int32 = 0
     attribute tls : Bool = false
@@ -37,14 +30,6 @@ module PlaceOS::Model
     # Custom module names (in addition to what is defined in the driver)
     attribute custom_name : String?
 
-    # Encrypted yaml settings, with metadata
-    has_many(
-      child_class: Settings,
-      collection_name: "settings",
-      foreign_key: "parent_id",
-      dependent: :destroy
-    )
-
     # Cache the module's driver role locally for load order
     attribute role : Driver::Role, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
 
@@ -58,17 +43,106 @@ module PlaceOS::Model
     attribute ignore_connected : Bool = false
     attribute ignore_startstop : Bool = false
 
-    # Add the Logic module directly to parent ControlSystem
-    after_create :add_logic_module
+    # Associations
+    ###############################################################################################
 
-    # Remove the module from associated (if any) ControlSystem
-    before_destroy :remove_module
+    # Control System the _logic_ module may be assigned to
+    belongs_to ControlSystem, foreign_key: "control_system_id"
 
-    # Ensure fields inherited from Driver are set correctly
-    before_save :set_name_and_role
+    # The binary the module is to run on
+    belongs_to Driver, foreign_key: "driver_id", presence: true
 
-    # NOTE: Temporary while `edge` feature developed
-    before_create :set_edge_hint
+    # The edge node the module may be assigned to
+    belongs_to Edge, foreign_key: "edge_id"
+
+    # Encrypted yaml settings, with metadata
+    has_many(
+      child_class: Settings,
+      collection_name: "settings",
+      foreign_key: "parent_id",
+      dependent: :destroy
+    )
+
+    # Validation
+    ###############################################################################################
+
+    validate ->(this : Module) {
+      driver = this.driver
+      role = driver.try(&.role)
+      return if driver.nil? || role.nil?
+
+      case role
+      in .service?, .websocket?
+        this.validate_service_module(driver.role)
+      in .logic?
+        this.validate_logic_module
+      in .device?, .ssh?
+        this.validate_device_module
+      end
+
+      this.validate_no_parent_system unless this.role.logic?
+    }
+
+    protected def has_control?
+      !self.control_system_id.presence.nil?
+    end
+
+    protected def validate_no_parent_system
+      self.validation_error(:control_system, "should not be associated for #{self.role} modules") if has_control?
+    end
+
+    protected def validate_logic_module
+      self.tls = false
+      self.udp = false
+
+      self.connected = true # Logic modules are connectionless
+      self.role = Driver::Role::Logic
+      self.validation_error(:control_system, "must be associated for logic modules") unless has_control?
+      self.validation_error(:edge, "logic module cannot be allocated to an edge") if self.on_edge?
+    end
+
+    protected def validate_service_module(driver_role)
+      self.role = driver_role
+      self.udp = false
+
+      return if (driver = self.driver).nil?
+
+      unless (default_uri = driver.default_uri.presence).nil?
+        self.uri ||= default_uri
+      end
+
+      # URI presence
+      unless self.uri.presence
+        self.validation_error(:uri, "not present")
+        return
+      end
+
+      # Set secure transport flag if URI defines `https` protocol
+      self.tls = URI.parse(self.uri).scheme == "https"
+
+      self.validation_error(:uri, "is an invalid URI") unless Validation.valid_uri?(uri)
+    end
+
+    protected def validate_device_module
+      return if (driver = self.driver).nil?
+
+      self.role = driver.role
+      self.port ||= (driver.default_port || 0)
+
+      # No blank IP
+      self.validation_error(:ip, "cannot be blank") unless self.ip.presence
+      # Port in valid range
+      self.validation_error(:port, "is invalid") unless (1..65_535).includes?(self.port)
+
+      self.tls = false if self.udp
+
+      unless Validation.valid_uri?("http://#{ip}:#{port}/")
+        validation_error(:ip, "address, hostname or port are invalid")
+      end
+    end
+
+    # Queries
+    ###############################################################################################
 
     # Finds the systems for which this module is in use
     def systems
@@ -149,146 +223,27 @@ module PlaceOS::Model
       end.to_json
     end
 
-    # Whether or not module is an edge module
-    #
-    def on_edge?
-      !self.edge_id.nil?
-    end
+    # Callbacks
+    ###############################################################################################
 
-    private EDGE_HINT = "-edge"
+    # Add the Logic module directly to parent ControlSystem
+    after_create :add_logic_module
 
-    protected def set_edge_hint
-      if on_edge?
-        self._new_flag = true
-        @id = RethinkORM::IdGenerator.next(self) + EDGE_HINT
-      end
-    end
+    # Remove the module from associated (if any) ControlSystem
+    before_destroy :remove_module
 
-    # Hint in the model id whether the module is an edge module
-    #
-    def self.has_edge_hint?(module_id : String)
-      module_id.ends_with? EDGE_HINT
-    end
+    # Ensure fields inherited from Driver are set correctly
+    before_save :set_name_and_role
 
-    # Getter for the module's host
-    #
-    def hostname
-      case role
-      in .ssh?, .device?
-        self.ip
-      in .service?, .websocket?
-        uri = self.uri || self.driver.try &.default_uri
-        uri.try(&->URI.parse(String)).try(&.host)
-      in .logic?
-        # No hostname for Logic module
-        nil
-      in Nil
-        nil
-      end
-    end
-
-    # Setter for Device module ip
-    def hostname=(host : String)
-      # TODO: resolve hostname?
-      @ip = host
-    end
-
-    # Set driver and role
-    def driver=(driver : Driver)
-      previous_def(driver)
-      self.role = driver.role
-      self.name = driver.module_name
-    end
-
-    # Use custom name if it is defined and non-empty, otherwise use module name
-    #
-    def resolved_name : String
-      custom = self.custom_name.presence
-      custom.nil? ? self.name : custom
-    end
-
-    validate ->(this : Module) {
-      driver = this.driver
-      role = driver.try(&.role)
-      return if driver.nil? || role.nil?
-
-      case role
-      in .service?, .websocket?
-        this.validate_service_module(driver.role)
-      in .logic?
-        this.validate_logic_module
-      in .device?, .ssh?
-        this.validate_device_module
-      end
-
-      this.validate_no_parent_system unless this.role.logic?
-    }
-
-    protected def has_control?
-      !self.control_system_id.presence.nil?
-    end
-
-    protected def validate_no_parent_system
-      self.validation_error(:control_system, "should not be associated for #{self.role} modules") if has_control?
-    end
-
-    protected def validate_logic_module
-      self.tls = false
-      self.udp = false
-
-      self.connected = true # Logic modules are connectionless
-      self.role = Driver::Role::Logic
-      self.validation_error(:control_system, "must be associated for logic modules") unless has_control?
-      self.validation_error(:edge, "logic module cannot be allocated to an edge") if self.on_edge?
-    end
-
-    protected def validate_service_module(driver_role)
-      self.role = driver_role
-      self.udp = false
-
-      return if (driver = self.driver).nil?
-
-      unless (default_uri = driver.default_uri.presence).nil?
-        self.uri ||= default_uri
-      end
-
-      # URI presence
-      unless self.uri.presence
-        self.validation_error(:uri, "not present")
-        return
-      end
-
-      # Set secure transport flag if URI defines `https` protocol
-      self.tls = URI.parse(self.uri).scheme == "https"
-
-      self.validation_error(:uri, "is an invalid URI") unless Validation.valid_uri?(uri)
-    end
-
-    protected def validate_device_module
-      return if (driver = self.driver).nil?
-
-      self.role = driver.role
-      self.port ||= (driver.default_port || 0)
-
-      # No blank IP
-      self.validation_error(:ip, "cannot be blank") unless self.ip.presence
-      # Port in valid range
-      self.validation_error(:port, "is invalid") unless (1..65_535).includes?(self.port)
-
-      self.tls = false if self.udp
-
-      unless Validation.valid_uri?("http://#{ip}:#{port}/")
-        validation_error(:ip, "address, hostname or port are invalid")
-      end
-    end
+    # NOTE: Temporary while `edge` feature developed
+    before_create :set_edge_hint
 
     # Logic modules are automatically added to the ControlSystem
     #
     protected def add_logic_module
       return unless (cs = self.control_system)
 
-      modules = cs.modules
-      cs.modules = modules << self.id.as(String)
+      cs.modules = cs.modules << self.id.as(String)
       cs.version = cs.version + 1
       cs.save!
     end
@@ -317,6 +272,70 @@ module PlaceOS::Model
 
       self.role = driver_ref.role
       self.name = driver_ref.module_name
+    end
+
+    private EDGE_HINT = "-edge"
+
+    protected def set_edge_hint
+      if on_edge?
+        self._new_flag = true
+        @id = RethinkORM::IdGenerator.next(self) + EDGE_HINT
+      end
+    end
+
+    # Overridden attribute accessors
+    ###############################################################################################
+
+    # Set driver and role
+    def driver=(driver : Driver)
+      previous_def(driver)
+      self.role = driver.role
+      self.name = driver.module_name
+    end
+
+    # Getter for the module's host
+    #
+    def hostname
+      case role
+      in .ssh?, .device?
+        self.ip
+      in .service?, .websocket?
+        uri = self.uri || self.driver.try &.default_uri
+        uri.try(&->URI.parse(String)).try(&.host)
+      in .logic?
+        # No hostname for Logic module
+        nil
+      in Nil
+        nil
+      end
+    end
+
+    # Setter for Device module ip
+    def hostname=(host : String)
+      # TODO: resolve hostname?
+      @ip = host
+    end
+
+    # Use custom name if it is defined and non-empty, otherwise use module name
+    #
+    def resolved_name : String
+      custom = self.custom_name.presence
+      custom.nil? ? self.name : custom
+    end
+
+    # Edge Helpers
+    ###############################################################################################
+
+    # Whether or not module is an edge module
+    #
+    def on_edge?
+      !self.edge_id.nil?
+    end
+
+    # Hint in the model id whether the module is an edge module
+    #
+    def self.has_edge_hint?(module_id : String)
+      module_id.ends_with? EDGE_HINT
     end
   end
 end
