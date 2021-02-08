@@ -16,7 +16,6 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute domain : String
-    ensure_unique :domain, create_index: true
 
     # TODO: feature request: autogenerate login url
     attribute login_url : String = "/login?continue={{url}}"
@@ -25,7 +24,17 @@ module PlaceOS::Model
     attribute internals : Hash(String, JSON::Any) = {} of String => JSON::Any
     attribute config : Hash(String, JSON::Any) = {} of String => JSON::Any
 
-    validates :name, presence: true
+    macro finished
+      # Ensure only the host is saved.
+      #
+      def domain=(value : String)
+        host = URI.parse(value).host.try &.downcase || ""
+        previous_def(host)
+      end
+    end
+
+    # Associations
+    ###############################################################################################
 
     {% for relation, _idx in [
                                {LdapAuthentication, "ldap_authentications"},
@@ -41,18 +50,18 @@ module PlaceOS::Model
       )
     {% end %}
 
-    macro finished
-      # Ensure we are only saving the host
-      #
-      def domain=(value : String)
-        host = value.try do |domain|
-          URI.parse(domain).host.try &.downcase
-        end
-        previous_def(host)
-      end
-    end
+    # Validation
+    ###############################################################################################
 
-    # locates an authority by its unique domain name
+    validates :domain, presence: true
+    validates :name, presence: true
+
+    ensure_unique :domain, create_index: true
+
+    # Queries
+    ###########################################################################
+
+    # Locates an authority by its unique domain name
     #
     def self.find_by_domain(domain : String) : Authority?
       host = URI.parse(domain).host || domain
