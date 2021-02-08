@@ -29,6 +29,9 @@ module PlaceOS::Model
     attribute capacity : Int32 = 0
     attribute map_id : String?
 
+    # Array of URLs to images for a system
+    attribute images : Array(String) = ->{ [] of String }
+
     attribute timezone : Time::Location?, converter: Time::Location::Converter
 
     # Provide a field for simplifying support
