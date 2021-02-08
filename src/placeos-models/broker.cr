@@ -1,6 +1,6 @@
-require "rethinkdb-orm"
 require "openssl"
 require "random"
+require "rethinkdb-orm"
 
 require "./base/model"
 
@@ -34,26 +34,35 @@ module PlaceOS::Model
     # Matches will be replaced with a hmac_256(secret, match).
     attribute filters : Array(String) = ->{ [] of String }
 
+    # Validation
+    ###############################################################################################
+
     validates :name, presence: true
     validates :host, presence: true
     validates :secret, presence: true
 
     ensure_unique :name
 
-    validate ->(this : Broker) {
-      return unless (filters = this.filters)
+    validate ->Broker.validate_filters(Broker)
+
+    # Validate broker's `filter` regexes
+    def self.validate_filters(broker : Broker)
+      return if broker.filters.empty?
       # Render regex errors
-      error_string = filters.compact_map { |filter|
+      error_string = broker.filters.compact_map { |filter|
         error = Regex.error?(filter)
         "'#{filter}' errored with '#{error}'" if error
       }.join(" and")
 
-      this.validation_error(:filters, error_string) unless error_string.empty?
-    }
+      broker.validation_error(:filters, error_string) unless error_string.empty?
+    end
 
+    # Payload Sanitization
+    ###############################################################################################
+
+    # Hash sensitive data from a string using the document's `filters`
     def sanitize(payload : String)
-      filters = self.filters
-      return payload if filters.nil? || filters.empty?
+      return payload if self.filters.empty?
 
       # TODO: Cache and reuse unless filters_changed?
       regex = Regex.union(filters)
