@@ -39,8 +39,9 @@ module PlaceOS::Model
     end
 
     def self.validate_token?(token : String) : String?
-      parts = Base64.decode_string(token).split('_')
-      unless parts.size == 2
+      parts = Base64.decode_string(token).split('_') rescue nil
+
+      if parts.nil? || parts.size != 2
         Log.info { {message: "deformed token", token: token} }
         return
       end
