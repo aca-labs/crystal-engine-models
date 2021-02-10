@@ -12,7 +12,7 @@ module PlaceOS::Model
 
     attribute description : String = ""
 
-    attribute secret : String = ->{ Random::Secure.hex(64) }, mass_assignment: false
+    attribute secret : String = ->{ Random::Secure.base64(64) }, mass_assignment: false
 
     ENCRYPTION_LEVEL = Encryption::Level::Admin
 
@@ -46,9 +46,7 @@ module PlaceOS::Model
       end
 
       edge_id, secret = parts
-
-      edge = Model::Edge.find(edge_id)
-      if edge.nil?
+      if (edge = Model::Edge.find(edge_id)).nil?
         Log.info { {message: "edge not found", edge_id: edge_id} }
         return
       end

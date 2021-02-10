@@ -44,16 +44,6 @@ module PlaceOS::Model
       {repo_type, folder_name.strip.downcase}
     end
 
-    def pull!
-      if self.commit_hash == "HEAD"
-        self.updated_at = Time.utc
-      else
-        self.commit_hash = "HEAD"
-      end
-
-      self.save!
-    end
-
     # Authentication
     attribute username : String?
     attribute password : String?
@@ -65,5 +55,19 @@ module PlaceOS::Model
       foreign_key: "repository_id",
       dependent: :destroy
     )
+
+    def pull!
+      commit_hash_will_change!
+      self.commit_hash = self.class.pull_commit(self)
+      save!
+    end
+
+    def should_pull?
+      self.commit_hash == self.class.pull_commit(self)
+    end
+
+    def self.pull_commit(repo : Repository)
+      repo.repo_type.driver? ? "HEAD" : "PULL"
+    end
   end
 end
