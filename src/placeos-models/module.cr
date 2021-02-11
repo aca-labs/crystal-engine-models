@@ -246,47 +246,38 @@ module PlaceOS::Model
       self.role = driver_role
       self.udp = false
 
-      driver = self.driver
-      return if driver.nil?
+      return if (driver = self.driver).nil?
 
-      if (default_uri = driver.default_uri.presence)
+      unless (default_uri = driver.default_uri.presence).nil?
         self.uri ||= default_uri
       end
 
-      uri = self.uri # URI presence
-      unless uri
+      if self.uri.blank?
         self.validation_error(:uri, "not present")
         return
       end
 
-      url = URI.parse(uri)
-      url_parsed = !!(url.host && url.scheme)     # Ensure URL can be parsed
-      self.tls = !!(url && url.scheme == "https") # Secure indication
+      # Set secure transport flag if URI defines `https` protocol
+      self.tls = URI.parse(self.uri).scheme == "https"
 
-      self.validation_error(:uri, "is an invalid URI") unless url_parsed
+      self.validation_error(:uri, "is an invalid URI") unless Validation.valid_uri?(uri)
     end
 
     protected def validate_device_module
-      driver = self.driver
-      return if driver.nil?
+      return if (driver = self.driver).nil?
 
       self.role = driver.role
-      self.port = self.port || driver.default_port || 0
-
-      ip = self.ip
-      port = self.port
+      self.port ||= (driver.default_port || 0)
+      self.tls = !udp
 
       # No blank IP
-      self.validation_error(:ip, "cannot be blank") if ip && ip.blank?
+      validation_error(:ip, "cannot be blank") if ip.blank?
       # Port in valid range
-      self.validation_error(:port, "is invalid") unless port && (1..65_535) === port
+      validation_error(:port, "is invalid") unless (1..65_535).includes?(port)
 
-      self.tls = false if self.udp
-
-      url = URI.parse("http://#{ip}:#{port}/")
-      url_parsed = !!(url.scheme && url.host)
-
-      self.validation_error(:ip, "address / hostname or port are not valid") unless url_parsed
+      unless Validation.valid_uri?("http://#{ip}:#{port}/")
+        validation_error(:ip, "address, hostname or port are invalid")
+      end
     end
 
     # Logic modules are automatically added to the ControlSystem

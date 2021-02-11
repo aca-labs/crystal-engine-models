@@ -84,12 +84,8 @@ module PlaceOS::Model
 
     # Validate support URI
     validate ->(this : ControlSystem) {
-      support_url = this.support_url
-      unless support_url.empty?
-        url = URI.parse(support_url)
-        url_parsed = !!(url && url.scheme && url.host)
-        this.validation_error(:support_url, "is an invalid URI") unless url_parsed
-      end
+      return if this.support_url.blank?
+      this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
 
     def self.by_zone_id(id)

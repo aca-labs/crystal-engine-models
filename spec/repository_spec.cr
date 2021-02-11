@@ -7,17 +7,34 @@ module PlaceOS::Model
       Repository.find(repo.id.as(String)).should_not be_nil
     end
 
-    it "enforces valid path characters in folder_name" do
-      repo = Generator.repository
+    describe "validation" do
+      context "folder_name" do
+        it "enforces valid path characters" do
+          repo = Generator.repository
 
-      repo.folder_name = "no spaces please"
-      repo.valid?.should be_false
-      repo.errors.first.to_s.should eq("folder_name is invalid")
+          repo.folder_name = "no spaces please"
+          repo.valid?.should be_false
+          repo.errors.first.to_s.should eq("folder_name is invalid")
 
-      repo.errors.clear
+          repo.errors.clear
 
-      repo.folder_name = "no_spaces_here"
-      repo.valid?.should be_true
+          repo.folder_name = "no_spaces_here"
+          repo.valid?.should be_true
+        end
+      end
+      context "url" do
+        it "ensures scheme is present" do
+          repo = Generator.repository
+
+          repo.uri = "iqoherlk9dgaJUNK"
+          repo.valid?.should be_false
+          repo.errors.first.to_s.should eq("uri is an invalid URI")
+          repo.errors.clear
+
+          repo.uri = "https://good.stuff"
+          repo.valid?.should be_true
+        end
+      end
     end
 
     it "removes dependent Drivers on destroy" do
