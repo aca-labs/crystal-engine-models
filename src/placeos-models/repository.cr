@@ -40,6 +40,10 @@ module PlaceOS::Model
     validates :uri, presence: true
     validates :commit_hash, presence: true
 
+    validate ->(this : Model::Repository) {
+      this.validation_error(:uri, "is an invalid URI") unless Validation.valid_uri?(this.uri)
+    }
+
     ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
       {repo_type, folder_name.strip.downcase}
     end
