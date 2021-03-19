@@ -45,6 +45,9 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
+    # Output of the last failed compilation
+    attribute compilation_output : String?, es_type: "ignore"
+
     # Module instance configuration
     attribute module_name : String
 
