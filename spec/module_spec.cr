@@ -263,7 +263,7 @@ module PlaceOS::Model
         module_settings_string = %(value: 2\n)
         module_settings = Generator.settings(mod: mod, settings_string: module_settings_string).save!
 
-        merged_settings = JSON.parse(mod.merge_settings).as_h.transform_values { |v| v.as_i }
+        merged_settings = JSON.parse(mod.merge_settings).as_h.transform_values &.as_i
 
         # Module > Driver
         merged_settings["value"].should eq 2
@@ -302,7 +302,7 @@ module PlaceOS::Model
         module_settings_string = %(value: 2\n)
         module_settings = Generator.settings(mod: mod, settings_string: module_settings_string).save!
 
-        merged_settings = JSON.parse(mod.merge_settings).as_h.transform_values { |v| v.as_i }
+        merged_settings = JSON.parse(mod.merge_settings).as_h.transform_values &.as_i
 
         # Module > Driver
         merged_settings["value"].should eq 2

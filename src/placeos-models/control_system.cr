@@ -158,11 +158,7 @@ module PlaceOS::Model
       zones = Model::Zone.get_all(zone_ids).to_a
       # Merge by highest associated zone
       zone_ids.reverse_each do |zone_id|
-        zone = zones.find { |found_zone| found_zone.id == zone_id }
-        # TODO: Warn that zone not present rather than error
-        # logger.warn "Missing zone: control_system_id=#{id} zone_id=#{zone_id}"
-        next unless zone
-
+        next if (zone = zones.find &.id.==(zone_id)).nil?
         settings.concat(zone.master_settings)
       end
 
