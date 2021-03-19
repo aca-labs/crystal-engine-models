@@ -18,6 +18,7 @@ module PlaceOS::Model
     attribute description : String = ""
     attribute details : JSON::Any, converter: JSON::Any::StringConverter
     attribute editors : Set(String) = ->{ Set(String).new }
+    attribute schema : String = ""
 
     attribute parent_id : String, es_type: "keyword"
 
