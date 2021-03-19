@@ -40,7 +40,7 @@ module PlaceOS::Model
           Generator.module(driver: driver, control_system: cs).save!
         end
 
-        driver_names = modules.compact_map(&.driver.try &.name).sort
+        driver_names = modules.compact_map(&.driver.try &.name).sort!
 
         module_ids = modules.compact_map(&.id)
         cs.modules = module_ids
@@ -51,10 +51,10 @@ module PlaceOS::Model
           any.merge({"driver" => any["driver"].as_h})
         end
 
-        data_driver_names = module_anys.map { |m| m["driver"]["name"].to_s }.sort
+        data_driver_names = module_anys.map(&.["driver"]["name"].to_s).sort!
         data_driver_names.should eq driver_names
 
-        ids = module_anys.map { |m| m["id"].to_s }
+        ids = module_anys.map &.["id"].to_s
         ids.sort.should eq module_ids.sort
       end
 

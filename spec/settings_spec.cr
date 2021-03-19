@@ -81,8 +81,8 @@ module PlaceOS::Model
           Settings.new(encryption_level: level, settings_string: string, parent_id: id).save!
         end.to_a
 
-        ids = settings.map(&.id.as(String)).sort
-        Settings.for_parent(id).map(&.id.as(String)).sort.should eq ids
+        ids = settings.compact_map(&.id).sort!
+        Settings.for_parent(id).compact_map(&.id).sort!.should eq ids
         settings.each &.destroy
       end
 
@@ -94,8 +94,8 @@ module PlaceOS::Model
           Settings.new(encryption_level: level, settings_string: string, parent_id: id).save!
         end.to_a
 
-        ids = settings.map(&.id.as(String)).sort
-        Settings.for_parent(mock_ids).map(&.id.as(String)).sort.should eq ids
+        ids = settings.compact_map(&.id).sort!
+        Settings.for_parent(mock_ids).compact_map(&.id).sort!.should eq ids
         settings.each &.destroy
       end
     end

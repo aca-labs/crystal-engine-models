@@ -90,7 +90,7 @@ module PlaceOS::Model
         field.is_a?(NamedTuple) ? field[:field].to_s : field.to_s
       end
 
-      public_user.keys.sort.should eq public_attributes.sort
+      public_user.keys.sort!.should eq public_attributes.sort
     end
 
     it "#as_admin_json" do
@@ -101,7 +101,7 @@ module PlaceOS::Model
         field.is_a?(NamedTuple) ? field[:field].to_s : field.to_s
       end
 
-      admin_user.keys.sort.should eq admin_attributes.sort
+      admin_user.keys.sort!.should eq admin_attributes.sort
     end
 
     it "should create a new user with a password" do
@@ -138,8 +138,8 @@ module PlaceOS::Model
         not_expected.save!
 
         found = User.find_by_emails(authority.id.as(String), expected_users.map(&.email))
-        found_ids = found.compact_map(&.id).to_a.sort
-        found_ids.should eq expected_users.compact_map(&.id).sort
+        found_ids = found.compact_map(&.id).to_a.sort!
+        found_ids.should eq expected_users.compact_map(&.id).sort!
         found_ids.should_not contain(not_expected.id)
       end
     end

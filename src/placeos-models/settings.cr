@@ -86,12 +86,12 @@ module PlaceOS::Model
       in .control_system?
         Module
           .in_control_system(model_id)
-          .select { |m| m.role == Driver::Role::Logic }
+          .select(&.role.logic?)
           .to_a
       in .zone?
         Module
           .in_zone(model_id)
-          .select { |m| m.role == Driver::Role::Logic }
+          .select(&.role.logic?)
           .to_a
       end
     end
@@ -167,7 +167,7 @@ module PlaceOS::Model
     def self.master_settings_query(ids : String | Array(String))
       # Get documents where the settings_id does not exist, i.e. is the master
       cursor = query(ids) do |q|
-        yield q.filter { |s| s.has_fields(:settings_id).not }
+        yield q.filter &.has_fields(:settings_id).not
       end
 
       cursor

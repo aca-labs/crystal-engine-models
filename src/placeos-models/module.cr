@@ -95,7 +95,7 @@ module PlaceOS::Model
           # Find the module ids for the control systems
           .map { |id| q.table(PlaceOS::Model::Module.table_name).get(id) }
           # Return all modules located
-          .filter { |m| m.has_fields("id") }
+          .filter(&.has_fields("id"))
           # Unique module ids
           .distinct
       end
@@ -106,13 +106,13 @@ module PlaceOS::Model
         q
           .table(PlaceOS::Model::ControlSystem.table_name)
           # Find control systems that have the zone
-          .filter { |sys| sys["zones"].contains(zone_id) }
+          .filter(&.["zones"].contains(zone_id))
           # Find the module ids for the control systems
           .concat_map { |sys|
             sys["modules"].map { |id| q.table(PlaceOS::Model::Module.table_name).get(id) }
           }
           # Return all modules located
-          .filter { |m| m.has_fields("id") }
+          .filter(&.has_fields("id"))
           # Unique module ids
           .distinct
       end
@@ -297,7 +297,7 @@ module PlaceOS::Model
       mod_id = self.id.as(String)
 
       ControlSystem
-        .raw_query(&.table(ControlSystem.table_name).filter { |sys| sys["modules"].contains(mod_id) })
+        .raw_query(&.table(ControlSystem.table_name).filter(&.["modules"].contains(mod_id)))
         .map do |sys|
           sys.remove_module(mod_id)
           # The `ControlSystem` will regenerate `features`
