@@ -12,6 +12,6 @@ jobs:
           crystal: latest
       - uses: actions/checkout@v2
       - run: docker run -p "29015:29015" -p "28015:28015" -d rethinkdb:2.4
-      - run: shards install--ignore-crystal-version
+      - run: shards install --ignore-crystal-version
       - run: crystal spec
       - run: crystal tool format --check
