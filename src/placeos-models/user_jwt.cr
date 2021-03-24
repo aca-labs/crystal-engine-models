@@ -37,7 +37,7 @@ module PlaceOS::Model
       getter name : String
       @[JSON::Field(key: "e")]
       getter email : String
-      @[JSON::Field(key: "p")]
+      @[JSON::Field(key: "p", converter: Enum::ValueConverter(PlaceOS::Model::UserJWT::Permissions))]
       getter permissions : Permissions
       @[JSON::Field(key: "r")]
       getter roles : Array(String)

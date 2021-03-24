@@ -45,7 +45,8 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
-    enum_attribute role : Driver::Role, es_type: "integer" # cache the driver role locally for load order
+    # Cache the module's driver role locally for load order
+    attribute role : Driver::Role, es_type: "integer", converter: Enum::ValueConverter(Driver::Role)
 
     # Connected state in model so we can filter and search on it
     attribute connected : Bool = true

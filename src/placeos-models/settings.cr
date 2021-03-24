@@ -21,7 +21,8 @@ module PlaceOS::Model
 
     secondary_index :parent_id
 
-    enum_attribute encryption_level : Encryption::Level = Encryption::Level::None
+    attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(Encryption::Level)
+
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String, es_type: "text"
 
@@ -51,10 +52,6 @@ module PlaceOS::Model
       Module
       Zone
 
-      def to_json(json)
-        json.string(to_s)
-      end
-
       def self.from_id?(id : String?) : ParentType?
         return if id.nil?
 
@@ -67,7 +64,7 @@ module PlaceOS::Model
       end
     end
 
-    enum_attribute parent_type : ParentType
+    attribute parent_type : ParentType
 
     validates :parent_type, presence: true
 

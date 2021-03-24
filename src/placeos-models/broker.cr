@@ -16,7 +16,7 @@ module PlaceOS::Model
       UserPassword
     end
 
-    enum_attribute auth_type : AuthType = AuthType::UserPassword
+    attribute auth_type : AuthType = AuthType::UserPassword, converter: Enum::ValueConverter(AuthType)
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""

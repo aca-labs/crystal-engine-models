@@ -31,7 +31,7 @@ module PlaceOS::Model
     attribute commit_hash : String = "HEAD"
     attribute branch : String = "master"
 
-    enum_attribute repo_type : Type = Type::Driver, column_type: String, es_type: "text"
+    attribute repo_type : Type = Type::Driver, es_type: "text"
 
     # Validations
     validates :name, presence: true

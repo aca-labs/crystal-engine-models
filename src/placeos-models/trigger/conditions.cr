@@ -10,7 +10,7 @@ module PlaceOS::Model
         Cron
       end
 
-      enum_attribute type : Type, column_type: String
+      attribute type : Type
 
       attribute time : Time?, converter: Time::EpochConverter
       attribute cron : String?
