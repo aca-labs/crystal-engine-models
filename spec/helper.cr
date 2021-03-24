@@ -1,3 +1,6 @@
+require "placeos-log-backend"
+::Log.setup("*", backend: PlaceOS::LogBackend.log_backend, level: Log::Severity::Debug)
+
 require "spec"
 require "random"
 require "rethinkdb-orm"
@@ -9,8 +12,10 @@ require "./generator"
 # Configure DB
 db_name = "test"
 
-RethinkORM.configure do |settings|
-  settings.db = db_name
+Spec.before_suite do
+  RethinkORM.configure do |settings|
+    settings.db = db_name
+  end
 end
 
 # Clear test tables on exit

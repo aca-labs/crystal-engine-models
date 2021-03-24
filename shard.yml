@@ -25,6 +25,11 @@ dependencies:
     github: spider-gazelle/neuroplastic
     version: ~> 1.6
 
+  # PlaceOS log backend
+  placeos-log-backend:
+    github: place-labs/log-backend
+    version: ~> 0.1
+
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm

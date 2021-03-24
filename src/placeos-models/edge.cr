@@ -60,13 +60,6 @@ module PlaceOS::Model
       end
     end
 
-    # Check the validity of the token.
-    # Returns the `edge_id` of the node if the token is valid.
-    @[Deprecated("Use `validate_token?` instead")]
-    def self.validate_token(token : String) : String?
-      self.validate_token?(token)
-    end
-
     # Encrypt all encrypted attributes
     def encrypt!
       self.secret = encrypt_secret
