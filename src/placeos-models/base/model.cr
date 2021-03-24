@@ -12,6 +12,10 @@ module PlaceOS::Model
   # Base class for all Engine models
   abstract class ModelBase < RethinkORM::Base
     include Neuroplastic
+
+    macro inherited
+      Log = ::Log.for(self)
+    end
   end
 
   # Validation for embedded objects in Engine models
