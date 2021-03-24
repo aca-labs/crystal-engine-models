@@ -24,11 +24,21 @@ module PlaceOS::Model
     @[JSON::Field(key: "u")]
     getter user : Metadata
 
+    delegate is_admin?, is_support?, to: user.permissions
+
     enum Permissions
       User         = 0
       Support      = 1
       Admin        = 2
       AdminSupport = 3
+
+      def is_admin?
+        self >= Permissions::Admin
+      end
+
+      def is_support?
+        self >= Permissions::Support
+      end
     end
 
     struct Metadata
@@ -55,24 +65,6 @@ module PlaceOS::Model
 
     def id
       @sub
-    end
-
-    def is_admin?
-      case @user.permissions
-      in .admin?, .admin_support?
-        true
-      in .user?, .support?
-        false
-      end
-    end
-
-    def is_support?
-      case @user.permissions
-      in .support?, .admin?, .admin_support?
-        true
-      in .user?
-        false
-      end
     end
   end
 end
