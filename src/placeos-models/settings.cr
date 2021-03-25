@@ -21,7 +21,7 @@ module PlaceOS::Model
 
     secondary_index :parent_id
 
-    attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(Encryption::Level)
+    attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(PlaceOS::Encryption::Level)
 
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String, es_type: "text"
