@@ -20,6 +20,10 @@ module PlaceOS::Model
       Service   =  2
       Websocket =  3
       Logic     = 99
+
+      def to_json(json)
+        json.number value
+      end
     end
 
     attribute name : String, es_subfield: "keyword"
