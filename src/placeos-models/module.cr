@@ -269,10 +269,13 @@ module PlaceOS::Model
 
       self.role = driver.role
       self.port ||= (driver.default_port || 0)
-      self.tls = !udp
+
+      # No TLS for UDP
+      self.tls = false if udp
 
       # No blank IP
       validation_error(:ip, "cannot be blank") if ip.blank?
+
       # Port in valid range
       validation_error(:port, "is invalid") unless (1..65_535).includes?(port)
 
