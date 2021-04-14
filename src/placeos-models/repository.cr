@@ -16,7 +16,7 @@ module PlaceOS::Model
       Interface
 
       def to_reql
-        JSON::Any.new(to_s)
+        JSON::Any.new(to_s.downcase)
       end
     end
 
