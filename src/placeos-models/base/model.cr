@@ -24,7 +24,7 @@ module PlaceOS::Model
 
     # RethinkDB library serializes through JSON::Any
     def to_reql
-      JSON::Any.new(self.to_json)
+      JSON.parse(self.to_json)
     end
 
     # Propagate submodel validation errors to parent's
