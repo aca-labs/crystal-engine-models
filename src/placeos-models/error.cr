@@ -1,6 +1,9 @@
 module PlaceOS::Model
   class Error < Exception
     getter message
+
+    def initialize(@message = "", @cause = nil)
+    end
   end
 
   class NoParentError < Error
