@@ -11,14 +11,7 @@ module PlaceOS::Model
   describe Settings do
     it "saves a settings" do
       settings = Generator.settings
-      begin
-        settings.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
-        inspect_error(e)
-        raise e
-      end
-
-      settings.should_not be_nil
+      settings.save
       settings.persisted?.should be_true
       settings.id.as(String).should start_with "sets-"
     end
@@ -26,14 +19,7 @@ module PlaceOS::Model
     it "accepts empty settings strings" do
       settings = Generator.settings
       settings.settings_string = ""
-      begin
-        settings.save!
-      rescue e : RethinkORM::Error::DocumentInvalid
-        inspect_error(e)
-        raise e
-      end
-
-      settings.should_not be_nil
+      settings.save
       settings.persisted?.should be_true
       settings.keys.should be_empty
     end

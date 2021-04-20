@@ -1,5 +1,6 @@
 require "placeos-log-backend"
-::Log.setup("*", backend: PlaceOS::LogBackend.log_backend, level: Log::Severity::Debug)
+
+::Log.setup("*", backend: PlaceOS::LogBackend.log_backend, level: :trace)
 
 require "spec"
 require "random"
