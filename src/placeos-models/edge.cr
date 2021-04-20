@@ -12,7 +12,7 @@ module PlaceOS::Model
 
     attribute description : String = ""
 
-    attribute secret : String = ->{ Random::Secure.base64(64) }, mass_assignment: false
+    attribute secret : String = ->{ Random::Secure.base64(64).delete('_') }, mass_assignment: false
 
     ENCRYPTION_LEVEL = Encryption::Level::Admin
 
