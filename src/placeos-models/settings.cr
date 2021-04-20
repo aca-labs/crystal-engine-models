@@ -18,16 +18,20 @@ module PlaceOS::Model
     table :sets
 
     attribute parent_id : String?, es_type: "keyword"
+    attribute settings_id : String? = nil
 
     secondary_index :parent_id
+    secondary_index :settings_id
 
     attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(PlaceOS::Encryption::Level)
 
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String, es_type: "text"
 
-    attribute settings_id : String? = nil
-    secondary_index :settings_id
+    belongs_to ControlSystem, foreign_key: "parent_id"
+    belongs_to Driver, foreign_key: "parent_id"
+    belongs_to Module, foreign_key: "parent_id", association_name: "mod"
+    belongs_to Zone, foreign_key: "parent_id"
 
     # Settings self-referential entity relationship acts as a 2-level tree
     has_many(
@@ -37,13 +41,9 @@ module PlaceOS::Model
       dependent: :destroy
     )
 
-    belongs_to ControlSystem, foreign_key: "parent_id"
-    belongs_to Driver, foreign_key: "parent_id"
-    belongs_to Module, foreign_key: "parent_id", association_name: "mod"
-    belongs_to Zone, foreign_key: "parent_id"
-
     validates :encryption_level, presence: true
     validates :parent_id, presence: true
+    validates :parent_type, presence: true
 
     # Possible parent documents
     enum ParentType
@@ -66,7 +66,47 @@ module PlaceOS::Model
 
     attribute parent_type : ParentType
 
-    validates :parent_type, presence: true
+    # Callbacks
+    ###########################################################################
+
+    before_save :parse_parent_type
+    before_save :build_keys
+    before_save :encrypt_settings
+    after_save :create_version
+
+    # Parse `parent_id` and set the `parent_type` of the `Settings`
+    #
+    def parse_parent_type
+      if (type = ParentType.from_id?(parent_id))
+        self.parent_type = type
+      else
+        raise Error.new("Failed to parse Settings' parent type from #{parent_id}")
+      end
+    rescue e : NilAssertionError
+      raise NoParentError.new
+    end
+
+    # Generate keys for settings object
+    #
+    def build_keys : Array(String)
+      unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
+      self.keys = YAML.parse(unencrypted).as_h?.try(&.keys.map(&.to_s)) || [] of String
+    end
+
+    # Generate a version upon save of a master Settings
+    #
+    def create_version
+      return if is_version?
+
+      old_settings = encrypt(settings_string)
+      attrs = attributes_tuple.merge({id: nil, created_at: nil, updated_at: nil, settings_string: old_settings})
+      version = Settings.new(**attrs)
+      version.settings_id = self.id
+      version.save!
+    end
+
+    # Queries
+    ###########################################################################
 
     # Locate the modules that will be affected by the change of this setting
     #
@@ -93,33 +133,6 @@ module PlaceOS::Model
       end
     end
 
-    # Callbacks
-    ###########################################################################
-
-    before_save :parse_parent_type
-    before_save :build_keys
-    before_save :encrypt_settings
-    after_save :create_version
-
-    # Generate a version upon save of a master Settings
-    #
-    def create_version
-      return if is_version?
-
-      old_settings = encrypt(settings_string)
-      attrs = attributes_tuple.merge({id: nil, created_at: nil, updated_at: nil, settings_string: old_settings})
-      version = Settings.new(**attrs)
-      version.settings_id = self.id
-      version.save!
-    end
-
-    # Generate keys for settings object
-    #
-    def build_keys : Array(String)
-      unencrypted = Encryption.is_encrypted?(settings_string) ? decrypt : settings_string
-      self.keys = YAML.parse(unencrypted).as_h?.try(&.keys.map(&.to_s)) || [] of String
-    end
-
     # Get version history
     #
     # Versions are in descending order of creation
@@ -137,21 +150,6 @@ module PlaceOS::Model
 
       versions.to_a
     end
-
-    # Parse `parent_id` and set the `parent_type` of the `Settings`
-    #
-    def parse_parent_type
-      if (type = ParentType.from_id?(parent_id))
-        self.parent_type = type
-      else
-        raise Error.new("Failed to parse Settings' parent type from #{parent_id}")
-      end
-    rescue e : NilAssertionError
-      raise NoParentError.new
-    end
-
-    # Queries
-    ###########################################################################
 
     # Get settings for given parent id/s
     #
