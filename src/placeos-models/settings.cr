@@ -334,8 +334,8 @@ module PlaceOS::Model
       else
         YAML.parse(settings_string).as_h
       end
-    rescue
-      raise Model::Error.new("Failed to parse YAML settings: #{settings_string}")
+    rescue e
+      raise Model::Error.new("Failed to parse YAML settings: #{settings_string}", cause: e)
     end
   end
 end
