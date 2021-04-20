@@ -45,6 +45,18 @@ module PlaceOS::Model
     validates :parent_id, presence: true
     validates :parent_type, presence: true
 
+    # Ensure `settings_string` is valid
+    validate ->(this : Settings) {
+      if this.settings_string_changed?
+        unencrypted = Encryption.is_encrypted?(this.settings_string) ? this.decrypt : this.settings_string
+        begin
+          YAML.parse(unencrypted) rescue JSON.parse(unencrypted)
+        rescue
+          this.validation_error(:settings_string, "is invalid JSON/YAML")
+        end
+      end
+    }
+
     # Possible parent documents
     enum ParentType
       ControlSystem

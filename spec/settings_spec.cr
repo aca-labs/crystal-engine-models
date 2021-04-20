@@ -38,6 +38,24 @@ module PlaceOS::Model
       settings.keys.should be_empty
     end
 
+    describe "settings_string validation" do
+      it "rejects ill-formed JSON" do
+        settings = Generator.settings
+        settings.parent_type = :zone
+        settings.settings_string = "{"
+        settings.valid?.should be_false
+        settings.errors.first.to_s.should eq "settings_string is invalid JSON/YAML"
+      end
+
+      it "rejects ill-formed YAML" do
+        settings = Generator.settings
+        settings.parent_type = :zone
+        settings.settings_string = "hello:\n1"
+        settings.valid?.should be_false
+        settings.errors.first.to_s.should eq "settings_string is invalid JSON/YAML"
+      end
+    end
+
     it "encrypts on save" do
       unencrypted = %({"secret_key": "secret1234"})
       settings = Generator.settings(settings_string: unencrypted, encryption_level: Encryption::Level::Admin).save!
