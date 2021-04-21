@@ -237,10 +237,9 @@ module PlaceOS::Model
     # Removes the module from the system and deletes it if not used elsewhere
     #
     def remove_module(module_id : String)
-      mods = self.modules
       mod = Module.find(module_id)
-      if mods && mods.includes?(module_id) && ControlSystem.remove_module(id.as(String), module_id)
-        mods.delete(module_id)
+      if modules.includes?(module_id) && ControlSystem.remove_module(id.as(String), module_id)
+        modules.delete(module_id)
         unless mod.nil?
           # Remove the module from the control system's features
           self.features.delete(mod.resolved_name)
@@ -269,13 +268,13 @@ module PlaceOS::Model
         sys.id != control_system_id
       end
 
-      if !still_in_use
-        # TODO: Global Logger
-        #   logger.info "module (#{module_id}) removed as not in any other systems"
-        Module.find(module_id).try(&.destroy)
-        # else
-        #   logger.info "module (#{module_id}) still in use"
-      end
+      Module.find(module_id).try(&.destroy) if !still_in_use
+
+      Log.debug { {
+        message:           "module removed from system #{still_in_use ? "still in use" : "deleted as not in any other systems"}",
+        module_id:         module_id,
+        control_system_id: control_system_id,
+      } }
 
       true
     end
