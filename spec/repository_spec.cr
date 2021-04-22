@@ -46,7 +46,7 @@ module PlaceOS::Model
 
       Repository.find(repo.id.as(String)).should_not be_nil
       repo.destroy
-      Driver.get_all(drivers.compact_map &.id).to_a.should be_empty
+      Driver.find_all(drivers.compact_map &.id).to_a.should be_empty
     end
   end
 end
