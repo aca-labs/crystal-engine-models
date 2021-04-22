@@ -115,7 +115,6 @@ module PlaceOS::Model
     # Obtains the control system's modules as json
     # FIXME: Dreadfully needs optimisation, i.e. subset serialisation
     def module_data
-      modules = self.modules || [] of String
       Module.find_all(modules).to_a.map do |mod|
         # Pick off driver name, and module_name from associated driver
         driver_data = mod.driver.try do |driver|
@@ -174,7 +173,7 @@ module PlaceOS::Model
     # Extends features with extra_features field in settings if present
     protected def update_features
       module_names = Module
-        .find_all(@modules || [] of String)
+        .find_all(modules)
         .map(&.resolved_name)
         .select(&.in?(IGNORED_MODULES).!)
         .to_set
@@ -190,7 +189,6 @@ module PlaceOS::Model
     # Remove Modules not associated with any other systems
     # NOTE: Includes compulsory associated Logic Modules
     def cleanup_modules
-      modules = self.modules.as(Array(String))
       return if modules.empty?
 
       # Locate modules that have no other associated ControlSystems
