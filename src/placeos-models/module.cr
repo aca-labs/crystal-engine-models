@@ -78,13 +78,13 @@ module PlaceOS::Model
     # Find `Module`s allocated to an `Edge`
     #
     def self.on_edge(edge_id : String)
-      Module.get_all([edge_id], index: :edge_id)
+      Module.find_all([edge_id], index: :edge_id)
     end
 
     # Fetch `Module`s who have a direct parent `ControlSystem`
     #
     def self.logic_for(control_system_id : String)
-      Module.get_all([control_system_id], index: :control_system_id)
+      Module.find_all([control_system_id], index: :control_system_id)
     end
 
     def self.in_control_system(control_system_id : String)

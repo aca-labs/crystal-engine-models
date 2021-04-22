@@ -124,7 +124,7 @@ module PlaceOS::Model
     secondary_index :authority_id
 
     def by_authority_id(auth_id : String)
-      User.get_all([auth_id], index: :authority_id)
+      User.find_all([auth_id], index: :authority_id)
     end
 
     secondary_index :email
@@ -144,19 +144,19 @@ module PlaceOS::Model
     secondary_index :login_name
 
     def self.find_by_login_name(login_name : String)
-      User.get_all([login_name], index: :login_name).first?
+      User.find_all([login_name], index: :login_name).first?
     end
 
     secondary_index :staff_id
 
     def self.find_by_staff_id(staff_id : String)
-      User.get_all([staff_id], index: :staff_id).first?
+      User.find_all([staff_id], index: :staff_id).first?
     end
 
     secondary_index :sys_admin
 
     def self.find_sys_admins
-      User.get_all([true], index: :sys_admin)
+      User.find_all([true], index: :sys_admin)
     end
 
     # Access Control

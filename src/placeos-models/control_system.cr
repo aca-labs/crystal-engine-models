@@ -137,7 +137,7 @@ module PlaceOS::Model
     # Obtains the control system's zones as json
     def zone_data
       zones = @zones || [] of String
-      Zone.get_all(zones).to_a.map(&.to_json)
+      Zone.find_all(zones).to_a.map(&.to_json)
     end
 
     # Triggers
@@ -154,7 +154,7 @@ module PlaceOS::Model
 
       # Zone Settings
       zone_ids = zones.as(Array(String))
-      zones = Model::Zone.get_all(zone_ids).to_a
+      zones = Model::Zone.find_all(zone_ids).to_a
       # Merge by highest associated zone
       zone_ids.reverse_each do |zone_id|
         next if (zone = zones.find &.id.==(zone_id)).nil?
