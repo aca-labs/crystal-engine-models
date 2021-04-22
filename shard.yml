@@ -1,5 +1,5 @@
 name: placeos-models
-version: 4.16.1
+version: 4.16.2
 crystal: ~> 1
 
 dependencies:
@@ -33,7 +33,7 @@ dependencies:
   # ORM for RethinkDB built on active-model
   rethinkdb-orm:
     github: spider-gazelle/rethinkdb-orm
-    version: ~> 4
+    version: ~> 4.1
 
 development_dependencies:
   ameba:
