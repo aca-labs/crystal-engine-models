@@ -1,20 +1,21 @@
 require "uri"
 require "json"
+
 require "./base/model"
 
 module PlaceOS::Model
   # See: https://github.com/omniauth/omniauth-oauth2
-  # https://github.com/oauth-xx/oauth2
   class OAuthAuthentication < ModelBase
     include RethinkORM::Timestamps
 
     table :oauth_strat
 
     attribute name : String, es_subfield: "keyword"
-    belongs_to Authority, foreign_key: "authority_id"
 
-    # The client ID and secret configured for this application
+    # The client ID configured for this application
     attribute client_id : String
+
+    # The secret configured for this application
     attribute client_secret : String
 
     # Maps an expected key to a provided key i.e. {used_in_engine => used_by_remote}
@@ -49,15 +50,15 @@ module PlaceOS::Model
     # URL to call with a valid token to obtain the users profile data (name, email etc)
     attribute raw_info_url : String?
 
+    # Association
+    ###############################################################################################
+
+    belongs_to Authority, foreign_key: "authority_id"
+
+    # Validation
+    ###############################################################################################
+
     validates :name, presence: true
     validates :authority_id, presence: true
-
-    def type
-      "oauths"
-    end
-
-    def type=(auth_type)
-      raise "bad authentication type #{auth_type}" unless auth_type.to_s == "oauths"
-    end
   end
 end

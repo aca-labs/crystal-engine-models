@@ -30,7 +30,7 @@ module PlaceOS::Model
     # Can be used instead of `uid`
     attribute filter : String?
 
-    # Associations
+    # Association
     ###############################################################################################
 
     belongs_to Authority, foreign_key: "authority_id"
