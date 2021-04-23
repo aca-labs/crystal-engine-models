@@ -47,6 +47,9 @@ module PlaceOS::Model
     attribute zones : Array(String) = [] of String, es_type: "keyword"
     attribute modules : Array(String) = [] of String, es_type: "keyword"
 
+    # Associations
+    ###############################################################################################
+
     # Encrypted yaml settings, with metadata
     has_many(
       child_class: Settings,
@@ -74,6 +77,9 @@ module PlaceOS::Model
     # Provide a email lookup helpers
     secondary_index :email
 
+    # Validation
+    ###############################################################################################
+
     # Zones and settings are only required for confident coding
     validates :name, presence: true
 
@@ -87,6 +93,9 @@ module PlaceOS::Model
       return if this.support_url.blank?
       this.validation_error(:support_url, "is an invalid URI") unless Validation.valid_uri?(this.support_url)
     }
+
+    # Queries
+    ###############################################################################################
 
     def self.by_zone_id(id)
       ControlSystem.raw_query do |q|
@@ -138,7 +147,7 @@ module PlaceOS::Model
 
     # Obtains the control system's zones as json
     def zone_data
-      Zone.get_all(self.zones).to_a.map(&.to_json)
+      Zone.find_all(self.zones).to_a.map(&.to_json)
     end
 
     # Triggers
@@ -164,7 +173,16 @@ module PlaceOS::Model
       settings.compact
     end
 
+    # Callbacks
+    ###############################################################################################
+
     before_save :update_features
+
+    before_destroy :cleanup_modules
+
+    before_save :check_zones
+
+    after_save :update_triggers
 
     # Internal modules
     private IGNORED_MODULES = ["__Triggers__"]
@@ -179,12 +197,6 @@ module PlaceOS::Model
         .to_set
       self.features = self.features + module_names
     end
-
-    # =======================
-    # Module Management
-    # =======================
-
-    before_destroy :cleanup_modules
 
     # Remove Modules not associated with any other systems
     # NOTE: Includes compulsory associated Logic Modules
@@ -206,6 +218,63 @@ module PlaceOS::Model
         future { m.destroy }
       end.each(&.get)
     end
+
+    private getter remove_zones : Array(String) { [] of String }
+    private getter add_zones : Array(String) { [] of String }
+
+    private property? update_triggers = false
+
+    # Update the zones on the model
+    protected def check_zones
+      if self.zones_changed?
+        previous = self.zones_was || [] of String
+        current = self.zones
+
+        @remove_zones = previous - current
+        @add_zones = current - previous
+
+        self.update_triggers = !remove_zones.empty? || !add_zones.empty?
+      else
+        self.update_triggers = false
+      end
+    end
+
+    # Updates triggers after save
+    #
+    # - Destroy `Trigger`s from removed zones
+    # - Adds `TriggerInstance`s to added zones
+    protected def update_triggers
+      return unless update_triggers?
+
+      unless remove_zones.empty?
+        trigger_models = self.triggers.to_a
+
+        # Remove ControlSystem's triggers associated with the removed zone
+        Zone.find_all(remove_zones).each do |zone|
+          # Destroy the associated triggers
+          zone.triggers.each do |trig_id|
+            trigger_models.each do |trigger_model|
+              # Ensure trigger is for the removed zone
+              if trigger_model.trigger_id == trig_id && trigger_model.zone_id == zone.id
+                trigger_model.destroy
+              end
+            end
+          end
+        end
+      end
+
+      # Add trigger instances to zones
+      Zone.find_all(add_zones).each do |zone|
+        zone.triggers.each do |trig_id|
+          inst = TriggerInstance.new(trigger_id: trig_id, zone_id: zone.id)
+          inst.control_system = self
+          inst.save
+        end
+      end
+    end
+
+    # Module Management
+    ###############################################################################################
 
     # Removes the module from the system and deletes it if not used elsewhere
     #
@@ -274,68 +343,6 @@ module PlaceOS::Model
       } }
 
       true
-    end
-
-    # =======================
-    # Zone Trigger Management
-    # =======================
-
-    private getter remove_zones : Array(String) { [] of String }
-    private getter add_zones : Array(String) { [] of String }
-
-    private property? update_triggers = false
-
-    before_save :check_zones
-
-    # Update the zones on the model
-    protected def check_zones
-      if self.zones_changed?
-        previous = self.zones_was || [] of String
-        current = self.zones
-
-        @remove_zones = previous - current
-        @add_zones = current - previous
-
-        self.update_triggers = !remove_zones.empty? || !add_zones.empty?
-      else
-        self.update_triggers = false
-      end
-    end
-
-    after_save :update_triggers
-
-    # Updates triggers after save
-    #
-    # * Destroy Triggers from removed zones
-    # * Adds TriggerInstances to added zones
-    protected def update_triggers
-      return unless update_triggers?
-
-      unless remove_zones.empty?
-        trigger_models = self.triggers.to_a
-
-        # Remove ControlSystem's triggers associated with the removed zone
-        Zone.find_all(remove_zones).each do |zone|
-          # Destroy the associated triggers
-          zone.triggers.each do |trig_id|
-            trigger_models.each do |trigger_model|
-              # Ensure trigger is for the removed zone
-              if trigger_model.trigger_id == trig_id && trigger_model.zone_id == zone.id
-                trigger_model.destroy
-              end
-            end
-          end
-        end
-      end
-
-      # Add trigger instances to zones
-      Zone.find_all(add_zones).each do |zone|
-        zone.triggers.each do |trig_id|
-          inst = TriggerInstance.new(trigger_id: trig_id, zone_id: zone.id)
-          inst.control_system = self
-          inst.save
-        end
-      end
     end
   end
 end
