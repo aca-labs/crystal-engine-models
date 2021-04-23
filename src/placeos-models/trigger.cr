@@ -8,6 +8,7 @@ require "./trigger/*"
 module PlaceOS::Model
   class Trigger < ModelBase
     include RethinkORM::Timestamps
+
     table :trigger
 
     attribute name : String, es_subfield: "keyword"
@@ -21,13 +22,13 @@ module PlaceOS::Model
     attribute debounce_period : Int32 = 0
     attribute important : Bool = false
 
-    METHODS = %w(GET POST PUT PATCH DELETE)
     attribute enable_webhook : Bool = false
+
+    METHODS = %w(GET POST PUT PATCH DELETE)
     attribute supported_methods : Array(String) = ["POST"]
 
-    def supported_method?(method)
-      !!(supported_methods.try &.includes?(method))
-    end
+    # Association
+    ###############################################################################################
 
     has_many(
       child_class: TriggerInstance,
@@ -36,31 +37,38 @@ module PlaceOS::Model
       collection_name: :trigger_instances
     )
 
-    # Allows filtering in cases of a Trigger belonging to a single ControlSystem
+    # Allows filtering in cases of a `Trigger` belonging to a single `ControlSystem`
     belongs_to ControlSystem, foreign_key: "control_system_id"
 
-    # ---------------------------
-    # VALIDATIONS
-    # ---------------------------
+    # Validation
+    ###############################################################################################
 
-    validate ->(this : Trigger) {
-      return unless (supported_methods = this.supported_methods)
-      invalid = supported_methods - METHODS
+    # Validate `supported_methods`
+    validate ->(this : Trigger) do
+      invalid = this.supported_methods - METHODS
       this.validation_error(:supported_methods, "contains invalid methods: #{invalid.join(", ")}") unless invalid.empty?
-    }
+    end
 
-    validate ->(this : Trigger) {
-      if (actions = this.actions) && !actions.valid?
-        actions.errors.each do |e|
+    # Validation of `actions` and `conditions`.
+    validate ->(this : Trigger) do
+      if !this.actions.valid?
+        this.actions.errors.each do |e|
           this.validation_error(:action, e.to_s)
         end
       end
 
-      if (conditions = this.conditions) && !conditions.valid?
-        conditions.errors.each do |e|
+      if !this.conditions.valid?
+        this.conditions.errors.each do |e|
           this.validation_error(:condition, e.to_s)
         end
       end
-    }
+    end
+
+    # Helpers
+    ###############################################################################################
+
+    def supported_method?(method : String)
+      method.in? supported_methods
+    end
   end
 end
