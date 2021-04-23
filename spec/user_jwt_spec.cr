@@ -9,12 +9,12 @@ module PlaceOS::Model
   )
 
   ATTRIBUTES = {
-    iss:  "POS",
-    iat:  Time.unix(1000),
-    exp:  Time.unix(Int32::MAX),
-    aud:  "protonmail.com",
-    sub:  "1234",
-    user: USER_META,
+    iss:    "POS",
+    iat:    Time.unix(1000),
+    exp:    Time.unix(Int32::MAX),
+    domain: "protonmail.com",
+    id:     "1234",
+    user:   USER_META,
   }
 
   ALGORITHM = JWT::Algorithm::RS256

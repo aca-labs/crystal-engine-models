@@ -321,8 +321,8 @@ module PlaceOS::Model
         iss: "POS",
         iat: Time.utc,
         exp: 2.weeks.from_now,
-        aud: Faker::Internet.email,
-        sub: id || RANDOM.base64(10),
+        domain: Faker::Internet.email,
+        id: id || RANDOM.base64(10),
         user: meta,
       )
     end
