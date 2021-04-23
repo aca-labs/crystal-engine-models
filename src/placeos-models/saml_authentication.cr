@@ -10,7 +10,6 @@ module PlaceOS::Model
     table :adfs_strat
 
     attribute name : String, es_subfield: "keyword"
-    belongs_to Authority, foreign_key: "authority_id"
 
     # The name of your application
     attribute issuer : String = "place.technology"
@@ -63,19 +62,19 @@ module PlaceOS::Model
     # The value to use as default RelayState for single log outs
     attribute slo_default_relay_state : String?
 
+    # Association
+    ###############################################################################################
+
+    belongs_to Authority, foreign_key: "authority_id"
+
+    # Validation
+    ###############################################################################################
+
     validates :authority_id, presence: true
     validates :name, presence: true
     validates :issuer, presence: true
     validates :idp_sso_target_url, presence: true
     validates :name_identifier_format, presence: true
     validates :assertion_consumer_service_url, presence: true
-
-    def type
-      "adfs"
-    end
-
-    def type=(auth_type)
-      raise "bad authentication type #{auth_type}" unless auth_type.to_s == "adfs"
-    end
   end
 end
