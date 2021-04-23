@@ -5,11 +5,28 @@ require "time"
 require "./base/model"
 
 module PlaceOS::Model
-  # Class that pins engine's drivers to a specific repository state
-  # Allows external driver management from a VCS
+  # Pins engine's driver sources to a specific repository state.
+  # Enables external driver management from a VCS.
   class Repository < ModelBase
     include RethinkORM::Timestamps
+
     table :repo
+
+    attribute name : String, es_subfield: "keyword"
+    attribute description : String = ""
+
+    # `folder_name` may only contain valid path characters
+    attribute folder_name : String
+
+    attribute uri : String
+    attribute commit_hash : String = "HEAD"
+    attribute branch : String = "master"
+
+    # Authentication
+
+    attribute username : String?
+    attribute password : String?
+    attribute key : String?
 
     enum Type
       Driver
@@ -20,20 +37,21 @@ module PlaceOS::Model
       end
     end
 
-    # Repository metadata
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
-
-    # folder_name may only contain valid path characters
-    attribute folder_name : String
-
-    attribute uri : String
-    attribute commit_hash : String = "HEAD"
-    attribute branch : String = "master"
-
     attribute repo_type : Type = Type::Driver, es_type: "text"
 
-    # Validations
+    # Association
+    ###############################################################################################
+
+    has_many(
+      child_class: Driver,
+      collection_name: "drivers",
+      foreign_key: "repository_id",
+      dependent: :destroy
+    )
+
+    # Validation
+    ###############################################################################################
+
     validates :name, presence: true
     validates :folder_name, presence: true, format: {with: /^[a-zA-Z0-9_+\-\(\)\.]*$/}
     validates :repo_type, presence: true
@@ -48,17 +66,8 @@ module PlaceOS::Model
       {repo_type, folder_name.strip.downcase}
     end
 
-    # Authentication
-    attribute username : String?
-    attribute password : String?
-    attribute key : String?
-
-    has_many(
-      child_class: Driver,
-      collection_name: "drivers",
-      foreign_key: "repository_id",
-      dependent: :destroy
-    )
+    # Cloning Management
+    ###############################################################################################
 
     def pull!
       commit_hash_will_change!
