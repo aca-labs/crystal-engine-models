@@ -10,37 +10,37 @@ module PlaceOS::Model
     table :ldap_strat
 
     attribute name : String, es_subfield: "keyword"
-    belongs_to Authority, foreign_key: "authority_id"
-
     attribute port : Int32 = 636
 
-    # Options are: plain, ssl, tls
-    attribute auth_method : String = "ssl"
+    # One of `"plain"`, `"ssl`", `"tls"`
+    attribute auth_method : String = "ssl", inclusion: {in: %w(plain ssl tls)}
+
     attribute uid : String = "sAMAccountName"
     attribute host : String
 
     # BaseDN such as dc=intridea, dc=com
     attribute base : String
 
-    # :bind_dn and :password is the default credentials to perform user lookup
+    # `bind_dn` and `password` are the default credentials to perform user lookups
     attribute bind_dn : String?
+    # :ditto:
     attribute password : String?
 
     # LDAP filter like: (&(uid=%{username})(memberOf=cn=myapp-users,ou=groups,dc=example,dc=com))
-    # Can be used instead of UID
+    # Can be used instead of `uid`
     attribute filter : String?
+
+    # Associations
+    ###############################################################################################
+
+    belongs_to Authority, foreign_key: "authority_id"
+
+    # Validation
+    ###############################################################################################
 
     validates :authority_id, presence: true
     validates :name, presence: true
     validates :host, presence: true
     validates :base, presence: true
-
-    def type
-      "ldaps"
-    end
-
-    def type=(auth_type)
-      raise "bad authentication type #{auth_type}" unless auth_type.to_s == "ldaps"
-    end
   end
 end
