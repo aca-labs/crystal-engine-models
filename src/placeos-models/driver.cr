@@ -11,8 +11,11 @@ module PlaceOS::Model
 
     table :driver
 
-    after_save :update_modules
-    before_destroy :cleanup_modules
+    attribute name : String, es_subfield: "keyword"
+    attribute description : String = ""
+
+    attribute default_uri : String?
+    attribute default_port : Int32?
 
     enum Role
       SSH       =  0
@@ -26,28 +29,13 @@ module PlaceOS::Model
       end
     end
 
-    attribute name : String, es_subfield: "keyword"
-    attribute description : String = ""
-
-    attribute default_uri : String?
-    attribute default_port : Int32?
-
     attribute role : Role, es_type: "integer", converter: Enum::ValueConverter(PlaceOS::Model::Driver::Role)
 
-    # Driver version management
+    # Path to driver, relative to repository directory
+    attribute file_name : String
 
-    attribute file_name : String # Path to driver, relative to repository directory
-    attribute commit : String    # Commit/version of driver to compile
-
-    belongs_to Repository, foreign_key: "repository_id", presence: true
-
-    # Encrypted yaml settings, with metadata
-    has_many(
-      child_class: Settings,
-      collection_name: "settings",
-      foreign_key: "parent_id",
-      dependent: :destroy
-    )
+    # Commit/version of driver to compile
+    attribute commit : String
 
     # Output of the last failed compilation
     attribute compilation_output : String?, es_type: "ignore"
@@ -59,10 +47,68 @@ module PlaceOS::Model
     # Might be a device that commonly goes offline (like a PC or Display that only supports Wake on Lan)
     attribute ignore_connected : Bool = false
 
+    # Association
+    ###############################################################################################
+
+    belongs_to Repository, foreign_key: "repository_id", presence: true
+
+    # Encrypted yaml settings, with metadata
+    has_many(
+      child_class: Settings,
+      collection_name: "settings",
+      foreign_key: "parent_id",
+      dependent: :destroy
+    )
+
+    # Queries
+    ###############################################################################################
+
     # Find the modules that rely on this driver
     def modules
       Module.by_driver_id(self.id)
     end
+
+    # Callbacks
+    ###############################################################################################
+
+    after_save :update_modules
+
+    before_destroy :cleanup_modules
+
+    # Reload all modules to update their name
+    #
+    protected def update_modules
+      # TODO: Perform asynchronously
+      self.modules.each do |mod|
+        mod.driver = self
+        mod.save
+      end
+    end
+
+    # Delete all the module references relying on this driver
+    #
+    protected def cleanup_modules
+      # TODO: Perform asynchronously
+      self.modules.each &.destroy
+    end
+
+    # Validation
+    ###############################################################################################
+
+    validates :name, presence: true
+    validates :module_name, presence: true
+    validates :file_name, presence: true
+    validates :commit, presence: true
+
+    # Validate the repository type
+    #
+    validate ->(this : Driver) {
+      return if (repo = this.repository).nil?
+      this.validation_error(:repository, "should be a driver repository") unless repo.repo_type.driver?
+    }
+
+    # Overridden attribute accessors
+    ###############################################################################################
 
     def default_port=(port)
       self.role = Role::Device
@@ -74,18 +120,8 @@ module PlaceOS::Model
       self.default_uri = uri
     end
 
-    # Validations
-    validates :name, presence: true
-    validates :module_name, presence: true
-    validates :file_name, presence: true
-    validates :commit, presence: true
-
-    # Validate the repository type
-    #
-    validate ->(this : Driver) {
-      return unless (repo = this.repository)
-      this.validation_error(:repository, "should be a driver repository") unless repo.repo_type == Repository::Type::Driver
-    }
+    # Recompilation Helpers
+    ###############################################################################################
 
     RECOMPILE_PREFIX = "RECOMPILE-"
 
@@ -101,21 +137,6 @@ module PlaceOS::Model
     def recompile(commit_hash : String? = nil)
       commit_hash ||= self.commit
       self.update_fields(commit: RECOMPILE_PREFIX + commit_hash) if commit_hash
-    end
-
-    # Delete all the module references relying on this driver
-    #
-    protected def cleanup_modules
-      self.modules.each &.destroy
-    end
-
-    # Reload all modules to update their name
-    #
-    protected def update_modules
-      self.modules.each do |mod|
-        mod.driver = self
-        mod.save
-      end
     end
   end
 end
