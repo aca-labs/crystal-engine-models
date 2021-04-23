@@ -9,9 +9,8 @@ require "./base/model"
 module PlaceOS::Model
   class User < ModelBase
     include RethinkORM::Timestamps
-    table :user
 
-    belongs_to Authority
+    table :user
 
     attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
@@ -44,6 +43,13 @@ module PlaceOS::Model
 
     attribute sys_admin : Bool = false, mass_assignment: false
     attribute support : Bool = false, mass_assignment: false
+
+    # Association
+    ################################################################################################
+
+    secondary_index :authority_id
+
+    belongs_to Authority
 
     has_many(
       child_class: UserAuthLookup,
@@ -118,10 +124,8 @@ module PlaceOS::Model
       self.email_digest = Digest::MD5.hexdigest(self.email)
     end
 
-    # Indices
+    # Queries
     ###############################################################################################
-
-    secondary_index :authority_id
 
     def by_authority_id(auth_id : String)
       User.find_all([auth_id], index: :authority_id)
@@ -163,11 +167,11 @@ module PlaceOS::Model
     ###############################################################################################
 
     def is_admin?
-      !!(@sys_admin)
+      sys_admin
     end
 
     def is_support?
-      !!(@support)
+      support
     end
 
     # NOTE: required due to use of `JSON.mapping` macro by `active-model`
@@ -218,6 +222,9 @@ module PlaceOS::Model
         end
       end
     end
+
+    # Serialisation
+    ###############################################################################################
 
     # Publically visible fields
     PUBLIC_DATA = {
