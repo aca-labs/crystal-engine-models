@@ -21,20 +21,28 @@ module PlaceOS::Model
     attribute revoked_at : Time?, converter: Time::EpochConverter
 
     attribute uid : String, mass_assignment: false
+
+    # Validation
+    ###############################################################################################
+
     ensure_unique :uid, create_index: true
 
     validates :name, presence: true
     validates :secret, presence: true
     validates :redirect_uri, presence: true
 
-    before_create :generate_secret
+    # Callbacks
+    ###############################################################################################
+
     before_save :generate_uid
 
-    def generate_uid
+    before_create :generate_secret
+
+    protected def generate_uid
       check_uid = @uid
-      redirect = self.redirect_uri.downcase
       if check_uid.nil? || check_uid.blank?
-        if redirect && redirect.starts_with?("http")
+        redirect = self.redirect_uri.downcase
+        if redirect.starts_with?("http")
           self.uid = Digest::MD5.hexdigest(redirect)
         else
           self.uid = Random::Secure.urlsafe_base64(25)
@@ -49,7 +57,7 @@ module PlaceOS::Model
       end
     end
 
-    def generate_secret
+    protected def generate_secret
       self.secret = Random::Secure.urlsafe_base64(40)
     end
   end
