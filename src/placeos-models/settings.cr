@@ -11,51 +11,17 @@ require "./module"
 require "./zone"
 
 module PlaceOS::Model
-  # TODO: Statically ensure a single parent id exists on the table
   class Settings < ModelBase
     include RethinkORM::Timestamps
 
     table :sets
 
-    attribute parent_id : String?, es_type: "keyword"
-    attribute settings_id : String? = nil
-
-    secondary_index :parent_id
-    secondary_index :settings_id
+    # TODO: Statically ensure a single `parent_id` exists on the table
 
     attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(PlaceOS::Encryption::Level)
 
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String, es_type: "text"
-
-    belongs_to ControlSystem, foreign_key: "parent_id"
-    belongs_to Driver, foreign_key: "parent_id"
-    belongs_to Module, foreign_key: "parent_id", association_name: "mod"
-    belongs_to Zone, foreign_key: "parent_id"
-
-    # Settings self-referential entity relationship acts as a 2-level tree
-    has_many(
-      child_class: Settings,
-      collection_name: "settings",
-      foreign_key: "settings_id",
-      dependent: :destroy
-    )
-
-    validates :encryption_level, presence: true
-    validates :parent_id, presence: true
-    validates :parent_type, presence: true
-
-    # Ensure `settings_string` is valid
-    validate ->(this : Settings) {
-      if this.settings_string_changed?
-        unencrypted = Encryption.is_encrypted?(this.settings_string) ? this.decrypt : this.settings_string
-        begin
-          YAML.parse(unencrypted) rescue JSON.parse(unencrypted)
-        rescue
-          this.validation_error(:settings_string, "is invalid JSON/YAML")
-        end
-      end
-    }
 
     # Possible parent documents
     enum ParentType
@@ -78,12 +44,79 @@ module PlaceOS::Model
 
     attribute parent_type : ParentType
 
+    # Association
+    ###############################################################################################
+
+    attribute parent_id : String?, es_type: "keyword"
+    attribute settings_id : String? = nil
+
+    secondary_index :parent_id
+    secondary_index :settings_id
+
+    belongs_to ControlSystem, foreign_key: "parent_id"
+    belongs_to Driver, foreign_key: "parent_id"
+    belongs_to Module, foreign_key: "parent_id", association_name: "mod"
+    belongs_to Zone, foreign_key: "parent_id"
+
+    # Settings self-referential entity relationship acts as a 2-level tree
+    has_many(
+      child_class: Settings,
+      collection_name: "settings",
+      foreign_key: "settings_id",
+      dependent: :destroy
+    )
+
+    # Validation
+    ###############################################################################################
+
+    validates :encryption_level, presence: true
+    validates :parent_id, presence: true
+    validates :parent_type, presence: true
+
+    # Ensure `settings_string` is valid
+    validate ->(this : Settings) do
+      if this.settings_string_changed?
+        unencrypted = Encryption.is_encrypted?(this.settings_string) ? this.decrypt : this.settings_string
+        begin
+          YAML.parse(unencrypted) rescue JSON.parse(unencrypted)
+        rescue
+          this.validation_error(:settings_string, "is invalid JSON/YAML")
+        end
+      end
+    end
+
+    # Parent accessor
+    ###############################################################################################
+
+    # Retrieve the parent relation
+    #
+    def parent
+      [
+        self.control_system,
+        self.driver,
+        self.mod,
+        self.zone,
+      ].compact.first?
+    end
+
+    def parent=(parent : Union(Zone, ControlSystem, Driver, Module))
+      case parent
+      in ControlSystem then self.control_system = parent
+      in Driver        then self.driver = parent
+      in Module        then self.mod = parent
+      in Zone          then self.zone = parent
+      end
+    end
+
     # Callbacks
     ###########################################################################
 
     before_save :parse_parent_type
+
     before_save :build_keys
+
     before_save :encrypt_settings
+
     after_save :create_version
 
     # Parse `parent_id` and set the `parent_type` of the `Settings`
@@ -192,7 +225,7 @@ module PlaceOS::Model
       end
     end
 
-    # Encryption methods
+    # Encryption
     ###########################################################################
 
     protected def encrypt(string : String)
@@ -203,7 +236,7 @@ module PlaceOS::Model
 
     # Encrypts all settings.
     #
-    def encrypt_settings
+    protected def encrypt_settings
       self.settings_string = encrypt(settings_string)
     end
 
@@ -216,7 +249,7 @@ module PlaceOS::Model
 
     # Decrypts the model's setting string
     #
-    def decrypt
+    protected def decrypt
       raise NoParentError.new if (encryption_id = parent_id).nil?
 
       Encryption.decrypt(string: settings_string, level: encryption_level, id: encryption_id)
@@ -237,52 +270,8 @@ module PlaceOS::Model
       Encryption.decrypt_for(user: user, string: settings_string, level: encryption_level, id: encryption_id)
     end
 
-    # Retrieve the parent relation
-    #
-    def parent
-      [
-        self.control_system,
-        self.driver,
-        self.mod,
-        self.zone,
-      ].compact.first?
-    end
-
-    def parent=(parent : Union(Zone, ControlSystem, Driver, Module))
-      case parent
-      in ControlSystem then self.control_system = parent
-      in Driver        then self.driver = parent
-      in Module        then self.mod = parent
-      in Zone          then self.zone = parent
-      end
-    end
-
-    # Helpers
+    # Settings Methods
     ###########################################################################
-
-    def self.has_privilege?(user : User, encryption_level : Encryption::Level)
-      case encryption_level
-      in .none?          then true
-      in .support?       then user.is_admin? || user.is_support?
-      in .admin?         then user.is_admin?
-      in .never_display? then false
-      end
-    end
-
-    # Look up a settings key, if it exists and the user has the correct privilege
-    #
-    def self.get_setting_for?(user : Model::User, key : String, settings : Array(Settings) = [] of Settings) : YAML::Any?
-      # First check if key present, then deserialise
-      if settings.any?(&.has_key_for?(user, key))
-        settings
-          # Sort on privilege
-          .sort_by(&.encryption_level)
-          # Attain (if exists) setting for given key
-          .compact_map(&.any[key]?)
-          # Get the highest privilege setting
-          .last
-      end
-    end
 
     # Decrypt and pick off the setting
     #
@@ -298,16 +287,19 @@ module PlaceOS::Model
       has_key && has_privilege
     end
 
-    # If a Settings has a parent, it's a version
+    # Look up a settings key, if it exists and the user has the correct privilege
     #
-    def is_version? : Bool
-      !settings_id.nil?
-    end
-
-    # Determine if setting_string is encrypted
-    #
-    def is_encrypted? : Bool
-      Encryption.is_encrypted?(settings_string)
+    def self.get_setting_for?(user : Model::User, key : String, settings : Array(Settings) = [] of Settings) : YAML::Any?
+      # First check if key present, then deserialise
+      if settings.any?(&.has_key_for?(user, key))
+        settings
+          # Sort on privilege
+          .sort_by(&.encryption_level)
+          # Attain (if exists) setting for given key
+          .compact_map(&.any[key]?)
+          # Get the highest privilege setting
+          .last
+      end
     end
 
     # Decrypts settings, encodes as a json object
@@ -336,6 +328,30 @@ module PlaceOS::Model
       end
     rescue e
       raise Model::Error.new("Failed to parse YAML settings: #{settings_string}", cause: e)
+    end
+
+    # Helpers
+    ###########################################################################
+
+    def self.has_privilege?(user : User, encryption_level : Encryption::Level)
+      case encryption_level
+      in .none?          then true
+      in .support?       then user.is_admin? || user.is_support?
+      in .admin?         then user.is_admin?
+      in .never_display? then false
+      end
+    end
+
+    # If a Settings has a parent, it's a version
+    #
+    def is_version? : Bool
+      !settings_id.nil?
+    end
+
+    # Determine if setting_string is encrypted
+    #
+    def is_encrypted? : Bool
+      Encryption.is_encrypted?(settings_string)
     end
   end
 end
