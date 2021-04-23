@@ -11,11 +11,12 @@ module PlaceOS::Model
       end
 
       attribute type : Type
-
       attribute time : Time?, converter: Time::EpochConverter
       attribute cron : String?
 
-      validates :type, presence: true
+      validate ->(this : TimeDependent) do
+        this.validation_error(:time_dependent, "must specify `time` or `cron`") if {this.time, this.cron}.none?
+      end
     end
 
     class Comparison < SubModel
@@ -38,25 +39,23 @@ module PlaceOS::Model
         keys: Array(String),
       )
 
-      OPERATORS = {
-        "equal", "not_equal", "greater_than", "greater_than_or_equal",
-        "less_than", "less_than_or_equal", "and", "or", "exclusive_or",
-      }
+      # Validation
+      #############################################################################################
 
-      validates :operator, inclusion: {in: OPERATORS}, presence: true
+      OPERATORS = %w(and equal exclusive_or greater_than greater_than_or_equal less_than less_than_or_equal not_equal or)
+
+      validates :operator, inclusion: {in: OPERATORS}
     end
 
     attribute comparisons : Array(Comparison) = ->{ [] of Comparison }
     attribute time_dependents : Array(TimeDependent) = ->{ [] of TimeDependent }
 
-    validate ->(this : Conditions) {
-      if (time_dependents = this.time_dependents)
-        this.collect_errors(:time_dependents, time_dependents)
-      end
+    # Validation
+    ###############################################################################################
 
-      if (comparisons = this.comparisons)
-        this.collect_errors(:comparisons, comparisons)
-      end
+    validate ->(this : Conditions) {
+      this.collect_errors(:time_dependents, this.time_dependents)
+      this.collect_errors(:comparisons, this.comparisons)
     }
   end
 end
