@@ -8,6 +8,9 @@ module PlaceOS::Model
       attribute emails : Array(String) = [] of String
       attribute content : String = ""
 
+      # Validation
+      #############################################################################################
+
       validates :emails, presence: true
     end
 
@@ -16,6 +19,9 @@ module PlaceOS::Model
       attribute method : String
       attribute args : Hash(String, JSON::Any) = ->{ {} of String => JSON::Any }
 
+      # Validation
+      #############################################################################################
+
       validates :mod, presence: true
       validates :method, presence: true
     end
@@ -23,13 +29,12 @@ module PlaceOS::Model
     attribute functions : Array(Function) = ->{ [] of Function }
     attribute mailers : Array(Email) = ->{ [] of Email }
 
-    validate ->(this : Actions) {
-      if (mailers = this.mailers)
-        this.collect_errors(:mailers, mailers)
-      end
-      if (functions = this.functions)
-        this.collect_errors(:functions, functions)
-      end
-    }
+    # Validation
+    ###############################################################################################
+
+    validate ->(this : Actions) do
+      this.collect_errors(:mailers, this.mailers)
+      this.collect_errors(:functions, this.functions)
+    end
   end
 end
