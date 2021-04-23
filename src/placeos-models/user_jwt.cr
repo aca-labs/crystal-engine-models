@@ -1,6 +1,7 @@
 require "./base/jwt"
 
 module PlaceOS::Model
+  # TODO: Migrate to human-readable attributes
   struct UserJWT < JWTBase
     getter iss : String
 
@@ -12,11 +13,13 @@ module PlaceOS::Model
 
     # getter jti : String
 
-    # Maps to authority domain
-    getter aud : String
+    @[JSON::Field(key: "aud")]
+    # The authority's domain
+    getter domain : String
 
-    # Maps to user id
-    getter sub : String
+    @[JSON::Field(key: "sub")]
+    # The user's id
+    getter id : String
 
     # OAuth2 Scopes
     getter scope : Array(String)
@@ -41,6 +44,24 @@ module PlaceOS::Model
       end
     end
 
+    @[Deprecated("Use `domain` instead of `aud`, and `id` instead of `sub`.")]
+    def initialize(@iss, @iat, @exp, aud, sub, @user, @scope = ["public"])
+      new(@iss, @iat, @exp, aud, sub, @user, @scope)
+    end
+
+    def initialize(@iss, @iat, @exp, @domain, @id, @user, @scope = ["public"])
+    end
+
+    @[Deprecated("Use #domain instead.")]
+    def aud
+      @domain
+    end
+
+    @[Deprecated("Use #id instead.")]
+    def sub
+      @id
+    end
+
     struct Metadata
       include JSON::Serializable
       @[JSON::Field(key: "n")]
@@ -54,17 +75,6 @@ module PlaceOS::Model
 
       def initialize(@name, @email, @permissions = Permissions::User, @roles = [] of String)
       end
-    end
-
-    def initialize(@iss, @iat, @exp, @aud, @sub, @user, @scope = ["public"])
-    end
-
-    def domain
-      @aud
-    end
-
-    def id
-      @sub
     end
   end
 end
