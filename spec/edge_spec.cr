@@ -28,14 +28,14 @@ module PlaceOS::Model
 
     describe "validate_token?" do
       it "validates a token, returning the edge_id" do
-        edge = Generator.edge.save!; Fiber.yield
+        edge = Generator.edge.save!
         token = edge.token(Generator.authenticated_user).not_nil!
         Edge.validate_token?(token).should eq edge.id
       end
 
       it "if token is malformed, it returns nil" do
         edge = Generator.edge.save!
-        token = "#{edge.id}_rubbish"
+        token = "#{edge.id}#{Edge::TOKEN_SEPERATOR}rubbish"
         Edge.validate_token?(token).should be_nil
       end
     end
@@ -44,7 +44,7 @@ module PlaceOS::Model
       edge = Generator.edge
       secret = edge.secret
       edge.save!
-      expected = Base64.urlsafe_encode "#{edge.id}_#{secret}"
+      expected = Base64.urlsafe_encode "#{edge.id}#{Edge::TOKEN_SEPERATOR}#{secret}"
       edge.token(Generator.authenticated_user).should eq expected
     end
   end

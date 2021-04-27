@@ -12,9 +12,7 @@ module PlaceOS::Model
 
     attribute description : String = ""
 
-    attribute secret : String = ->{ Random::Secure.urlsafe_base64(64).delete('_') }, mass_assignment: false
-
-    ENCRYPTION_LEVEL = Encryption::Level::Admin
+    attribute secret : String = ->{ Random::Secure.urlsafe_base64(32) }, mass_assignment: false
 
     # Association
     ###############################################################################################
@@ -38,17 +36,31 @@ module PlaceOS::Model
     # Callbacks
     ###############################################################################################
 
+    before_create :safe_id
+
     before_save :encrypt!
+
+    # Reject '+' and '~'
+    protected def safe_id
+      self._new_flag = true
+      @id = RethinkORM::IdGenerator.next(self).gsub({"+": '-', "~": '-'})
+    end
+
+    # Token Methods
+    ###############################################################################################
+
+    TOKEN_SEPERATOR = '~'
 
     # Yield a token if the user has privileges
     #
     def token(user : Model::User) : String?
       return unless user.is_admin?
-      Base64.urlsafe_encode("#{self.id}_#{decrypt_secret_for(user)}")
+      unencoded = {self.id, decrypt_secret_for(user)}.join(TOKEN_SEPERATOR)
+      Base64.urlsafe_encode(unencoded)
     end
 
     def self.validate_token?(token : String) : String?
-      parts = Base64.decode_string(token).split('_') rescue nil
+      parts = Base64.decode_string(token).split(TOKEN_SEPERATOR) rescue nil
 
       if parts.nil? || parts.size != 2
         Log.info { {message: "deformed token", token: token} }
@@ -68,6 +80,11 @@ module PlaceOS::Model
         nil
       end
     end
+
+    # Encryption
+    ###############################################################################################
+
+    ENCRYPTION_LEVEL = Encryption::Level::Admin
 
     # Encrypt all encrypted attributes
     def encrypt!
