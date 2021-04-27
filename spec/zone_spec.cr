@@ -100,5 +100,20 @@ module PlaceOS::Model
 
       {cs, zone, trigger}.each &.destroy
     end
+
+    describe "queries" do
+      it ".with_tag" do
+        zones = (0..5).map do |n|
+          zone = Generator.zone
+          zone.tags = (0..n).map(&.to_s).to_set
+          zone.save!
+        end
+
+        Zone.with_tag("0").to_a.compact_map(&.id).sort!.should eq zones.compact_map(&.id).sort!
+        Zone.with_tag("3").to_a.compact_map(&.id).sort!.should eq zones[3..].compact_map(&.id).sort!
+
+        zones.each &.destroy
+      end
+    end
   end
 end

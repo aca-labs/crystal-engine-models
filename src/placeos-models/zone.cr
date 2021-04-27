@@ -37,6 +37,9 @@ module PlaceOS::Model
 
     attribute triggers : Array(String) = [] of String
 
+    # Association
+    ###############################################################################################
+
     belongs_to Zone, foreign_key: "parent_id", association_name: "parent"
 
     has_many(
@@ -81,6 +84,7 @@ module PlaceOS::Model
     before_destroy :remove_zone
 
     before_save :check_triggers
+
     after_save :update_triggers
 
     # Removes self from ControlSystems
@@ -140,6 +144,23 @@ module PlaceOS::Model
 
     # Queries
     ###########################################################################
+
+    def self.with_tag(tag : String)
+      Zone.raw_query do |q|
+        q
+          .table(PlaceOS::Model::Zone.table_name)
+          .filter &.["tags"].contains(tag)
+      end
+    end
+
+    # TODO: Implement multiple element `contains` in crystal-rethinkdb
+    # def self.with_tag(tags : Enumerable(String))
+    #   Zone.raw_query do |q|
+    #     q
+    #       .table(PlaceOS::Model::Zone.table_name)
+    #       .filter &.["tags"].contains(*tags)
+    #   end
+    # end
 
     # Find systems
     def systems
