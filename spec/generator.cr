@@ -293,8 +293,8 @@ module PlaceOS::Model
         iss: "POS",
         iat: Time.utc,
         exp: 2.weeks.from_now,
-        aud: Faker::Internet.email,
-        sub: user.id.as(String),
+        domain: Faker::Internet.email,
+        id: user.id.as(String),
         scope: scope,
         user: meta,
       )
