@@ -15,6 +15,9 @@ module PlaceOS::Model
       authority = Authority.new
       authority.domain = "https://localhost:8080"
       authority.domain.should eq "localhost"
+
+      authority.domain = "test.somewhere.com"
+      authority.domain.should eq "test.somewhere.com"
     end
 
     it "find_by_domain" do

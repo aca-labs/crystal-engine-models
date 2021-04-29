@@ -28,7 +28,8 @@ module PlaceOS::Model
       # Ensure only the host is saved.
       #
       def domain=(value : String)
-        host = URI.parse(value).host.try &.downcase || ""
+        uri = URI.parse(value)
+        host = (uri.host || uri.path || "").downcase
         previous_def(host)
       end
     end
