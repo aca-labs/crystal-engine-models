@@ -1,4 +1,5 @@
 require "../base/model"
+require "json"
 
 class PlaceOS::Model::Trigger < PlaceOS::Model::ModelBase; end
 
@@ -20,10 +21,6 @@ module PlaceOS::Model
     end
 
     class Comparison < SubModel
-      attribute left : Value
-      attribute operator : String
-      attribute right : Value
-
       alias Value = StatusVariable | Constant
 
       # Constant value
@@ -39,12 +36,49 @@ module PlaceOS::Model
         keys: Array(String),
       )
 
-      # Validation
-      #############################################################################################
+      enum Operator
+        And
+        Equal
+        ExclusiveOr
+        GreaterThan
+        GreaterThanOrEqual
+        LessThan
+        LessThanOrEqual
+        NotEqual
+        Or
 
-      OPERATORS = %w(and equal exclusive_or greater_than greater_than_or_equal less_than less_than_or_equal not_equal or)
+        # ameba:disable Metrics/CyclomaticComplexity
+        def compare(left : JSON::Any::Type, right : JSON::Any::Type) : Bool
+          case self
+          in And
+            left != false && right != false && !left.nil? && !right.nil?
+          in Or
+            (left != false && !left.nil?) || (right != false && !right.nil?)
+          in Equal
+            left == right
+          in NotEqual
+            left != right
+          in ExclusiveOr
+            if left != false && right != false && !left.nil? && !right.nil?
+              false
+            else
+              (left != false && !left.nil?) || (right != false && !right.nil?)
+            end
+          in GreaterThan
+            left.as(Float64 | Int64) > right.as(Float64 | Int64)
+          in GreaterThanOrEqual
+            left.as(Float64 | Int64) >= right.as(Float64 | Int64)
+          in LessThan
+            left.as(Float64 | Int64) < right.as(Float64 | Int64)
+          in LessThanOrEqual
+            left.as(Float64 | Int64) <= right.as(Float64 | Int64)
+          end
+        end
+      end
 
-      validates :operator, inclusion: {in: OPERATORS}
+      attribute left : Value
+      attribute operator : Operator
+      attribute right : Value
     end
 
     attribute comparisons : Array(Comparison) = ->{ [] of Comparison }
