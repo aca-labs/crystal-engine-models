@@ -74,31 +74,17 @@ module PlaceOS::Model
       end
 
       it "validates comparison condition" do
-        model = Generator.trigger
-
-        valid = Trigger::Conditions::Comparison.new(
-          left: true,
-          operator: "and",
-          right: {
-            mod:    "anthropocene",
-            status: "{on: true}",
-            keys:   ["on"],
-          }
-        )
-        invalid = Trigger::Conditions::Comparison.new(
-          left: false,
-          operator: "asldkgjbn",
-          right: {
-            mod:    "anthropocene",
-            status: "{on: true}",
-            keys:   ["on"],
-          }
-        )
-        model.conditions.try &.comparisons = [valid, invalid]
-
-        model.valid?.should be_false
-        model.errors.size.should eq 1
-        model.errors.first.to_s.should end_with "operator is not included in the list"
+        expect_raises(JSON::SerializableError | JSON::MappingError) do
+          Trigger::Conditions::Comparison.from_json({
+            left:     false,
+            operator: "asldkgjbn",
+            right:    {
+              mod:    "anthropocene",
+              status: "{on: true}",
+              keys:   ["on"],
+            },
+          }.to_json)
+        end
       end
     end
   end
