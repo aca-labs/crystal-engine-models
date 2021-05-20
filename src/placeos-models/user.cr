@@ -2,6 +2,7 @@ require "CrystalEmail"
 require "crypto/bcrypt/password"
 require "digest/md5"
 require "rethinkdb-orm"
+require "rethinkdb-orm/lock"
 
 require "./authority"
 require "./base/model"
@@ -85,11 +86,33 @@ module PlaceOS::Model
     # Callbacks
     ###############################################################################################
 
+    before_destroy :ensure_admin_remains
     before_destroy :cleanup_auth_tokens
     before_save :build_name
     before_save :create_email_digest
 
-    # deletes auth tokens
+    private getter admin_destroy_lock : RethinkORM::Lock do
+      RethinkORM::Lock.new("admin_destroy_lock")
+    end
+
+    # :inherit:
+    def destroy
+      return super unless self.sys_admin
+
+      # Locking to protect against concurrent deletes
+      admin_destroy_lock.synchronize { super }
+    end
+
+    # Prevent the system from entering a state with no admin
+    protected def ensure_admin_remains
+      return unless self.sys_admin
+
+      if User.count(sys_admin: true) == 1
+        raise Model::Error.new("At least one admin must remain")
+      end
+    end
+
+    # Deletes auth tokens for the `User`
     protected def cleanup_auth_tokens
       user_id = self.id
 
