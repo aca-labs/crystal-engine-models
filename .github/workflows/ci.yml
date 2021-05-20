@@ -1,0 +1,35 @@
+name: CI
+on:
+  push:
+  schedule:
+    - cron: "0 0 * * 0" # Every Sunday at midnight
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    container:
+      image: crystallang/crystal
+    steps:
+      - uses: actions/checkout@v2
+      - name: Format
+        run: crystal tool format --check
+      - name: Lint
+        uses: crystal-ameba/github-action@v0.2.12
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        crystal:
+          - latest
+          - nightly
+          - 1.0.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: oprypin/install-crystal@v1
+        with:
+          crystal: ${{ matrix.crystal }}
+      - uses: actions/checkout@v2
+      - run: docker run -p "29015:29015" -p "28015:28015" -d rethinkdb:2.4
+      - run: shards install --ignore-crystal-version
+      - run: crystal spec --error-trace -v --order=random --no-color
