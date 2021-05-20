@@ -27,7 +27,7 @@ module PlaceOS::Model
       found.try(&.id).should eq authority.id
     end
 
-    describe "destroy relations" do
+    describe "#destroy" do
       it "removes dependent saml authentications" do
         auth = Generator.authority.save!
         strat = Generator.adfs_strat(authority: auth).save!
@@ -51,9 +51,18 @@ module PlaceOS::Model
 
       it "removes dependent users" do
         auth = Generator.authority.save!
-        user = Generator.user(authority: auth).save!
+        user = Generator.user(authority: auth, admin: false).save!
         auth.destroy
         User.find(user.id.as(String)).should be_nil
+      end
+
+      it "fails if it will destroy the only remaining admin user" do
+        User.clear
+        auth = Generator.authority.save!
+        Generator.user(authority: auth, admin: true).save!
+        expect_raises(Model::Error) do
+          auth.destroy
+        end
       end
     end
   end

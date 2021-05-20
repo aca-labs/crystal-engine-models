@@ -125,7 +125,7 @@ module PlaceOS::Model
       if (type = ParentType.from_id?(parent_id))
         self.parent_type = type
       else
-        raise Error.new("Failed to parse Settings' parent type from #{parent_id}")
+        raise Model::Error.new("Failed to parse Settings' parent type from #{parent_id}")
       end
     rescue e : NilAssertionError
       raise NoParentError.new

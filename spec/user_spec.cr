@@ -22,6 +22,56 @@ module PlaceOS::Model
       end
     end
 
+    describe "before_destroy" do
+      context "ensure_admin_remains" do
+        it "protects agains concurrent deletes of admins" do
+          num_tests = 30
+          errors = [] of Model::Error
+          num_tests.times do
+            User.clear
+            Array.new(4) { Generator.user(admin: true).save! }
+              .map { |u|
+                future do
+                  begin
+                    u.destroy
+                  rescue e : Model::Error
+                    e.message.should eq "At least one admin must remain"
+                    errors << e
+                  end
+                end
+              }.each &.get
+          end
+
+          errors.size.should eq num_tests
+        end
+
+        it "raises if only one sys_admin User remains" do
+          User.clear
+          user = Generator.user(admin: true).save!
+          expect_raises(Model::Error, "At least one admin must remain") do
+            user.destroy
+          end
+        end
+
+        it "does not raise if more than one sys_admin User remains" do
+          User.clear
+          user0 = Generator.user(admin: true).save!
+          user1 = Generator.user(admin: false).save!
+          Generator.user(admin: true).save!
+          user0.destroy
+          user1.destroy
+        end
+
+        it "does not perform the validation on non-admin Users" do
+          User.clear
+          user0 = Generator.user(support: false, admin: false).save!
+          user0.destroy
+          user1 = Generator.user(support: true, admin: false).save!
+          user1.destroy
+        end
+      end
+    end
+
     describe "validations" do
       it "ensure associated authority" do
         user = Generator.user
