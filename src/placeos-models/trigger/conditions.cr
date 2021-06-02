@@ -14,9 +14,17 @@ module PlaceOS::Model
       attribute type : Type
       attribute time : Time?, converter: Time::EpochConverter
       attribute cron : String?
+      attribute timezone : String?
 
       validate ->(this : TimeDependent) do
         this.validation_error(:time_dependent, "must specify `time` or `cron`") if {this.time, this.cron}.none?
+        if tz = this.timezone.presence
+          begin
+            Time::Location.load(tz)
+          rescue Time::Location::InvalidLocationNameError | Time::Location::InvalidTZDataError
+            this.validation_error(:time_dependent, "unable to load timezone data for #{tz}")
+          end
+        end
       end
     end
 
