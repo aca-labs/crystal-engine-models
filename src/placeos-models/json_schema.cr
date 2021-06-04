@@ -1,0 +1,20 @@
+require "./base/model"
+require "./utilities/json_string_converter"
+
+module PlaceOS::Model
+  class JsonSchema < ModelBase
+    include RethinkORM::Timestamps
+
+    table :json_schema
+
+    attribute name : String, es_subfield: "keyword"
+    attribute description : String = ""
+    attribute schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
+
+    has_many(
+      child_class: Metadata,
+      collection_name: "metadata",
+      foreign_key: "schema_id",
+    )
+  end
+end
