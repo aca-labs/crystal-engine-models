@@ -26,6 +26,31 @@ module PlaceOS::Model
       driver
     end
 
+    def self.schema
+      schema = JsonSchema.new
+      schema.name = "test"
+      schema.schema = JSON.parse %({
+        "title": "Person",
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "The person's first name."
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The person's last name."
+          },
+          "age": {
+            "description": "Age in years which must be equal to or greater than zero.",
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      })
+      schema
+    end
+
     def self.role
       role_value = Driver::Role.names.sample(1).first
       Driver::Role.parse(role_value)
