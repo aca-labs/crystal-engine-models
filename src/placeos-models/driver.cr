@@ -1,5 +1,6 @@
 require "./base/model"
 require "./utilities/settings_helper"
+require "./utilities/json_string_converter"
 
 require "./repository"
 require "./settings"
@@ -13,6 +14,7 @@ module PlaceOS::Model
 
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
+    attribute json_schema : JSON::Any, converter: JSON::Any::StringConverter
 
     attribute default_uri : String?
     attribute default_port : Int32?
