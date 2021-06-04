@@ -57,9 +57,10 @@ jobs:
       - name: Run `crystal docs`
         run: crystal docs
       - name: Publish to GitHub Pages
-        uses: rayluo/github-pages-overwriter@v1.1
+        uses: crazy-max/ghaction-github-pages@v2
+        with:
+          target_branch: docs
+          build_dir: docs
+          commit_message: "docs: update for ${{ github.sha }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          source-directory: ./docs
-          target-branch: docs
