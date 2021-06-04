@@ -54,8 +54,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: shards install --ignore-crystal-version
-      - name: Run `crystal tool docs`
-        run: crystal tool docs
+      - name: Run `crystal docs`
+        run: crystal docs
       - name: Publish to GitHub Pages
         uses: rayluo/github-pages-overwriter@v1.1
         env:
