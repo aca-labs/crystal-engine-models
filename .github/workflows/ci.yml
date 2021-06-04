@@ -53,6 +53,7 @@ jobs:
       image: crystallang/crystal
     steps:
       - uses: actions/checkout@v2
+      - run: shards install --ignore-crystal-version --production
       - name: Run `crystal tool docs`
         run: crystal tool docs
       - name: Publish to GitHub Pages
