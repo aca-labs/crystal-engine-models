@@ -1,7 +1,7 @@
 # PlaceOS Models
 
 [![CI](https://github.com/PlaceOS/models/actions/workflows/ci.yml/badge.svg)](https://github.com/PlaceOS/models/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/Docs-available-green.svg)](https://placeos.github.io/models)
+[![Documentation](https://img.shields.io/badge/Documentation-available-brightgreen.svg)](https://placeos.github.io/models)
 
 The database models for PlaceOS in [crystal](https://crystal-lang.org/).
 
