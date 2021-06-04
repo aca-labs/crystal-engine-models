@@ -16,6 +16,7 @@ jobs:
         uses: crystal-ameba/github-action@v0.2.12
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   test:
     strategy:
       fail-fast: false
@@ -33,3 +34,21 @@ jobs:
       - run: docker run -p "29015:29015" -p "28015:28015" -d rethinkdb:2.4
       - run: shards install --ignore-crystal-version
       - run: crystal spec --error-trace -v --order=random --no-color
+
+  publish:
+    if: ${{ github.ref == 'refs/head/master' }}
+    needs: test
+    runs-on: ubuntu-latest
+    container:
+      image: crystallang/crystal
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run `crystal tool docs`
+        run: crystal tool docs
+      - name: Publish to GitHub Pages
+        uses: rayluo/github-pages-overwriter@v1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          source-directory: ./docs
+          target-branch: docs
