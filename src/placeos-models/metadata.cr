@@ -20,6 +20,7 @@ module PlaceOS::Model
     attribute editors : Set(String) = ->{ Set(String).new }
 
     attribute parent_id : String, es_type: "keyword"
+    attribute schema_id : String?, es_type: "keyword"
 
     # Association
     ###############################################################################################
