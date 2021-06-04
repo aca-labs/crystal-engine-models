@@ -46,7 +46,7 @@ jobs:
         run: crystal spec --error-trace -v --order=random --no-color -Dpreview_mt
 
   publish:
-    if: github.ref == 'master'
+    if: contains('refs/heads/master', github.ref)
     needs: test
     runs-on: ubuntu-latest
     container:
