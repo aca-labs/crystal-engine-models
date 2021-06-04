@@ -27,8 +27,6 @@ jobs:
           - latest
           - nightly
           - 1.0.0
-    container:
-      image: crystallang/crystal:${{ matrix.crystal }}
     services:
       rethink:
         image: rethinkdb:2.4
@@ -36,12 +34,10 @@ jobs:
         - 29015:29015
         - 28015:28015
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        id: cache
+      - uses: oprypin/install-crystal@v1
         with:
-          path: ~/lib
-          key: ${{ hashFiles('shard.*') }}
+          crystal: ${{ matrix.crystal }}
+      - uses: actions/checkout@v2
       - run: shards install --ignore-crystal-version
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Tests
