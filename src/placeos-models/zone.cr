@@ -16,7 +16,7 @@ module PlaceOS::Model
     attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute tags : Set(String) = ->{ Set(String).new }
-    attribute json_schema : JSON::Any, converter: JSON::Any::StringConverter
+    attribute json_schema : JSON::Any = JSON::Any.new("{}"), converter: JSON::Any::StringConverter
 
     # =============================
     # Additional top level metadata that is fairly common
