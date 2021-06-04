@@ -18,7 +18,6 @@ module PlaceOS::Model
     attribute description : String = ""
     attribute details : JSON::Any, converter: JSON::Any::StringConverter
     attribute editors : Set(String) = ->{ Set(String).new }
-    attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
 
     attribute parent_id : String, es_type: "keyword"
 
@@ -30,6 +29,7 @@ module PlaceOS::Model
     belongs_to Zone, foreign_key: "parent_id", association_name: "zone"
     belongs_to ControlSystem, foreign_key: "parent_id", association_name: "control_system"
     belongs_to User, foreign_key: "parent_id", association_name: "user"
+    belongs_to JsonSchema, foreign_key: "schema_id", association_name: "schema"
 
     # Validation
     ###############################################################################################
