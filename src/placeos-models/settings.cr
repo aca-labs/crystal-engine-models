@@ -18,7 +18,7 @@ module PlaceOS::Model
 
     # TODO: Statically ensure a single `parent_id` exists on the table
 
-    attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(PlaceOS::Encryption::Level)
+    attribute encryption_level : Encryption::Level = Encryption::Level::None, converter: Enum::ValueConverter(PlaceOS::Encryption::Level), es_type: "integer"
 
     attribute settings_string : String = "{}"
     attribute keys : Array(String) = [] of String, es_type: "text"
@@ -42,7 +42,7 @@ module PlaceOS::Model
       end
     end
 
-    attribute parent_type : ParentType
+    attribute parent_type : ParentType, es_type: "keyword"
 
     # Association
     ###############################################################################################

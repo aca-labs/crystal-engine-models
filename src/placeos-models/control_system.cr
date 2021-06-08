@@ -32,7 +32,7 @@ module PlaceOS::Model
     # Array of URLs to images for a system
     attribute images : Array(String) = ->{ [] of String }
 
-    attribute timezone : Time::Location?, converter: Time::Location::Converter
+    attribute timezone : Time::Location?, converter: Time::Location::Converter, es_type: "text"
 
     # Provide a field for simplifying support
     attribute support_url : String = ""
