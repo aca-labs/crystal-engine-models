@@ -40,7 +40,7 @@ module PlaceOS::Model
     attribute commit : String
 
     # Output of the last failed compilation
-    attribute compilation_output : String?, es_type: "ignore"
+    attribute compilation_output : String?
 
     # Module instance configuration
     attribute module_name : String
