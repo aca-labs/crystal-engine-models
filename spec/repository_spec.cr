@@ -37,6 +37,39 @@ module PlaceOS::Model
       end
     end
 
+    describe "encryption" do
+      mock_id = "some-kinda-id"
+      mock_encrypted = %(\e0c217481-c787-482f-9522-3a24909b1432|QduWKfyGqlR7rVo5|AHHqybTR9+eIFY18)
+      expected_unencrypted = "super secret"
+
+      {% for field in {:key, :password} %}
+        it "#encrypt_{{ field.id }}" do
+          repository = Generator.repository
+          repository.{{ field.id }} = expected_unencrypted
+          repository.id = mock_id
+          repository.encrypt_{{ field.id }}.not_nil!.should start_with '\e'
+        end
+
+        it "#decrypt_{{ field.id }}" do
+          repository = Generator.repository
+
+          repository.{{ field.id }} = mock_encrypted
+          repository.id = mock_id
+          repository.decrypt_{{ field.id }}.should eq expected_unencrypted
+        end
+
+        it "encrypts `{{ field.id }}` before save" do
+          repository = Generator.repository
+          repository.{{ field.id }} = expected_unencrypted
+          repository.id = mock_id
+          repository.run_save_callbacks { true }
+          encrypted = repository.{{ field.id }}.not_nil!
+          encrypted.should_not eq expected_unencrypted
+          encrypted.should start_with '\e'
+        end
+      {% end %}
+    end
+
     it "removes dependent Drivers on destroy" do
       repo = Generator.repository(type: Repository::Type::Driver).save!
 

@@ -3,6 +3,7 @@ require "rethinkdb-orm"
 require "time"
 
 require "./base/model"
+require "./utilities/encryption"
 
 module PlaceOS::Model
   # Pins engine's driver sources to a specific repository state.
@@ -65,6 +66,39 @@ module PlaceOS::Model
     ensure_unique :folder_name, scope: [:repo_type, :folder_name] do |repo_type, folder_name|
       {repo_type, folder_name.strip.downcase}
     end
+
+    # Callbacks
+    ###############################################################################################
+
+    before_create :set_id
+    before_save :encrypt!
+
+    # Generate ID before document is created
+    protected def set_id
+      self._new_flag = true
+      @id = RethinkORM::IdGenerator.next(self)
+    end
+
+    # Encrypt sensitive fields
+    def encrypt!
+      self.key = encrypt_key
+      self.password = encrypt_password
+      self
+    end
+
+    # Encryption
+    ###############################################################################################
+
+    {% for field in {:key, :password} %}
+      {% for action in {:encrypt, :decrypt} %}
+        # {{ action }} the `{{ field }}` attribute, using `PlaceOS::Encryption`
+        def {{ action.id }}_{{ field.id }}
+          %temp = {{ field.id }}
+          return if %temp.nil?
+          Encryption.{{ action.id }}(%temp, id.as(String), Encryption::Level::NeverDisplay)
+        end
+      {% end %}
+    {% end %}
 
     # Cloning Management
     ###############################################################################################
