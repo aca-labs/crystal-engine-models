@@ -59,8 +59,40 @@ module PlaceOS
             encrypted_again = Encryption.encrypt(string: encrypted, id: id, level: level)
             encrypted.should eq encrypted_again
           end
+
+          it "#decrypt_for" do
+            user = Helper.create_token
+            support = Helper.create_token(PlaceOS::Model::UserJWT::Permissions::Support)
+            admin = Helper.create_token(PlaceOS::Model::UserJWT::Permissions::Admin)
+            plaintext = Faker::Internet.password(10, 20)
+            level = Encryption::Level::Support
+            id = UUID.random.to_s
+            encrypted = Encryption.encrypt(plaintext, id, level)
+            Encryption.decrypt_for(user, encrypted, id, level).should_not eq plaintext
+            Encryption.decrypt_for(support, encrypted, id, level).should eq plaintext
+            Encryption.decrypt_for(admin, encrypted, id, level).should eq plaintext
+          end
         end
       end
+    end
+  end
+
+  module Helper
+    extend self
+
+    def create_token(level : PlaceOS::Model::UserJWT::Permissions = PlaceOS::Model::UserJWT::Permissions::User)
+      PlaceOS::Model::UserJWT.new(
+        "Encrypt-Spec",
+        Time.local,
+        Time.local + 24.hours,
+        "encrypt-spec.dev",
+        "123",
+        PlaceOS::Model::UserJWT::Metadata.new(
+          Faker::Name.name,
+          Faker::Internet.email,
+          level
+        )
+      )
     end
   end
 end

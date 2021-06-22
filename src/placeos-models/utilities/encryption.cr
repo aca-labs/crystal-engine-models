@@ -14,7 +14,7 @@ module PlaceOS::Encryption
     Admin
     NeverDisplay
 
-    def visible_for?(user : Model::User)
+    def visible_for?(user : Model::User | Model::UserJWT)
       if user.is_admin?
         self <= Admin
       elsif user.is_support?
@@ -83,7 +83,7 @@ module PlaceOS::Encryption
     String.new(clear_data.to_slice)
   end
 
-  def self.decrypt_for(user : Model::User, string : String, id : String, level : Level)
+  def self.decrypt_for(user : Model::User | Model::UserJWT, string : String, id : String, level : Level)
     if level.visible_for?(user)
       decrypt(string, id, level)
     else
