@@ -60,7 +60,7 @@ module PlaceOS
             encrypted.should eq encrypted_again
           end
 
-          it "#decrypt_for", focus: true do
+          it "#decrypt_for" do
             user = Helper.create_token
             support = Helper.create_token(PlaceOS::Model::UserJWT::Permissions::Support)
             admin = Helper.create_token(PlaceOS::Model::UserJWT::Permissions::Admin)
