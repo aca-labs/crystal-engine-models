@@ -98,7 +98,6 @@ module PlaceOS::Model
     # :inherit:
     def destroy
       return super unless self.sys_admin
-
       # Locking to protect against concurrent deletes
       admin_destroy_lock.synchronize { super }
     end
@@ -249,24 +248,35 @@ module PlaceOS::Model
     # Serialisation
     ###############################################################################################
 
-    # Publically visible fields
-    PUBLIC_DATA = {
-      :id, :email_digest, :nickname, :name, :first_name, :last_name, :groups,
-      :country, :building, :image, {field: :created_at, serialise: :to_unix},
-    }
+    PUBLIC_DATA = [
+      :email_digest, :nickname, :name, :first_name, :last_name, :groups,
+      :country, :building, :image, :created_at,
+    ]
+
+    {% begin %}
+    ADMIN_DATA = {{
+                   PUBLIC_DATA + [
+                     :sys_admin, :support, :email, :phone, :ui_theme, :misc, :login_name,
+                     :staff_id, :card_number,
+                   ]
+                 }}
+    {% end %}
+
+    # Public visible fields
+    define_to_json :public, only: PUBLIC_DATA, methods: :id
 
     # Admin visible fields
-    ADMIN_DATA = {
-      # Public Visible
-      :id, :email_digest, :nickname, :name, :first_name, :last_name, :groups,
-      :country, :building, :image, {field: :created_at, serialise: :to_unix},
-      # Admin Visible
-      :sys_admin, :support, :email, :phone, :ui_theme, :misc, :login_name,
-      :staff_id, :card_number,
-    }
+    define_to_json :admin, only: ADMIN_DATA, methods: :id
 
-    subset_json(:as_public_json, PUBLIC_DATA)
-    subset_json(:as_admin_json, ADMIN_DATA)
+    @[Deprecated("Use `to_public_json` instead.")]
+    def as_public_json
+      to_public_json
+    end
+
+    @[Deprecated("Use `to_admin_json` instead.")]
+    def as_admin_json
+      to_admin_json
+    end
 
     # Password Encryption
     ###############################################################################################

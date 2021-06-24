@@ -1,12 +1,12 @@
 name: placeos-models
-version: 5.5.2
+version: 5.6.0
 crystal: ~> 1
 
 dependencies:
   # Data validation library
   active-model:
     github: spider-gazelle/active-model
-    version: ~> 3
+    version: ~> 3.1
 
   # Data validation library
   CrystalEmail:

@@ -133,25 +133,23 @@ module PlaceOS::Model
       {% end %}
     end
 
-    it "#as_public_json" do
+    describe "JSON subset" do
       user = Generator.user.save!
-      public_user = JSON.parse(user.as_public_json.to_json).as_h
-      public_attributes = User::PUBLIC_DATA.to_a.map do |field|
-        field.is_a?(NamedTuple) ? field[:field].to_s : field.to_s
+
+      it "#to_public_json" do
+        public_user = JSON.parse(user.to_public_json).as_h
+        public_attributes = User::PUBLIC_DATA.map(&.to_s)
+        public_attributes << "id"
+        public_user.keys.sort!.should eq public_attributes.sort
       end
 
-      public_user.keys.sort!.should eq public_attributes.sort
-    end
-
-    it "#as_admin_json" do
-      user = Generator.user.save!
-      admin_user = JSON.parse(user.as_admin_json.to_json).as_h
-
-      admin_attributes = User::ADMIN_DATA.to_a.map do |field|
-        field.is_a?(NamedTuple) ? field[:field].to_s : field.to_s
+      it "#to_admin_json" do
+        user = Generator.user.save!
+        admin_user = JSON.parse(user.to_admin_json).as_h
+        admin_attributes = User::ADMIN_DATA.map(&.to_s)
+        admin_attributes << "id"
+        admin_user.keys.sort!.should eq admin_attributes.sort
       end
-
-      admin_user.keys.sort!.should eq admin_attributes.sort
     end
 
     it "should create a new user with a password" do
