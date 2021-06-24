@@ -5,7 +5,6 @@ require "neuroplastic"
 require "rethinkdb-orm"
 
 require "../utilities/encryption"
-require "../utilities/subset_json"
 require "../utilities/validation"
 
 module PlaceOS::Model

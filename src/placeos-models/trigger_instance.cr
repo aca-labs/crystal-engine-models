@@ -58,16 +58,12 @@ module PlaceOS::Model
     # Serialisation
     ################################################################################################
 
+    define_to_json :metadata, methods: [:name, :description, :conditions, :actions, :binding]
+
     # Override to_json, set method fields
+    @[Deprecated("Use `#to_metadata_json` instead.")]
     def as_json
-      # NOTE: This pattern is fine as no attributes have special serialisation.
-      self.attributes.merge({
-        :name        => name,
-        :description => description,
-        :conditions  => conditions,
-        :actions     => actions,
-        :binding     => binding,
-      }).to_json
+      to_metadata_json
     end
 
     # TriggerInstance State
