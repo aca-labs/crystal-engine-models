@@ -17,6 +17,20 @@ module PlaceOS::Model
       cs.persisted?.should be_true
     end
 
+    it "no duplicate control system names" do
+      expect_raises(RethinkORM::Error::DocumentInvalid) do
+        name = RANDOM.base64(10)
+        cs1 = ControlSystem.new(
+          name: name,
+        )
+        cs1.save!
+        cs2 = ControlSystem.new(
+          name: name,
+        )
+        cs2.save!
+      end
+    end
+
     it "removes modules with only self as parent on destroy" do
       control_system = Generator.control_system
       control_system.save!
