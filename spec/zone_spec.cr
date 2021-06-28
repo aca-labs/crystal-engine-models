@@ -18,6 +18,20 @@ module PlaceOS::Model
       zone.persisted?.should be_true
     end
 
+    it "no duplicate zone names" do
+      expect_raises(RethinkORM::Error::DocumentInvalid) do
+        name = RANDOM.base64(10)
+        zone1 = Zone.new(
+          name: name,
+        )
+        zone1.save!
+        zone2 = Zone.new(
+          name: name,
+        )
+        zone2.save!
+      end
+    end
+
     it "has unique tags" do
       zone = Generator.zone
       zone.tags << "hello"

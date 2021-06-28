@@ -76,7 +76,9 @@ module PlaceOS::Model
     ###############################################################################################
 
     validates :name, presence: true
-    ensure_unique :name
+    ensure_unique :name do |name|
+      name.strip
+    end
 
     # Callbacks
     ###############################################################################################
