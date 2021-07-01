@@ -27,6 +27,14 @@ module PlaceOS::Model
 
     ensure_unique :uid, create_index: true
 
+    ensure_unique :redirect_uri do |redirect_uri|
+      redirect_uri.strip
+    end
+
+    ensure_unique :name do |name|
+      name.strip
+    end
+
     validates :name, presence: true
     validates :secret, presence: true
     validates :redirect_uri, presence: true
