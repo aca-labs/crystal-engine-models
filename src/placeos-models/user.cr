@@ -268,6 +268,9 @@ module PlaceOS::Model
     # Admin visible fields
     define_to_json :admin, only: ADMIN_DATA, methods: :id
 
+    # Groups only
+    define_to_json :group, only: :groups, methods: :id
+
     @[Deprecated("Use `to_public_json` instead.")]
     def as_public_json
       to_public_json
