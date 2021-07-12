@@ -12,7 +12,7 @@ module PlaceOS::Model
 
     table :driver
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute description : String = ""
     attribute json_schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
 

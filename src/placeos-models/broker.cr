@@ -18,7 +18,7 @@ module PlaceOS::Model
 
     attribute auth_type : AuthType = AuthType::UserPassword, converter: Enum::ValueConverter(PlaceOS::Model::Broker::AuthType)
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute description : String = ""
 
     attribute host : String

@@ -11,7 +11,7 @@ module PlaceOS::Model
 
     table :trigger
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute description : String = ""
 
     # Full path allows resolution in macros

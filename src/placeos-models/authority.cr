@@ -13,7 +13,7 @@ module PlaceOS::Model
 
     table :authority
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute description : String = ""
     attribute domain : String
 

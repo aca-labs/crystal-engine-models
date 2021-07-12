@@ -9,7 +9,7 @@ module PlaceOS::Model
 
     table :ldap_strat
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute port : Int32 = 636
 
     # One of `"plain"`, `"ssl`", `"tls"`
