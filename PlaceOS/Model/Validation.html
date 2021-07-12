@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 0.36.1">
+<meta name="crystal_docs.project_version" content="5.7.1">
+<meta name="crystal_docs.project_name" content="placeos-models">
+
+
+
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/doc.js"></script>
+
+  <meta name="repository-name" content="placeos-models">
+  <title>PlaceOS::Model::Validation - placeos-models 5.7.1</title>
+  <script type="text/javascript">
+    CrystalDocs.base_path = "../../";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="../../index.html">
+          placeos-models
+        </a>
+      </h1>
+
+      <span class="project-version">
+        5.7.1
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="placeos-models/PlaceOS" data-name="placeos">
+      <a href="../../PlaceOS.html">PlaceOS</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Encryption" data-name="placeos::encryption">
+      <a href="../../PlaceOS/Encryption.html">Encryption</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Encryption/Level" data-name="placeos::encryption::level">
+      <a href="../../PlaceOS/Encryption/Level.html">Level</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent open current" data-id="placeos-models/PlaceOS/Model" data-name="placeos::model">
+      <a href="../../PlaceOS/Model.html">Model</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Authority" data-name="placeos::model::authority">
+      <a href="../../PlaceOS/Model/Authority.html">Authority</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Broker" data-name="placeos::model::broker">
+      <a href="../../PlaceOS/Model/Broker.html">Broker</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Broker/AuthType" data-name="placeos::model::broker::authtype">
+      <a href="../../PlaceOS/Model/Broker/AuthType.html">AuthType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Connection" data-name="placeos::model::connection">
+      <a href="../../PlaceOS/Model/Connection.html">Connection</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ControlSystem" data-name="placeos::model::controlsystem">
+      <a href="../../PlaceOS/Model/ControlSystem.html">ControlSystem</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/DoorkeeperApplication" data-name="placeos::model::doorkeeperapplication">
+      <a href="../../PlaceOS/Model/DoorkeeperApplication.html">DoorkeeperApplication</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Driver" data-name="placeos::model::driver">
+      <a href="../../PlaceOS/Model/Driver.html">Driver</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Driver/Role" data-name="placeos::model::driver::role">
+      <a href="../../PlaceOS/Model/Driver/Role.html">Role</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Edge" data-name="placeos::model::edge">
+      <a href="../../PlaceOS/Model/Edge.html">Edge</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Error" data-name="placeos::model::error">
+      <a href="../../PlaceOS/Model/Error.html">Error</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/JsonSchema" data-name="placeos::model::jsonschema">
+      <a href="../../PlaceOS/Model/JsonSchema.html">JsonSchema</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/JWTBase" data-name="placeos::model::jwtbase">
+      <a href="../../PlaceOS/Model/JWTBase.html">JWTBase</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/LdapAuthentication" data-name="placeos::model::ldapauthentication">
+      <a href="../../PlaceOS/Model/LdapAuthentication.html">LdapAuthentication</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/MalformedFilter" data-name="placeos::model::malformedfilter">
+      <a href="../../PlaceOS/Model/MalformedFilter.html">MalformedFilter</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Metadata" data-name="placeos::model::metadata">
+      <a href="../../PlaceOS/Model/Metadata.html">Metadata</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Metadata/Interface" data-name="placeos::model::metadata::interface">
+      <a href="../../PlaceOS/Model/Metadata/Interface.html">Interface</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/ModelBase" data-name="placeos::model::modelbase">
+      <a href="../../PlaceOS/Model/ModelBase.html">ModelBase</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Module" data-name="placeos::model::module">
+      <a href="../../PlaceOS/Model/Module.html">Module</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/NoParentError" data-name="placeos::model::noparenterror">
+      <a href="../../PlaceOS/Model/NoParentError.html">NoParentError</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/OAuthAuthentication" data-name="placeos::model::oauthauthentication">
+      <a href="../../PlaceOS/Model/OAuthAuthentication.html">OAuthAuthentication</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Repository" data-name="placeos::model::repository">
+      <a href="../../PlaceOS/Model/Repository.html">Repository</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Repository/Type" data-name="placeos::model::repository::type">
+      <a href="../../PlaceOS/Model/Repository/Type.html">Type</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/SamlAuthentication" data-name="placeos::model::samlauthentication">
+      <a href="../../PlaceOS/Model/SamlAuthentication.html">SamlAuthentication</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Settings" data-name="placeos::model::settings">
+      <a href="../../PlaceOS/Model/Settings.html">Settings</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Settings/ParentType" data-name="placeos::model::settings::parenttype">
+      <a href="../../PlaceOS/Model/Settings/ParentType.html">ParentType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/SettingsHelper" data-name="placeos::model::settingshelper">
+      <a href="../../PlaceOS/Model/SettingsHelper.html">SettingsHelper</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Statistics" data-name="placeos::model::statistics">
+      <a href="../../PlaceOS/Model/Statistics.html">Statistics</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/SubModel" data-name="placeos::model::submodel">
+      <a href="../../PlaceOS/Model/SubModel.html">SubModel</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger" data-name="placeos::model::trigger">
+      <a href="../../PlaceOS/Model/Trigger.html">Trigger</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/Actions" data-name="placeos::model::trigger::actions">
+      <a href="../../PlaceOS/Model/Trigger/Actions.html">Actions</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Actions/Email" data-name="placeos::model::trigger::actions::email">
+      <a href="../../PlaceOS/Model/Trigger/Actions/Email.html">Email</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Actions/Function" data-name="placeos::model::trigger::actions::function">
+      <a href="../../PlaceOS/Model/Trigger/Actions/Function.html">Function</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions" data-name="placeos::model::trigger::conditions">
+      <a href="../../PlaceOS/Model/Trigger/Conditions.html">Conditions</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison" data-name="placeos::model::trigger::conditions::comparison">
+      <a href="../../PlaceOS/Model/Trigger/Conditions/Comparison.html">Comparison</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison/Constant" data-name="placeos::model::trigger::conditions::comparison::constant">
+      <a href="../../PlaceOS/Model/Trigger/Conditions/Comparison/Constant.html">Constant</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison/Operator" data-name="placeos::model::trigger::conditions::comparison::operator">
+      <a href="../../PlaceOS/Model/Trigger/Conditions/Comparison/Operator.html">Operator</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison/StatusVariable" data-name="placeos::model::trigger::conditions::comparison::statusvariable">
+      <a href="../../PlaceOS/Model/Trigger/Conditions/Comparison/StatusVariable.html">StatusVariable</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/Comparison/Value" data-name="placeos::model::trigger::conditions::comparison::value">
+      <a href="../../PlaceOS/Model/Trigger/Conditions/Comparison/Value.html">Value</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/TimeDependent" data-name="placeos::model::trigger::conditions::timedependent">
+      <a href="../../PlaceOS/Model/Trigger/Conditions/TimeDependent.html">TimeDependent</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Trigger/Conditions/TimeDependent/Type" data-name="placeos::model::trigger::conditions::timedependent::type">
+      <a href="../../PlaceOS/Model/Trigger/Conditions/TimeDependent/Type.html">Type</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/TriggerInstance" data-name="placeos::model::triggerinstance">
+      <a href="../../PlaceOS/Model/TriggerInstance.html">TriggerInstance</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/User" data-name="placeos::model::user">
+      <a href="../../PlaceOS/Model/User.html">User</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/User/Password" data-name="placeos::model::user::password">
+      <a href="../../PlaceOS/Model/User/Password.html">Password</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/UserAuthLookup" data-name="placeos::model::userauthlookup">
+      <a href="../../PlaceOS/Model/UserAuthLookup.html">UserAuthLookup</a>
+      
+    </li>
+  
+  <li class="parent " data-id="placeos-models/PlaceOS/Model/UserJWT" data-name="placeos::model::userjwt">
+      <a href="../../PlaceOS/Model/UserJWT.html">UserJWT</a>
+      
+        <ul>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/UserJWT/Metadata" data-name="placeos::model::userjwt::metadata">
+      <a href="../../PlaceOS/Model/UserJWT/Metadata.html">Metadata</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/UserJWT/Permissions" data-name="placeos::model::userjwt::permissions">
+      <a href="../../PlaceOS/Model/UserJWT/Permissions.html">Permissions</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" current" data-id="placeos-models/PlaceOS/Model/Validation" data-name="placeos::model::validation">
+      <a href="../../PlaceOS/Model/Validation.html">Validation</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Version" data-name="placeos::model::version">
+      <a href="../../PlaceOS/Model/Version.html">Version</a>
+      
+    </li>
+  
+  <li class=" " data-id="placeos-models/PlaceOS/Model/Zone" data-name="placeos::model::zone">
+      <a href="../../PlaceOS/Model/Zone.html">Zone</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">module</span> PlaceOS::Model::Validation
+
+</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      placeos-models/utilities/validation.cr
+    
+    <br/>
+  
+
+
+
+
+
+
+
+  <h2>
+    <a id="class-method-summary" class="anchor" href="#class-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Class Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#valid_uri?(uri:String):URI?-class-method" class="signature"><strong>.valid_uri?</strong>(uri : String) : URI?</a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+
+
+<div class="methods-inherited">
+  
+</div>
+
+
+
+
+  <h2>
+    <a id="class-method-detail" class="anchor" href="#class-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Class Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="valid_uri?(uri:String):URI?-class-method">
+      <div class="signature">
+        
+        def self.<strong>valid_uri?</strong>(uri : String) : URI?
+
+        <a class="method-permalink" href="#valid_uri?(uri:String):URI?-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+
+
+
+
+
+
+</div>
+
+</body>
+</html>
