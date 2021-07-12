@@ -8,7 +8,7 @@ module PlaceOS::Model
 
     table :edge
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
 
     attribute description : String = ""
 

@@ -15,7 +15,7 @@ module PlaceOS::Model
 
     table :sys
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute description : String = ""
 
     # Room search meta-data

@@ -11,7 +11,7 @@ module PlaceOS::Model
 
     table :doorkeeper_app
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute secret : String
     attribute scopes : String = "public"
     attribute owner_id : String, es_type: "keyword"

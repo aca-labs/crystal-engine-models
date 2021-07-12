@@ -14,7 +14,7 @@ module PlaceOS::Model
 
     table :metadata
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute description : String = ""
     attribute details : JSON::Any, converter: JSON::Any::StringConverter
     attribute editors : Set(String) = ->{ Set(String).new }

@@ -7,7 +7,7 @@ module PlaceOS::Model
 
     table :json_schema
 
-    attribute name : String, es_subfield: "keyword"
+    attribute name : String
     attribute description : String = ""
     attribute schema : JSON::Any = JSON::Any.new({} of String => JSON::Any), converter: JSON::Any::StringConverter
 
