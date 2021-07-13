@@ -9,7 +9,7 @@ module PlaceOS::Model
 
     table :adfs_strat
 
-    attribute name : String
+    attribute name : String, es_subfield: "keyword"
 
     # The name of your application
     attribute issuer : String = "place.technology"

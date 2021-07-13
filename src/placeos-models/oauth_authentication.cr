@@ -10,7 +10,7 @@ module PlaceOS::Model
 
     table :oauth_strat
 
-    attribute name : String
+    attribute name : String, es_subfield: "keyword"
 
     # The client ID configured for this application
     attribute client_id : String
