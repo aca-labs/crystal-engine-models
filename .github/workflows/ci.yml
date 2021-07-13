@@ -20,13 +20,16 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    name: "Test - crystal: ${{ matrix.crystal }}, stable: ${{ matrix.stable }}"
+    continue-on-error: ${{ !matrix.stable }}
     strategy:
-      fail-fast: false
       matrix:
+        stable: [true]
         crystal:
-          - latest
-          - nightly
           - 1.0.0
+        include:
+          - crystal: nightly
+            stable: false
     services:
       rethink:
         image: rethinkdb:2.4
@@ -46,11 +49,10 @@ jobs:
         run: crystal spec --error-trace -v --order=random --no-color -Dpreview_mt
 
   publish:
-    if: contains('refs/heads/master', github.ref)
+    if: contains('refs/tags', github.ref)
     needs: test
     runs-on: ubuntu-latest
-    container:
-      image: crystallang/crystal
+    container: crystallang/crystal
     steps:
       - uses: actions/checkout@v2
       - run: shards install --ignore-crystal-version
