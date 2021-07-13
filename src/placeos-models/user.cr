@@ -13,7 +13,7 @@ module PlaceOS::Model
 
     table :user
 
-    attribute name : String
+    attribute name : String, es_subfield: "keyword"
     attribute nickname : String = ""
     attribute email : String = ""
     attribute phone : String = ""

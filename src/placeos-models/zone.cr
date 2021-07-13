@@ -12,7 +12,7 @@ module PlaceOS::Model
 
     table :zone
 
-    attribute name : String
+    attribute name : String, es_subfield: "keyword"
     attribute description : String = ""
     attribute tags : Set(String) = ->{ Set(String).new }
 
