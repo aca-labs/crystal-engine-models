@@ -10,7 +10,7 @@ dependencies:
 
   # Data validation library
   CrystalEmail:
-    github: Nephos/CrystalEmail
+    github: place-labs/CrystalEmail
 
   # Simple async tasks
   future:
