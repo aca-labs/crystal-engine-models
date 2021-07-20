@@ -81,6 +81,8 @@ module PlaceOS::Model
 
     # Encrypt sensitive fields
     def encrypt!
+      self.username = username.presence
+
       self.key = encrypt_key
       self.password = encrypt_password
       self
@@ -94,7 +96,7 @@ module PlaceOS::Model
         # {{ action }} the `{{ field }}` attribute, using `PlaceOS::Encryption`
         def {{ action.id }}_{{ field.id }}
           %temp = {{ field.id }}
-          return if %temp.nil?
+          return if %temp.nil? || %temp.presence.nil?
           Encryption.{{ action.id }}(%temp, id.as(String), Encryption::Level::NeverDisplay)
         end
       {% end %}

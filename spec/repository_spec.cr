@@ -42,6 +42,18 @@ module PlaceOS::Model
       mock_encrypted = %(\e0c217481-c787-482f-9522-3a24909b1432|QduWKfyGqlR7rVo5|AHHqybTR9+eIFY18)
       expected_unencrypted = "super secret"
 
+      it "does not encrypt empty fields" do
+        repository = Generator.repository
+        repository.password = ""
+        repository.username = ""
+        repository.key = ""
+        repository.id = mock_id
+        repository.run_save_callbacks { true }
+        repository.password.nil?.should be_true
+        repository.username.nil?.should be_true
+        repository.key.nil?.should be_true
+      end
+
       {% for field in {:key, :password} %}
         it "#encrypt_{{ field.id }}" do
           repository = Generator.repository
