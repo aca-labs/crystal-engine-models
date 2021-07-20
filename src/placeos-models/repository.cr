@@ -81,6 +81,8 @@ module PlaceOS::Model
 
     # Encrypt sensitive fields
     def encrypt!
+      self.username = username.presence
+
       self.key = encrypt_key
       self.password = encrypt_password
       self
